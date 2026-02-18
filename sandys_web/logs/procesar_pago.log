@@ -1,0 +1,1961 @@
+[2025-11-12 09:07:20] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 09:07:20] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 09:07:20] Datos POST: servicio=129-1, socio_benef=5857, accion=preview, codigo=N/A
+[2025-11-12 09:07:20] Fechas POST: inicio=N/A, fin=N/A
+[2025-11-12 09:07:20] BaseURL calculada: https://f319381b1cdb.ngrok-free.app/gym2/sandys_web
+[2025-11-12 09:07:20] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-12 09:07:21] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 09:07:21] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 09:07:21] Datos POST: servicio=129-1, socio_benef=5857, accion=pagar, codigo=N/A
+[2025-11-12 09:07:21] Fechas POST: inicio=12-11-2025, fin=11-12-2025
+[2025-11-12 09:07:21] BaseURL calculada: https://f319381b1cdb.ngrok-free.app/gym2/sandys_web
+[2025-11-12 09:07:21] Acción 'pagar' detectada. Validando fechas.
+[2025-11-12 09:07:21] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Estudiantes",
+            "quantity": 1,
+            "unit_price": 342,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=gracias",
+        "failure": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=pago_fallido",
+        "pending": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_5857",
+    "notification_url": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 5857,
+        "id_socio_beneficiario": 5857,
+        "id_servicio": 129,
+        "fecha_ini": "12-11-2025",
+        "fecha_fin": "11-12-2025",
+        "codigo_usado": null,
+        "subtotal": 380,
+        "monto_pagado": 342,
+        "descuento_aplicado": 38,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-12 09:07:23] Preferencia Creada. ID: 2958194482-88a68475-b84d-481a-ae76-1c81b1e6c61f, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-88a68475-b84d-481a-ae76-1c81b1e6c61f
+[2025-11-12 09:12:03] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 09:12:03] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 09:12:03] Datos POST: servicio=129-1, socio_benef=5857, accion=preview, codigo=N/A
+[2025-11-12 09:12:03] Fechas POST: inicio=N/A, fin=N/A
+[2025-11-12 09:12:03] BaseURL calculada: https://f319381b1cdb.ngrok-free.app/gym2/sandys_web
+[2025-11-12 09:12:03] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-12 09:12:03] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 09:12:03] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 09:12:03] Datos POST: servicio=129-1, socio_benef=5857, accion=pagar, codigo=N/A
+[2025-11-12 09:12:03] Fechas POST: inicio=12-11-2025, fin=11-12-2025
+[2025-11-12 09:12:03] BaseURL calculada: https://f319381b1cdb.ngrok-free.app/gym2/sandys_web
+[2025-11-12 09:12:03] Acción 'pagar' detectada. Validando fechas.
+[2025-11-12 09:12:03] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Estudiantes",
+            "quantity": 1,
+            "unit_price": 342,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=gracias",
+        "failure": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=pago_fallido",
+        "pending": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_5857",
+    "notification_url": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 5857,
+        "id_socio_beneficiario": 5857,
+        "id_servicio": 129,
+        "fecha_ini": "12-11-2025",
+        "fecha_fin": "11-12-2025",
+        "codigo_usado": null,
+        "subtotal": 380,
+        "monto_pagado": 342,
+        "descuento_aplicado": 38,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-12 09:12:04] Preferencia Creada. ID: 2958194482-224bf3ec-cadb-44c0-81ea-017a12f4295e, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-224bf3ec-cadb-44c0-81ea-017a12f4295e
+[2025-11-12 09:21:04] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 09:21:04] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 09:21:04] Datos POST: servicio=1-1, socio_benef=5857, accion=preview, codigo=N/A
+[2025-11-12 09:21:04] Fechas POST: inicio=N/A, fin=N/A
+[2025-11-12 09:21:04] BaseURL calculada: https://f319381b1cdb.ngrok-free.app/gym2/sandys_web
+[2025-11-12 09:21:04] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-12 09:21:04] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 09:21:04] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 09:21:04] Datos POST: servicio=1-1, socio_benef=5857, accion=pagar, codigo=N/A
+[2025-11-12 09:21:04] Fechas POST: inicio=12-11-2025, fin=11-12-2025
+[2025-11-12 09:21:04] BaseURL calculada: https://f319381b1cdb.ngrok-free.app/gym2/sandys_web
+[2025-11-12 09:21:04] Acción 'pagar' detectada. Validando fechas.
+[2025-11-12 09:21:04] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "MENSUALIDAD",
+            "quantity": 1,
+            "unit_price": 360,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=gracias",
+        "failure": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=pago_fallido",
+        "pending": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_5857",
+    "notification_url": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 5857,
+        "id_socio_beneficiario": 5857,
+        "id_servicio": 1,
+        "fecha_ini": "12-11-2025",
+        "fecha_fin": "11-12-2025",
+        "codigo_usado": null,
+        "subtotal": 400,
+        "monto_pagado": 360,
+        "descuento_aplicado": 40,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-12 09:21:05] Preferencia Creada. ID: 2958194482-1dbf1e86-16fe-49c8-988c-9a8a9a940888, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-1dbf1e86-16fe-49c8-988c-9a8a9a940888
+[2025-11-12 09:21:05] Cache de metadata guardada para pref_id=2958194482-1dbf1e86-16fe-49c8-988c-9a8a9a940888
+[2025-11-12 09:24:18] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 09:24:18] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 09:24:18] Datos POST: servicio=129-1, socio_benef=5857, accion=preview, codigo=N/A
+[2025-11-12 09:24:18] Fechas POST: inicio=N/A, fin=N/A
+[2025-11-12 09:24:18] BaseURL calculada: https://f319381b1cdb.ngrok-free.app/gym2/sandys_web
+[2025-11-12 09:24:18] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-12 09:24:19] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 09:24:19] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 09:24:19] Datos POST: servicio=129-1, socio_benef=5857, accion=pagar, codigo=N/A
+[2025-11-12 09:24:19] Fechas POST: inicio=12-11-2025, fin=11-12-2025
+[2025-11-12 09:24:19] BaseURL calculada: https://f319381b1cdb.ngrok-free.app/gym2/sandys_web
+[2025-11-12 09:24:19] Acción 'pagar' detectada. Validando fechas.
+[2025-11-12 09:24:19] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Estudiantes",
+            "quantity": 1,
+            "unit_price": 342,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=gracias",
+        "failure": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=pago_fallido",
+        "pending": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_5857",
+    "notification_url": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 5857,
+        "id_socio_beneficiario": 5857,
+        "id_servicio": 129,
+        "fecha_ini": "12-11-2025",
+        "fecha_fin": "11-12-2025",
+        "codigo_usado": null,
+        "subtotal": 380,
+        "monto_pagado": 342,
+        "descuento_aplicado": 38,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-12 09:24:20] Preferencia Creada. ID: 2958194482-70290d91-38c9-45f9-ac33-2b6655af49bb, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-70290d91-38c9-45f9-ac33-2b6655af49bb
+[2025-11-12 09:24:20] Cache de metadata guardada para pref_id=2958194482-70290d91-38c9-45f9-ac33-2b6655af49bb
+[2025-11-12 09:27:55] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 09:27:55] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 09:27:55] Datos POST: servicio=129-1, socio_benef=5857, accion=preview, codigo=N/A
+[2025-11-12 09:27:55] Fechas POST: inicio=N/A, fin=N/A
+[2025-11-12 09:27:55] BaseURL calculada: https://f319381b1cdb.ngrok-free.app/gym2/sandys_web
+[2025-11-12 09:27:55] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-12 09:27:55] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 09:27:55] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 09:27:55] Datos POST: servicio=129-1, socio_benef=5857, accion=pagar, codigo=N/A
+[2025-11-12 09:27:55] Fechas POST: inicio=12-11-2025, fin=11-12-2025
+[2025-11-12 09:27:55] BaseURL calculada: https://f319381b1cdb.ngrok-free.app/gym2/sandys_web
+[2025-11-12 09:27:55] Acción 'pagar' detectada. Validando fechas.
+[2025-11-12 09:27:55] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Estudiantes",
+            "quantity": 1,
+            "unit_price": 342,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=gracias",
+        "failure": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=pago_fallido",
+        "pending": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_5857",
+    "notification_url": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 5857,
+        "id_socio_beneficiario": 5857,
+        "id_servicio": 129,
+        "fecha_ini": "12-11-2025",
+        "fecha_fin": "11-12-2025",
+        "codigo_usado": null,
+        "subtotal": 380,
+        "monto_pagado": 342,
+        "descuento_aplicado": 38,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-12 09:27:56] Preferencia Creada. ID: 2958194482-f8c56996-5a81-43f1-b12c-fbb4b3c987e9, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-f8c56996-5a81-43f1-b12c-fbb4b3c987e9
+[2025-11-12 09:27:56] Cache de metadata guardada para pref_id=2958194482-f8c56996-5a81-43f1-b12c-fbb4b3c987e9
+[2025-11-12 09:31:56] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 09:31:56] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 09:31:56] Datos POST: servicio=129-1, socio_benef=5857, accion=preview, codigo=N/A
+[2025-11-12 09:31:56] Fechas POST: inicio=N/A, fin=N/A
+[2025-11-12 09:31:56] BaseURL calculada: https://f319381b1cdb.ngrok-free.app/gym2/sandys_web
+[2025-11-12 09:31:56] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-12 09:32:01] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 09:32:01] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 09:32:01] Datos POST: servicio=129-1, socio_benef=5857, accion=pagar, codigo=N/A
+[2025-11-12 09:32:01] Fechas POST: inicio=12-11-2025, fin=11-12-2025
+[2025-11-12 09:32:01] BaseURL calculada: https://f319381b1cdb.ngrok-free.app/gym2/sandys_web
+[2025-11-12 09:32:01] Acción 'pagar' detectada. Validando fechas.
+[2025-11-12 09:32:01] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Estudiantes",
+            "quantity": 1,
+            "unit_price": 342,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=gracias",
+        "failure": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=pago_fallido",
+        "pending": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_5857",
+    "notification_url": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 5857,
+        "id_socio_beneficiario": 5857,
+        "id_servicio": 129,
+        "fecha_ini": "12-11-2025",
+        "fecha_fin": "11-12-2025",
+        "codigo_usado": null,
+        "subtotal": 380,
+        "monto_pagado": 342,
+        "descuento_aplicado": 38,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-12 09:32:02] Preferencia Creada. ID: 2958194482-574677f9-7603-4dc5-b1ea-9c5e9580da50, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-574677f9-7603-4dc5-b1ea-9c5e9580da50
+[2025-11-12 09:32:02] Cache de metadata guardada para pref_id=2958194482-574677f9-7603-4dc5-b1ea-9c5e9580da50
+[2025-11-12 09:32:58] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 09:32:58] ERROR: Sesión no válida. _SESSION['admin']['soc_id_socio'] está vacía.
+[2025-11-12 09:33:04] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 09:33:04] ERROR: Sesión no válida. _SESSION['admin']['soc_id_socio'] está vacía.
+[2025-11-12 09:39:14] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 09:39:14] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 09:39:14] Datos POST: servicio=129-1, socio_benef=5857, accion=preview, codigo=N/A
+[2025-11-12 09:39:14] Fechas POST: inicio=N/A, fin=N/A
+[2025-11-12 09:39:14] BaseURL calculada: https://f319381b1cdb.ngrok-free.app/gym2/sandys_web
+[2025-11-12 09:39:14] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-12 09:39:15] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 09:39:15] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 09:39:15] Datos POST: servicio=129-1, socio_benef=5857, accion=pagar, codigo=N/A
+[2025-11-12 09:39:15] Fechas POST: inicio=12-11-2025, fin=11-12-2025
+[2025-11-12 09:39:15] BaseURL calculada: https://f319381b1cdb.ngrok-free.app/gym2/sandys_web
+[2025-11-12 09:39:15] Acción 'pagar' detectada. Validando fechas.
+[2025-11-12 09:39:15] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Estudiantes",
+            "quantity": 1,
+            "unit_price": 342,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=gracias",
+        "failure": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=pago_fallido",
+        "pending": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_5857",
+    "notification_url": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 5857,
+        "id_socio_beneficiario": 5857,
+        "id_servicio": 129,
+        "fecha_ini": "12-11-2025",
+        "fecha_fin": "11-12-2025",
+        "codigo_usado": null,
+        "subtotal": 380,
+        "monto_pagado": 342,
+        "descuento_aplicado": 38,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-12 09:39:15] Preferencia Creada. ID: 2958194482-6eb042fd-43b5-446c-a66a-253c1af4799a, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-6eb042fd-43b5-446c-a66a-253c1af4799a
+[2025-11-12 09:39:15] Cache de metadata guardada para pref_id=2958194482-6eb042fd-43b5-446c-a66a-253c1af4799a
+[2025-11-12 09:40:33] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 09:40:33] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 09:40:33] Datos POST: servicio=129-1, socio_benef=5857, accion=preview, codigo=N/A
+[2025-11-12 09:40:33] Fechas POST: inicio=N/A, fin=N/A
+[2025-11-12 09:40:33] BaseURL calculada: https://f319381b1cdb.ngrok-free.app/gym2/sandys_web
+[2025-11-12 09:40:33] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-12 09:40:33] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 09:40:33] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 09:40:33] Datos POST: servicio=129-1, socio_benef=5857, accion=pagar, codigo=N/A
+[2025-11-12 09:40:33] Fechas POST: inicio=12-11-2025, fin=11-12-2025
+[2025-11-12 09:40:33] BaseURL calculada: https://f319381b1cdb.ngrok-free.app/gym2/sandys_web
+[2025-11-12 09:40:33] Acción 'pagar' detectada. Validando fechas.
+[2025-11-12 09:40:33] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Estudiantes",
+            "quantity": 1,
+            "unit_price": 342,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=gracias",
+        "failure": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=pago_fallido",
+        "pending": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_5857",
+    "notification_url": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 5857,
+        "id_socio_beneficiario": 5857,
+        "id_servicio": 129,
+        "fecha_ini": "12-11-2025",
+        "fecha_fin": "11-12-2025",
+        "codigo_usado": null,
+        "subtotal": 380,
+        "monto_pagado": 342,
+        "descuento_aplicado": 38,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-12 09:40:34] Preferencia Creada. ID: 2958194482-1b7c782e-9366-4e82-a6f4-20f75a951291, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-1b7c782e-9366-4e82-a6f4-20f75a951291
+[2025-11-12 09:40:34] Cache de metadata guardada para pref_id=2958194482-1b7c782e-9366-4e82-a6f4-20f75a951291
+[2025-11-12 09:42:22] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 09:42:22] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 09:42:22] Datos POST: servicio=129-1, socio_benef=5857, accion=preview, codigo=N/A
+[2025-11-12 09:42:22] Fechas POST: inicio=N/A, fin=N/A
+[2025-11-12 09:42:22] BaseURL calculada: https://f319381b1cdb.ngrok-free.app/gym2/sandys_web
+[2025-11-12 09:42:22] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-12 09:42:24] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 09:42:24] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 09:42:24] Datos POST: servicio=129-1, socio_benef=5857, accion=pagar, codigo=N/A
+[2025-11-12 09:42:24] Fechas POST: inicio=12-11-2025, fin=11-12-2025
+[2025-11-12 09:42:24] BaseURL calculada: https://f319381b1cdb.ngrok-free.app/gym2/sandys_web
+[2025-11-12 09:42:24] Acción 'pagar' detectada. Validando fechas.
+[2025-11-12 09:42:24] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Estudiantes",
+            "quantity": 1,
+            "unit_price": 342,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=gracias",
+        "failure": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=pago_fallido",
+        "pending": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_5857",
+    "notification_url": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 5857,
+        "id_socio_beneficiario": 5857,
+        "id_servicio": 129,
+        "fecha_ini": "12-11-2025",
+        "fecha_fin": "11-12-2025",
+        "codigo_usado": null,
+        "subtotal": 380,
+        "monto_pagado": 342,
+        "descuento_aplicado": 38,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-12 09:42:25] Preferencia Creada. ID: 2958194482-c293de64-0933-4a97-8cc7-9f4729e5b793, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-c293de64-0933-4a97-8cc7-9f4729e5b793
+[2025-11-12 09:42:25] Cache de metadata guardada para pref_id=2958194482-c293de64-0933-4a97-8cc7-9f4729e5b793
+[2025-11-12 10:05:32] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 10:05:32] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 10:05:32] Datos POST: servicio=129-1, socio_benef=5857, accion=preview, codigo=N/A
+[2025-11-12 10:05:32] Fechas POST: inicio=N/A, fin=N/A
+[2025-11-12 10:05:32] BaseURL calculada: https://f319381b1cdb.ngrok-free.app/gym2/sandys_web
+[2025-11-12 10:05:32] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-12 10:05:34] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 10:05:34] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 10:05:34] Datos POST: servicio=129-1, socio_benef=5857, accion=pagar, codigo=1
+[2025-11-12 10:05:34] Fechas POST: inicio=12-11-2025, fin=11-12-2025
+[2025-11-12 10:05:34] BaseURL calculada: https://f319381b1cdb.ngrok-free.app/gym2/sandys_web
+[2025-11-12 10:05:34] Exception General: El código de promoción no es válido o ha expirado.
+[2025-11-12 10:05:34] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 10:05:34] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 10:05:34] Datos POST: servicio=129-1, socio_benef=5857, accion=preview, codigo=1
+[2025-11-12 10:05:34] Fechas POST: inicio=N/A, fin=N/A
+[2025-11-12 10:05:34] BaseURL calculada: https://f319381b1cdb.ngrok-free.app/gym2/sandys_web
+[2025-11-12 10:05:34] Exception General: El código de promoción no es válido o ha expirado.
+[2025-11-12 10:05:36] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 10:05:36] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 10:05:36] Datos POST: servicio=129-1, socio_benef=5857, accion=preview, codigo=N/A
+[2025-11-12 10:05:36] Fechas POST: inicio=N/A, fin=N/A
+[2025-11-12 10:05:36] BaseURL calculada: https://f319381b1cdb.ngrok-free.app/gym2/sandys_web
+[2025-11-12 10:05:36] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-12 10:05:37] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 10:05:37] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 10:05:37] Datos POST: servicio=129-1, socio_benef=5857, accion=pagar, codigo=N/A
+[2025-11-12 10:05:37] Fechas POST: inicio=12-11-2025, fin=11-12-2025
+[2025-11-12 10:05:37] BaseURL calculada: https://f319381b1cdb.ngrok-free.app/gym2/sandys_web
+[2025-11-12 10:05:37] Acción 'pagar' detectada. Validando fechas.
+[2025-11-12 10:05:37] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Estudiantes",
+            "quantity": 1,
+            "unit_price": 342,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=gracias",
+        "failure": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=pago_fallido",
+        "pending": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_5857",
+    "notification_url": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 5857,
+        "id_socio_beneficiario": 5857,
+        "id_servicio": 129,
+        "fecha_ini": "12-11-2025",
+        "fecha_fin": "11-12-2025",
+        "codigo_usado": null,
+        "subtotal": 380,
+        "monto_pagado": 342,
+        "descuento_aplicado": 38,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-12 10:05:38] Preferencia Creada. ID: 2958194482-37640469-4d44-4c34-bb39-cb8f52b84ad4, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-37640469-4d44-4c34-bb39-cb8f52b84ad4
+[2025-11-12 10:05:38] Cache de metadata guardada para pref_id=2958194482-37640469-4d44-4c34-bb39-cb8f52b84ad4
+[2025-11-12 10:09:05] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 10:09:05] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 10:09:05] Datos POST: servicio=129-1, socio_benef=5857, accion=preview, codigo=N/A
+[2025-11-12 10:09:05] Fechas POST: inicio=N/A, fin=N/A
+[2025-11-12 10:09:05] BaseURL calculada: https://f319381b1cdb.ngrok-free.app/gym2/sandys_web
+[2025-11-12 10:09:05] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-12 10:09:05] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 10:09:05] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 10:09:05] Datos POST: servicio=129-1, socio_benef=5857, accion=pagar, codigo=N/A
+[2025-11-12 10:09:05] Fechas POST: inicio=12-11-2025, fin=11-12-2025
+[2025-11-12 10:09:05] BaseURL calculada: https://f319381b1cdb.ngrok-free.app/gym2/sandys_web
+[2025-11-12 10:09:05] Acción 'pagar' detectada. Validando fechas.
+[2025-11-12 10:09:05] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Estudiantes",
+            "quantity": 1,
+            "unit_price": 342,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=gracias",
+        "failure": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=pago_fallido",
+        "pending": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_5857",
+    "notification_url": "https://f319381b1cdb.ngrok-free.app/gym2/sandys_web/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 5857,
+        "id_socio_beneficiario": 5857,
+        "id_servicio": 129,
+        "fecha_ini": "12-11-2025",
+        "fecha_fin": "11-12-2025",
+        "codigo_usado": null,
+        "subtotal": 380,
+        "monto_pagado": 342,
+        "descuento_aplicado": 38,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-12 10:09:06] Preferencia Creada. ID: 2958194482-3da6a49c-d619-4ac6-b792-8532a4a30244, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-3da6a49c-d619-4ac6-b792-8532a4a30244
+[2025-11-12 10:09:06] Cache de metadata guardada para pref_id=2958194482-3da6a49c-d619-4ac6-b792-8532a4a30244
+[2025-11-13 05:41:37] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 05:41:37] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 05:41:37] Datos POST: servicio=129-1, socio_benef=5857, accion=preview, codigo=N/A
+[2025-11-13 05:41:37] Fechas POST: inicio=N/A, fin=N/A
+[2025-11-13 05:41:37] BaseURL calculada: https://fa6bf7ef388f.ngrok-free.app/gym2/sandys_web
+[2025-11-13 05:41:37] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 05:41:38] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 05:41:38] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 05:41:38] Datos POST: servicio=129-1, socio_benef=5857, accion=pagar, codigo=N/A
+[2025-11-13 05:41:38] Fechas POST: inicio=12-11-2025, fin=11-12-2025
+[2025-11-13 05:41:38] BaseURL calculada: https://fa6bf7ef388f.ngrok-free.app/gym2/sandys_web
+[2025-11-13 05:41:38] Acción 'pagar' detectada. Validando fechas.
+[2025-11-13 05:41:38] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Estudiantes",
+            "quantity": 1,
+            "unit_price": 342,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://fa6bf7ef388f.ngrok-free.app/gym2/sandys_web/index.php?page=gracias",
+        "failure": "https://fa6bf7ef388f.ngrok-free.app/gym2/sandys_web/index.php?page=pago_fallido",
+        "pending": "https://fa6bf7ef388f.ngrok-free.app/gym2/sandys_web/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_5857",
+    "notification_url": "https://fa6bf7ef388f.ngrok-free.app/gym2/sandys_web/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 5857,
+        "id_socio_beneficiario": 5857,
+        "id_servicio": 129,
+        "fecha_ini": "12-11-2025",
+        "fecha_fin": "11-12-2025",
+        "codigo_usado": null,
+        "subtotal": 380,
+        "monto_pagado": 342,
+        "descuento_aplicado": 38,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-13 05:41:39] Preferencia Creada. ID: 2958194482-ece061d1-0927-4827-9d31-98bfe498361a, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-ece061d1-0927-4827-9d31-98bfe498361a
+[2025-11-13 05:41:39] Cache de metadata guardada para pref_id=2958194482-ece061d1-0927-4827-9d31-98bfe498361a
+[2025-11-12 23:24:00] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 23:24:00] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 23:24:00] Datos POST: servicio=129-1, socio_benef=5857, accion=preview, codigo=N/A
+[2025-11-12 23:24:00] Fechas POST: inicio=N/A, fin=N/A
+[2025-11-12 23:24:00] BaseURL calculada: https://fa6bf7ef388f.ngrok-free.app/gym2/sandys_web
+[2025-11-12 23:24:00] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-12 23:24:01] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 23:24:01] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 23:24:01] Datos POST: servicio=129-1, socio_benef=5857, accion=pagar, codigo=N/A
+[2025-11-12 23:24:01] Fechas POST: inicio=12-11-2025, fin=11-12-2025
+[2025-11-12 23:24:01] BaseURL calculada: https://fa6bf7ef388f.ngrok-free.app/gym2/sandys_web
+[2025-11-12 23:24:01] Acción 'pagar' detectada. Validando fechas.
+[2025-11-12 23:24:01] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Estudiantes",
+            "quantity": 1,
+            "unit_price": 342,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://fa6bf7ef388f.ngrok-free.app/gym2/sandys_web/index.php?page=gracias",
+        "failure": "https://fa6bf7ef388f.ngrok-free.app/gym2/sandys_web/index.php?page=pago_fallido",
+        "pending": "https://fa6bf7ef388f.ngrok-free.app/gym2/sandys_web/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_5857",
+    "notification_url": "https://fa6bf7ef388f.ngrok-free.app/gym2/sandys_web/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 5857,
+        "id_socio_beneficiario": 5857,
+        "id_servicio": 129,
+        "fecha_ini": "12-11-2025",
+        "fecha_fin": "11-12-2025",
+        "codigo_usado": null,
+        "subtotal": 380,
+        "monto_pagado": 342,
+        "descuento_aplicado": 38,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-12 23:24:01] Preferencia Creada. ID: 2958194482-6b3b5e4d-6564-4a14-9418-a4bf4c2d0ba8, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-6b3b5e4d-6564-4a14-9418-a4bf4c2d0ba8
+[2025-11-12 23:24:01] Cache de metadata guardada para pref_id=2958194482-6b3b5e4d-6564-4a14-9418-a4bf4c2d0ba8 a las 2025-11-12 23:24:01
+[2025-11-12 23:39:10] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 23:39:10] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 23:39:10] Datos POST: servicio=129-1, socio_benef=5857, accion=preview, codigo=N/A
+[2025-11-12 23:39:10] Fechas POST: inicio=N/A, fin=N/A
+[2025-11-12 23:39:10] BaseURL calculada: https://fa6bf7ef388f.ngrok-free.app/gym2/sandys_web
+[2025-11-12 23:39:10] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-12 23:39:13] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 23:39:13] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 23:39:13] Datos POST: servicio=129-1, socio_benef=5857, accion=pagar, codigo=N/A
+[2025-11-12 23:39:13] Fechas POST: inicio=12-11-2025, fin=11-12-2025
+[2025-11-12 23:39:13] BaseURL calculada: https://fa6bf7ef388f.ngrok-free.app/gym2/sandys_web
+[2025-11-12 23:39:13] Acción 'pagar' detectada. Validando fechas.
+[2025-11-12 23:39:13] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Estudiantes",
+            "quantity": 1,
+            "unit_price": 342,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://fa6bf7ef388f.ngrok-free.app/gym2/sandys_web/index.php?page=gracias",
+        "failure": "https://fa6bf7ef388f.ngrok-free.app/gym2/sandys_web/index.php?page=pago_fallido",
+        "pending": "https://fa6bf7ef388f.ngrok-free.app/gym2/sandys_web/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_5857",
+    "notification_url": "https://fa6bf7ef388f.ngrok-free.app/gym2/sandys_web/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 5857,
+        "id_socio_beneficiario": 5857,
+        "id_servicio": 129,
+        "fecha_ini": "12-11-2025",
+        "fecha_fin": "11-12-2025",
+        "codigo_usado": null,
+        "subtotal": 380,
+        "monto_pagado": 342,
+        "descuento_aplicado": 38,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-12 23:39:14] Preferencia Creada. ID: 2958194482-5beb14a6-24ba-4ae5-9dde-4f95d8ba57d8, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-5beb14a6-24ba-4ae5-9dde-4f95d8ba57d8
+[2025-11-12 23:39:14] Cache de metadata guardada para pref_id=2958194482-5beb14a6-24ba-4ae5-9dde-4f95d8ba57d8 a las 2025-11-12 23:39:14
+[2025-11-12 23:46:52] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 23:46:52] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 23:46:52] Datos POST: servicio=1-1, socio_benef=5857, accion=preview, codigo=N/A
+[2025-11-12 23:46:52] Fechas POST: inicio=N/A, fin=N/A
+[2025-11-12 23:46:52] BaseURL calculada: https://fa6bf7ef388f.ngrok-free.app/gym2/sandys_web
+[2025-11-12 23:46:52] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-12 23:47:13] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 23:47:13] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 23:47:13] Datos POST: servicio=129-1, socio_benef=5857, accion=preview, codigo=N/A
+[2025-11-12 23:47:13] Fechas POST: inicio=N/A, fin=N/A
+[2025-11-12 23:47:13] BaseURL calculada: https://fa6bf7ef388f.ngrok-free.app/gym2/sandys_web
+[2025-11-12 23:47:13] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-12 23:57:09] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-12 23:57:09] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-12 23:57:09] Datos POST: servicio=129-1, socio_benef=5857, accion=preview, codigo=N/A
+[2025-11-12 23:57:09] Fechas POST: inicio=N/A, fin=N/A
+[2025-11-12 23:57:10] BaseURL calculada: https://fa6bf7ef388f.ngrok-free.app/gym2/sandys_web
+[2025-11-12 23:57:10] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 00:00:45] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 00:00:45] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 00:00:45] Datos POST: servicio=129-1, socio_benef=5857, accion=preview, codigo=N/A
+[2025-11-13 00:00:45] Fechas POST: inicio=N/A, fin=N/A
+[2025-11-13 00:00:45] BaseURL calculada: https://fa6bf7ef388f.ngrok-free.app/gym2/sandys_web
+[2025-11-13 00:00:45] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 00:01:39] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 00:01:39] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 00:01:39] Datos POST: servicio=129-1, socio_benef=5857, accion=preview, codigo=N/A
+[2025-11-13 00:01:39] Fechas POST: inicio=N/A, fin=N/A
+[2025-11-13 00:01:39] BaseURL calculada: https://fa6bf7ef388f.ngrok-free.app/gym2/sandys_web
+[2025-11-13 00:01:39] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 00:03:58] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 00:03:58] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 00:03:58] Datos POST: servicio=129-1, socio_benef=5857, accion=preview, codigo=N/A
+[2025-11-13 00:03:58] Fechas POST: inicio=N/A, fin=N/A
+[2025-11-13 00:03:58] BaseURL calculada: https://fa6bf7ef388f.ngrok-free.app/gym2/sandys_web
+[2025-11-13 00:03:58] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 00:04:10] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 00:04:10] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 00:04:10] Datos POST: servicio=129-1, socio_benef=5857, accion=preview, codigo=N/A
+[2025-11-13 00:04:10] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2025-11-13 00:04:10] BaseURL calculada: https://fa6bf7ef388f.ngrok-free.app/gym2/sandys_web
+[2025-11-13 00:04:10] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 00:04:36] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 00:04:36] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 00:04:36] Datos POST: servicio=129-1, socio_benef=5857, accion=pagar, codigo=N/A
+[2025-11-13 00:04:36] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2025-11-13 00:04:36] BaseURL calculada: https://fa6bf7ef388f.ngrok-free.app/gym2/sandys_web
+[2025-11-13 00:04:36] Acción 'pagar' detectada. Validando fechas.
+[2025-11-13 00:04:36] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Estudiantes",
+            "quantity": 1,
+            "unit_price": 342,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://fa6bf7ef388f.ngrok-free.app/gym2/sandys_web/index.php?page=gracias",
+        "failure": "https://fa6bf7ef388f.ngrok-free.app/gym2/sandys_web/index.php?page=pago_fallido",
+        "pending": "https://fa6bf7ef388f.ngrok-free.app/gym2/sandys_web/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_5857",
+    "notification_url": "https://fa6bf7ef388f.ngrok-free.app/gym2/sandys_web/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 5857,
+        "id_socio_beneficiario": 5857,
+        "id_servicio": 129,
+        "fecha_ini": "04-08-2027",
+        "fecha_fin": "03-09-2027",
+        "codigo_usado": null,
+        "subtotal": 380,
+        "monto_pagado": 342,
+        "descuento_aplicado": 38,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-13 00:04:37] Preferencia Creada. ID: 2958194482-dba70274-cd65-46b9-a4a5-22bad8afbecd, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-dba70274-cd65-46b9-a4a5-22bad8afbecd
+[2025-11-13 00:04:37] Cache de metadata guardada para pref_id=2958194482-dba70274-cd65-46b9-a4a5-22bad8afbecd a las 2025-11-13 00:04:37
+[2025-11-13 00:09:52] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 00:09:52] Datos de Sesión: id_socio_pagador=9380, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 00:09:52] Datos POST: servicio=1-1, socio_benef=9380, accion=preview, codigo=N/A
+[2025-11-13 00:09:52] Fechas POST: inicio=01-12-2025, fin=31-12-2025
+[2025-11-13 00:09:52] BaseURL calculada: https://sandysgym.com
+[2025-11-13 00:09:52] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 00:10:38] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 00:10:38] Datos de Sesión: id_socio_pagador=9380, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 00:10:38] Datos POST: servicio=1-1, socio_benef=9380, accion=preview, codigo=N/A
+[2025-11-13 00:10:38] Fechas POST: inicio=01-12-2025, fin=31-12-2025
+[2025-11-13 00:10:38] BaseURL calculada: https://sandysgym.com
+[2025-11-13 00:10:38] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 00:10:48] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 00:10:48] Datos de Sesión: id_socio_pagador=9380, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 00:10:48] Datos POST: servicio=1-1, socio_benef=9380, accion=pagar, codigo=N/A
+[2025-11-13 00:10:48] Fechas POST: inicio=01-12-2025, fin=31-12-2025
+[2025-11-13 00:10:48] BaseURL calculada: https://sandysgym.com
+[2025-11-13 00:10:48] Acción 'pagar' detectada. Validando fechas.
+[2025-11-13 00:10:48] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "MENSUALIDAD",
+            "quantity": 1,
+            "unit_price": 0,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://sandysgym.com/index.php?page=gracias",
+        "failure": "https://sandysgym.com/index.php?page=pago_fallido",
+        "pending": "https://sandysgym.com/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_9380",
+    "notification_url": "https://sandysgym.com/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 9380,
+        "id_socio_beneficiario": 9380,
+        "id_servicio": 1,
+        "fecha_ini": "01-12-2025",
+        "fecha_fin": "31-12-2025",
+        "codigo_usado": null,
+        "subtotal": 400,
+        "monto_pagado": 0,
+        "descuento_aplicado": 400,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-13 00:10:48] MPApiException: HTTP=0, Content="Api error. Check response for details"
+[2025-11-13 00:10:55] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 00:10:55] Datos de Sesión: id_socio_pagador=9380, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 00:10:55] Datos POST: servicio=, socio_benef=9380, accion=pagar, codigo=N/A
+[2025-11-13 00:10:55] Fechas POST: inicio=N/A, fin=N/A
+[2025-11-13 00:10:55] BaseURL calculada: https://sandysgym.com
+[2025-11-13 00:10:55] Exception General: Selecciona un servicio válido.
+[2025-11-13 00:11:51] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 00:11:51] Datos de Sesión: id_socio_pagador=9380, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 00:11:51] Datos POST: servicio=1-1, socio_benef=9380, accion=preview, codigo=N/A
+[2025-11-13 00:11:51] Fechas POST: inicio=01-12-2025, fin=31-12-2025
+[2025-11-13 00:11:51] BaseURL calculada: https://sandysgym.com
+[2025-11-13 00:11:51] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 00:11:52] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 00:11:52] Datos de Sesión: id_socio_pagador=9380, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 00:11:52] Datos POST: servicio=1-1, socio_benef=9380, accion=pagar, codigo=N/A
+[2025-11-13 00:11:52] Fechas POST: inicio=01-12-2025, fin=31-12-2025
+[2025-11-13 00:11:52] BaseURL calculada: https://sandysgym.com
+[2025-11-13 00:11:52] Acción 'pagar' detectada. Validando fechas.
+[2025-11-13 00:11:52] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "MENSUALIDAD",
+            "quantity": 1,
+            "unit_price": 360,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://sandysgym.com/index.php?page=gracias",
+        "failure": "https://sandysgym.com/index.php?page=pago_fallido",
+        "pending": "https://sandysgym.com/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_9380",
+    "notification_url": "https://sandysgym.com/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 9380,
+        "id_socio_beneficiario": 9380,
+        "id_servicio": 1,
+        "fecha_ini": "01-12-2025",
+        "fecha_fin": "31-12-2025",
+        "codigo_usado": null,
+        "subtotal": 400,
+        "monto_pagado": 360,
+        "descuento_aplicado": 40,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-13 00:11:53] Preferencia Creada. ID: 2958194482-9938aeda-fca1-49e1-91aa-8dc6125c49c9, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-9938aeda-fca1-49e1-91aa-8dc6125c49c9
+[2025-11-13 00:11:53] [WARN] No se pudo guardar san_mp_pref: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'dbs1756575.san_mp_pref' doesn't exist
+[2025-11-13 00:15:26] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 00:15:26] Datos de Sesión: id_socio_pagador=9380, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 00:15:26] Datos POST: servicio=1-1, socio_benef=9380, accion=preview, codigo=N/A
+[2025-11-13 00:15:26] Fechas POST: inicio=01-12-2025, fin=31-12-2025
+[2025-11-13 00:15:26] BaseURL calculada: https://sandysgym.com
+[2025-11-13 00:15:26] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 00:15:30] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 00:15:30] Datos de Sesión: id_socio_pagador=9380, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 00:15:30] Datos POST: servicio=1-1, socio_benef=9380, accion=pagar, codigo=N/A
+[2025-11-13 00:15:30] Fechas POST: inicio=01-12-2025, fin=31-12-2025
+[2025-11-13 00:15:30] BaseURL calculada: https://sandysgym.com
+[2025-11-13 00:15:30] Acción 'pagar' detectada. Validando fechas.
+[2025-11-13 00:15:30] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "MENSUALIDAD",
+            "quantity": 1,
+            "unit_price": 360,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://sandysgym.com/index.php?page=gracias",
+        "failure": "https://sandysgym.com/index.php?page=pago_fallido",
+        "pending": "https://sandysgym.com/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_9380",
+    "notification_url": "https://sandysgym.com/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 9380,
+        "id_socio_beneficiario": 9380,
+        "id_servicio": 1,
+        "fecha_ini": "01-12-2025",
+        "fecha_fin": "31-12-2025",
+        "codigo_usado": null,
+        "subtotal": 400,
+        "monto_pagado": 360,
+        "descuento_aplicado": 40,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-13 00:15:31] Preferencia Creada. ID: 2958194482-78f7daf0-b81c-4496-bc26-83d397778657, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-78f7daf0-b81c-4496-bc26-83d397778657
+[2025-11-13 00:15:31] Cache de metadata guardada para pref_id=2958194482-78f7daf0-b81c-4496-bc26-83d397778657 a las 2025-11-13 00:15:31
+[2025-11-13 22:18:44] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:18:44] Datos de Sesión: id_socio_pagador=9379, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:18:44] Datos POST: servicio=254-1, socio_benef=9379, accion=preview, codigo=N/A
+[2025-11-13 22:18:44] Fechas POST: inicio=01-01-2026, fin=31-01-2026
+[2025-11-13 22:18:44] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:18:44] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 22:20:31] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:20:31] Datos de Sesión: id_socio_pagador=9379, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:20:31] Datos POST: servicio=254-1, socio_benef=9379, accion=preview, codigo=N/A
+[2025-11-13 22:20:31] Fechas POST: inicio=01-01-2026, fin=31-01-2026
+[2025-11-13 22:20:31] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:20:31] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 22:22:29] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:22:29] Datos de Sesión: id_socio_pagador=9379, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:22:29] Datos POST: servicio=254-1, socio_benef=9379, accion=preview, codigo=N/A
+[2025-11-13 22:22:29] Fechas POST: inicio=01-01-2026, fin=31-01-2026
+[2025-11-13 22:22:29] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:22:29] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 22:23:26] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:23:26] Datos de Sesión: id_socio_pagador=9379, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:23:26] Datos POST: servicio=254-1, socio_benef=9379, accion=preview, codigo=N/A
+[2025-11-13 22:23:26] Fechas POST: inicio=01-01-2026, fin=31-01-2026
+[2025-11-13 22:23:26] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:23:26] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 22:23:32] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:23:32] Datos de Sesión: id_socio_pagador=9379, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:23:32] Datos POST: servicio=254-1, socio_benef=9379, accion=pagar, codigo=N/A
+[2025-11-13 22:23:32] Fechas POST: inicio=01-01-2026, fin=31-01-2026
+[2025-11-13 22:23:32] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:23:32] Acción 'pagar' detectada. Validando fechas.
+[2025-11-13 22:23:32] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Buen Fin",
+            "quantity": 1,
+            "unit_price": 6,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://sandysgym.com/index.php?page=gracias",
+        "failure": "https://sandysgym.com/index.php?page=pago_fallido",
+        "pending": "https://sandysgym.com/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_9379",
+    "notification_url": "https://sandysgym.com/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 9379,
+        "id_socio_beneficiario": 9379,
+        "id_servicio": 254,
+        "fecha_ini": "01-01-2026",
+        "fecha_fin": "31-01-2026",
+        "codigo_usado": null,
+        "subtotal": 300,
+        "monto_pagado": 6,
+        "descuento_aplicado": 294,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-13 22:23:33] Preferencia Creada. ID: 2958194482-6dbacb35-bd66-4bbd-bb1f-00b5d3f0fd75, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-6dbacb35-bd66-4bbd-bb1f-00b5d3f0fd75
+[2025-11-13 22:23:33] Cache de metadata guardada para pref_id=2958194482-6dbacb35-bd66-4bbd-bb1f-00b5d3f0fd75 a las 2025-11-13 22:23:33
+[2025-11-13 22:28:58] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:28:58] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:28:58] Datos POST: servicio=254-1, socio_benef=10743, accion=preview, codigo=N/A
+[2025-11-13 22:28:58] Fechas POST: inicio=13-11-2025, fin=12-12-2025
+[2025-11-13 22:28:58] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:28:58] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 22:29:09] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:29:09] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:29:09] Datos POST: servicio=254-1, socio_benef=10743, accion=preview, codigo=N/A
+[2025-11-13 22:29:09] Fechas POST: inicio=13-11-2025, fin=12-12-2025
+[2025-11-13 22:29:09] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:29:09] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 22:30:18] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:30:18] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:30:18] Datos POST: servicio=254-1, socio_benef=10743, accion=preview, codigo=N/A
+[2025-11-13 22:30:18] Fechas POST: inicio=13-11-2025, fin=12-12-2025
+[2025-11-13 22:30:18] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:30:18] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 22:32:10] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:32:10] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:32:10] Datos POST: servicio=254-1, socio_benef=10743, accion=preview, codigo=N/A
+[2025-11-13 22:32:10] Fechas POST: inicio=13-11-2025, fin=12-12-2025
+[2025-11-13 22:32:10] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:32:10] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 22:32:19] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:32:19] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:32:19] Datos POST: servicio=254-1, socio_benef=10743, accion=pagar, codigo=N/A
+[2025-11-13 22:32:19] Fechas POST: inicio=13-11-2025, fin=12-12-2025
+[2025-11-13 22:32:19] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:32:19] Acción 'pagar' detectada. Validando fechas.
+[2025-11-13 22:32:19] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Buen Fin",
+            "quantity": 1,
+            "unit_price": 6,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://sandysgym.com/index.php?page=gracias",
+        "failure": "https://sandysgym.com/index.php?page=pago_fallido",
+        "pending": "https://sandysgym.com/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_10743",
+    "notification_url": "https://sandysgym.com/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 10743,
+        "id_socio_beneficiario": 10743,
+        "id_servicio": 254,
+        "fecha_ini": "13-11-2025",
+        "fecha_fin": "12-12-2025",
+        "codigo_usado": null,
+        "subtotal": 300,
+        "monto_pagado": 6,
+        "descuento_aplicado": 294,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-13 22:32:19] Preferencia Creada. ID: 2958194482-b16f89b0-6697-4ff8-b2f2-2d057d4e4e9f, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-b16f89b0-6697-4ff8-b2f2-2d057d4e4e9f
+[2025-11-13 22:32:19] Cache de metadata guardada para pref_id=2958194482-b16f89b0-6697-4ff8-b2f2-2d057d4e4e9f a las 2025-11-13 22:32:19
+[2025-11-13 22:32:49] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:32:49] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:32:49] Datos POST: servicio=254-1, socio_benef=10743, accion=preview, codigo=N/A
+[2025-11-13 22:32:49] Fechas POST: inicio=13-11-2025, fin=12-12-2025
+[2025-11-13 22:32:49] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:32:49] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 22:32:50] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:32:50] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:32:50] Datos POST: servicio=254-1, socio_benef=10743, accion=pagar, codigo=N/A
+[2025-11-13 22:32:50] Fechas POST: inicio=13-11-2025, fin=12-12-2025
+[2025-11-13 22:32:50] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:32:50] Acción 'pagar' detectada. Validando fechas.
+[2025-11-13 22:32:50] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Buen Fin",
+            "quantity": 1,
+            "unit_price": 6,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://sandysgym.com/index.php?page=gracias",
+        "failure": "https://sandysgym.com/index.php?page=pago_fallido",
+        "pending": "https://sandysgym.com/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_10743",
+    "notification_url": "https://sandysgym.com/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 10743,
+        "id_socio_beneficiario": 10743,
+        "id_servicio": 254,
+        "fecha_ini": "13-11-2025",
+        "fecha_fin": "12-12-2025",
+        "codigo_usado": null,
+        "subtotal": 300,
+        "monto_pagado": 6,
+        "descuento_aplicado": 294,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-13 22:32:51] Preferencia Creada. ID: 2958194482-8cb5ebf7-f5dd-4582-a475-e1602f60f287, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-8cb5ebf7-f5dd-4582-a475-e1602f60f287
+[2025-11-13 22:32:51] Cache de metadata guardada para pref_id=2958194482-8cb5ebf7-f5dd-4582-a475-e1602f60f287 a las 2025-11-13 22:32:51
+[2025-11-13 22:36:27] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:36:27] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:36:27] Datos POST: servicio=254-1, socio_benef=10743, accion=preview, codigo=N/A
+[2025-11-13 22:36:27] Fechas POST: inicio=13-11-2025, fin=12-12-2025
+[2025-11-13 22:36:27] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:36:27] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 22:36:28] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:36:28] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:36:28] Datos POST: servicio=254-1, socio_benef=10743, accion=pagar, codigo=N/A
+[2025-11-13 22:36:28] Fechas POST: inicio=13-11-2025, fin=12-12-2025
+[2025-11-13 22:36:28] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:36:28] Acción 'pagar' detectada. Validando fechas.
+[2025-11-13 22:36:28] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Buen Fin",
+            "quantity": 1,
+            "unit_price": 6,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://sandysgym.com/index.php?page=gracias",
+        "failure": "https://sandysgym.com/index.php?page=pago_fallido",
+        "pending": "https://sandysgym.com/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_10743",
+    "notification_url": "https://sandysgym.com/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 10743,
+        "id_socio_beneficiario": 10743,
+        "id_servicio": 254,
+        "fecha_ini": "13-11-2025",
+        "fecha_fin": "12-12-2025",
+        "codigo_usado": null,
+        "subtotal": 300,
+        "monto_pagado": 6,
+        "descuento_aplicado": 294,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-13 22:36:29] Preferencia Creada. ID: 2958194482-2957b791-d20a-46e7-b0e2-904e182a1c15, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-2957b791-d20a-46e7-b0e2-904e182a1c15
+[2025-11-13 22:36:29] Cache de metadata guardada para pref_id=2958194482-2957b791-d20a-46e7-b0e2-904e182a1c15 a las 2025-11-13 22:36:29
+[2025-11-13 22:36:41] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:36:41] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:36:41] Datos POST: servicio=254-1, socio_benef=10743, accion=preview, codigo=N/A
+[2025-11-13 22:36:41] Fechas POST: inicio=13-11-2025, fin=12-12-2025
+[2025-11-13 22:36:41] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:36:41] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 22:36:43] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:36:43] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:36:43] Datos POST: servicio=254-1, socio_benef=10743, accion=pagar, codigo=N/A
+[2025-11-13 22:36:43] Fechas POST: inicio=13-11-2025, fin=12-12-2025
+[2025-11-13 22:36:43] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:36:43] Acción 'pagar' detectada. Validando fechas.
+[2025-11-13 22:36:43] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Buen Fin",
+            "quantity": 1,
+            "unit_price": 6,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://sandysgym.com/index.php?page=gracias",
+        "failure": "https://sandysgym.com/index.php?page=pago_fallido",
+        "pending": "https://sandysgym.com/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_10743",
+    "notification_url": "https://sandysgym.com/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 10743,
+        "id_socio_beneficiario": 10743,
+        "id_servicio": 254,
+        "fecha_ini": "13-11-2025",
+        "fecha_fin": "12-12-2025",
+        "codigo_usado": null,
+        "subtotal": 300,
+        "monto_pagado": 6,
+        "descuento_aplicado": 294,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-13 22:36:43] Preferencia Creada. ID: 2958194482-f995fe89-c072-4217-aeb4-4dd307121333, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-f995fe89-c072-4217-aeb4-4dd307121333
+[2025-11-13 22:36:43] Cache de metadata guardada para pref_id=2958194482-f995fe89-c072-4217-aeb4-4dd307121333 a las 2025-11-13 22:36:43
+[2025-11-13 22:36:55] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:36:55] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:36:55] Datos POST: servicio=254-1, socio_benef=10743, accion=preview, codigo=N/A
+[2025-11-13 22:36:55] Fechas POST: inicio=13-11-2025, fin=12-12-2025
+[2025-11-13 22:36:55] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:36:55] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 22:36:57] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:36:57] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:36:57] Datos POST: servicio=254-1, socio_benef=10743, accion=pagar, codigo=N/A
+[2025-11-13 22:36:57] Fechas POST: inicio=13-11-2025, fin=12-12-2025
+[2025-11-13 22:36:57] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:36:57] Acción 'pagar' detectada. Validando fechas.
+[2025-11-13 22:36:57] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Buen Fin",
+            "quantity": 1,
+            "unit_price": 6,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://sandysgym.com/index.php?page=gracias",
+        "failure": "https://sandysgym.com/index.php?page=pago_fallido",
+        "pending": "https://sandysgym.com/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_10743",
+    "notification_url": "https://sandysgym.com/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 10743,
+        "id_socio_beneficiario": 10743,
+        "id_servicio": 254,
+        "fecha_ini": "13-11-2025",
+        "fecha_fin": "12-12-2025",
+        "codigo_usado": null,
+        "subtotal": 300,
+        "monto_pagado": 6,
+        "descuento_aplicado": 294,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-13 22:36:57] Preferencia Creada. ID: 2958194482-64040f67-9d9b-4fbb-af91-84d221e66861, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-64040f67-9d9b-4fbb-af91-84d221e66861
+[2025-11-13 22:36:57] Cache de metadata guardada para pref_id=2958194482-64040f67-9d9b-4fbb-af91-84d221e66861 a las 2025-11-13 22:36:57
+[2025-11-13 22:40:24] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:40:24] Datos de Sesión: id_socio_pagador=9380, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:40:24] Datos POST: servicio=1-1, socio_benef=9380, accion=preview, codigo=N/A
+[2025-11-13 22:40:24] Fechas POST: inicio=01-12-2025, fin=31-12-2025
+[2025-11-13 22:40:24] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:40:24] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 22:40:25] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:40:25] Datos de Sesión: id_socio_pagador=9380, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:40:25] Datos POST: servicio=1-1, socio_benef=9380, accion=pagar, codigo=N/A
+[2025-11-13 22:40:25] Fechas POST: inicio=01-12-2025, fin=31-12-2025
+[2025-11-13 22:40:25] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:40:25] Acción 'pagar' detectada. Validando fechas.
+[2025-11-13 22:40:25] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "MENSUALIDAD",
+            "quantity": 1,
+            "unit_price": 360,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://sandysgym.com/index.php?page=gracias",
+        "failure": "https://sandysgym.com/index.php?page=pago_fallido",
+        "pending": "https://sandysgym.com/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_9380",
+    "notification_url": "https://sandysgym.com/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 9380,
+        "id_socio_beneficiario": 9380,
+        "id_servicio": 1,
+        "fecha_ini": "01-12-2025",
+        "fecha_fin": "31-12-2025",
+        "codigo_usado": null,
+        "subtotal": 400,
+        "monto_pagado": 360,
+        "descuento_aplicado": 40,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-13 22:40:25] Preferencia Creada. ID: 2958194482-b06e35e3-8bad-4dde-920e-cabcf4a0359d, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-b06e35e3-8bad-4dde-920e-cabcf4a0359d
+[2025-11-13 22:40:25] Cache de metadata guardada para pref_id=2958194482-b06e35e3-8bad-4dde-920e-cabcf4a0359d a las 2025-11-13 22:40:25
+[2025-11-13 22:40:53] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:40:53] Datos de Sesión: id_socio_pagador=9380, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:40:53] Datos POST: servicio=1-1, socio_benef=9380, accion=preview, codigo=N/A
+[2025-11-13 22:40:53] Fechas POST: inicio=01-12-2025, fin=31-12-2025
+[2025-11-13 22:40:53] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:40:53] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 22:40:54] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:40:54] Datos de Sesión: id_socio_pagador=9380, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:40:54] Datos POST: servicio=1-1, socio_benef=9380, accion=pagar, codigo=N/A
+[2025-11-13 22:40:54] Fechas POST: inicio=01-12-2025, fin=31-12-2025
+[2025-11-13 22:40:54] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:40:54] Acción 'pagar' detectada. Validando fechas.
+[2025-11-13 22:40:54] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "MENSUALIDAD",
+            "quantity": 1,
+            "unit_price": 360,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://sandysgym.com/index.php?page=gracias",
+        "failure": "https://sandysgym.com/index.php?page=pago_fallido",
+        "pending": "https://sandysgym.com/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_9380",
+    "notification_url": "https://sandysgym.com/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 9380,
+        "id_socio_beneficiario": 9380,
+        "id_servicio": 1,
+        "fecha_ini": "01-12-2025",
+        "fecha_fin": "31-12-2025",
+        "codigo_usado": null,
+        "subtotal": 400,
+        "monto_pagado": 360,
+        "descuento_aplicado": 40,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-13 22:40:54] Preferencia Creada. ID: 2958194482-86458840-0e8e-4767-a9de-44eaf082af59, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-86458840-0e8e-4767-a9de-44eaf082af59
+[2025-11-13 22:40:54] Cache de metadata guardada para pref_id=2958194482-86458840-0e8e-4767-a9de-44eaf082af59 a las 2025-11-13 22:40:54
+[2025-11-13 22:48:49] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:48:49] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:48:49] Datos POST: servicio=254-1, socio_benef=10743, accion=preview, codigo=N/A
+[2025-11-13 22:48:49] Fechas POST: inicio=14-12-2025, fin=13-01-2026
+[2025-11-13 22:48:49] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:48:49] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 22:48:50] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:48:50] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:48:50] Datos POST: servicio=254-1, socio_benef=10743, accion=pagar, codigo=N/A
+[2025-11-13 22:48:50] Fechas POST: inicio=14-12-2025, fin=13-01-2026
+[2025-11-13 22:48:50] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:48:50] Acción 'pagar' detectada. Validando fechas.
+[2025-11-13 22:48:50] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Buen Fin",
+            "quantity": 1,
+            "unit_price": 300,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://sandysgym.com/index.php?page=gracias",
+        "failure": "https://sandysgym.com/index.php?page=pago_fallido",
+        "pending": "https://sandysgym.com/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_10743",
+    "notification_url": "https://sandysgym.com/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 10743,
+        "id_socio_beneficiario": 10743,
+        "id_servicio": 254,
+        "fecha_ini": "14-12-2025",
+        "fecha_fin": "13-01-2026",
+        "codigo_usado": null,
+        "subtotal": 300,
+        "monto_pagado": 300,
+        "descuento_aplicado": 0,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-13 22:48:51] Preferencia Creada. ID: 2958194482-5cdfce73-708f-4f06-9fb3-4d6306b845a5, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-5cdfce73-708f-4f06-9fb3-4d6306b845a5
+[2025-11-13 22:48:51] Cache de metadata guardada para pref_id=2958194482-5cdfce73-708f-4f06-9fb3-4d6306b845a5 a las 2025-11-13 22:48:51
+[2025-11-13 22:49:18] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:49:18] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:49:18] Datos POST: servicio=254-1, socio_benef=10743, accion=preview, codigo=N/A
+[2025-11-13 22:49:18] Fechas POST: inicio=14-12-2025, fin=13-01-2026
+[2025-11-13 22:49:18] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:49:18] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 22:49:20] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:49:20] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:49:20] Datos POST: servicio=254-1, socio_benef=10743, accion=pagar, codigo=N/A
+[2025-11-13 22:49:20] Fechas POST: inicio=14-12-2025, fin=13-01-2026
+[2025-11-13 22:49:20] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:49:20] Acción 'pagar' detectada. Validando fechas.
+[2025-11-13 22:49:20] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Buen Fin",
+            "quantity": 1,
+            "unit_price": 300,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://sandysgym.com/index.php?page=gracias",
+        "failure": "https://sandysgym.com/index.php?page=pago_fallido",
+        "pending": "https://sandysgym.com/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_10743",
+    "notification_url": "https://sandysgym.com/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 10743,
+        "id_socio_beneficiario": 10743,
+        "id_servicio": 254,
+        "fecha_ini": "14-12-2025",
+        "fecha_fin": "13-01-2026",
+        "codigo_usado": null,
+        "subtotal": 300,
+        "monto_pagado": 300,
+        "descuento_aplicado": 0,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-13 22:49:20] Preferencia Creada. ID: 2958194482-b0a14f8d-45bc-4a17-a29a-529de3c61582, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-b0a14f8d-45bc-4a17-a29a-529de3c61582
+[2025-11-13 22:49:20] Cache de metadata guardada para pref_id=2958194482-b0a14f8d-45bc-4a17-a29a-529de3c61582 a las 2025-11-13 22:49:20
+[2025-11-13 22:49:32] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:49:32] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:49:32] Datos POST: servicio=254-1, socio_benef=10743, accion=preview, codigo=N/A
+[2025-11-13 22:49:32] Fechas POST: inicio=14-12-2025, fin=13-01-2026
+[2025-11-13 22:49:32] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:49:32] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 22:49:34] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:49:34] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:49:34] Datos POST: servicio=254-1, socio_benef=10743, accion=pagar, codigo=N/A
+[2025-11-13 22:49:34] Fechas POST: inicio=14-12-2025, fin=13-01-2026
+[2025-11-13 22:49:34] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:49:34] Acción 'pagar' detectada. Validando fechas.
+[2025-11-13 22:49:34] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Buen Fin",
+            "quantity": 1,
+            "unit_price": 300,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://sandysgym.com/index.php?page=gracias",
+        "failure": "https://sandysgym.com/index.php?page=pago_fallido",
+        "pending": "https://sandysgym.com/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_10743",
+    "notification_url": "https://sandysgym.com/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 10743,
+        "id_socio_beneficiario": 10743,
+        "id_servicio": 254,
+        "fecha_ini": "14-12-2025",
+        "fecha_fin": "13-01-2026",
+        "codigo_usado": null,
+        "subtotal": 300,
+        "monto_pagado": 300,
+        "descuento_aplicado": 0,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-13 22:49:34] Preferencia Creada. ID: 2958194482-ec2c2960-0640-4103-949e-e39f39ed04af, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-ec2c2960-0640-4103-949e-e39f39ed04af
+[2025-11-13 22:49:34] Cache de metadata guardada para pref_id=2958194482-ec2c2960-0640-4103-949e-e39f39ed04af a las 2025-11-13 22:49:34
+[2025-11-13 22:49:41] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:49:41] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:49:41] Datos POST: servicio=254-1, socio_benef=10743, accion=preview, codigo=N/A
+[2025-11-13 22:49:41] Fechas POST: inicio=14-12-2025, fin=13-01-2026
+[2025-11-13 22:49:41] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:49:41] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 22:50:09] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:50:09] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:50:09] Datos POST: servicio=254-1, socio_benef=10743, accion=pagar, codigo=N/A
+[2025-11-13 22:50:09] Fechas POST: inicio=14-12-2025, fin=13-01-2026
+[2025-11-13 22:50:09] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:50:09] Acción 'pagar' detectada. Validando fechas.
+[2025-11-13 22:50:09] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Buen Fin",
+            "quantity": 1,
+            "unit_price": 300,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://sandysgym.com/index.php?page=gracias",
+        "failure": "https://sandysgym.com/index.php?page=pago_fallido",
+        "pending": "https://sandysgym.com/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_10743",
+    "notification_url": "https://sandysgym.com/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 10743,
+        "id_socio_beneficiario": 10743,
+        "id_servicio": 254,
+        "fecha_ini": "14-12-2025",
+        "fecha_fin": "13-01-2026",
+        "codigo_usado": null,
+        "subtotal": 300,
+        "monto_pagado": 300,
+        "descuento_aplicado": 0,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-13 22:50:10] Preferencia Creada. ID: 2958194482-8886e26e-d1bf-4cc4-98d6-52e504427689, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-8886e26e-d1bf-4cc4-98d6-52e504427689
+[2025-11-13 22:50:10] Cache de metadata guardada para pref_id=2958194482-8886e26e-d1bf-4cc4-98d6-52e504427689 a las 2025-11-13 22:50:10
+[2025-11-13 22:50:22] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:50:22] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:50:22] Datos POST: servicio=254-1, socio_benef=10743, accion=preview, codigo=N/A
+[2025-11-13 22:50:22] Fechas POST: inicio=14-12-2025, fin=13-01-2026
+[2025-11-13 22:50:22] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:50:22] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 22:50:24] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:50:24] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:50:24] Datos POST: servicio=254-1, socio_benef=10743, accion=pagar, codigo=N/A
+[2025-11-13 22:50:24] Fechas POST: inicio=14-12-2025, fin=13-01-2026
+[2025-11-13 22:50:24] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:50:24] Acción 'pagar' detectada. Validando fechas.
+[2025-11-13 22:50:24] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Buen Fin",
+            "quantity": 1,
+            "unit_price": 6,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://sandysgym.com/index.php?page=gracias",
+        "failure": "https://sandysgym.com/index.php?page=pago_fallido",
+        "pending": "https://sandysgym.com/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_10743",
+    "notification_url": "https://sandysgym.com/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 10743,
+        "id_socio_beneficiario": 10743,
+        "id_servicio": 254,
+        "fecha_ini": "14-12-2025",
+        "fecha_fin": "13-01-2026",
+        "codigo_usado": null,
+        "subtotal": 300,
+        "monto_pagado": 6,
+        "descuento_aplicado": 294,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-13 22:50:24] Preferencia Creada. ID: 2958194482-438881e3-5ccf-486b-bc45-d0c94d5286e9, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-438881e3-5ccf-486b-bc45-d0c94d5286e9
+[2025-11-13 22:50:24] Cache de metadata guardada para pref_id=2958194482-438881e3-5ccf-486b-bc45-d0c94d5286e9 a las 2025-11-13 22:50:24
+[2025-11-13 22:50:59] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:50:59] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:50:59] Datos POST: servicio=254-1, socio_benef=10743, accion=preview, codigo=N/A
+[2025-11-13 22:50:59] Fechas POST: inicio=14-12-2025, fin=13-01-2026
+[2025-11-13 22:50:59] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:50:59] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 22:51:02] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:51:02] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:51:02] Datos POST: servicio=254-1, socio_benef=10743, accion=pagar, codigo=N/A
+[2025-11-13 22:51:02] Fechas POST: inicio=14-12-2025, fin=13-01-2026
+[2025-11-13 22:51:02] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:51:02] Acción 'pagar' detectada. Validando fechas.
+[2025-11-13 22:51:02] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Buen Fin",
+            "quantity": 1,
+            "unit_price": 6,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://sandysgym.com/index.php?page=gracias",
+        "failure": "https://sandysgym.com/index.php?page=pago_fallido",
+        "pending": "https://sandysgym.com/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_10743",
+    "notification_url": "https://sandysgym.com/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 10743,
+        "id_socio_beneficiario": 10743,
+        "id_servicio": 254,
+        "fecha_ini": "14-12-2025",
+        "fecha_fin": "13-01-2026",
+        "codigo_usado": null,
+        "subtotal": 300,
+        "monto_pagado": 6,
+        "descuento_aplicado": 294,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-13 22:51:02] Preferencia Creada. ID: 2958194482-a392a820-3c9d-4992-86d4-1d3290150b09, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-a392a820-3c9d-4992-86d4-1d3290150b09
+[2025-11-13 22:51:02] Cache de metadata guardada para pref_id=2958194482-a392a820-3c9d-4992-86d4-1d3290150b09 a las 2025-11-13 22:51:02
+[2025-11-13 22:51:21] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:51:21] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:51:21] Datos POST: servicio=254-1, socio_benef=10743, accion=preview, codigo=N/A
+[2025-11-13 22:51:21] Fechas POST: inicio=14-12-2025, fin=13-01-2026
+[2025-11-13 22:51:21] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:51:21] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 22:51:29] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:51:29] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:51:29] Datos POST: servicio=254-1, socio_benef=10743, accion=pagar, codigo=N/A
+[2025-11-13 22:51:29] Fechas POST: inicio=14-12-2025, fin=13-01-2026
+[2025-11-13 22:51:29] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:51:29] Acción 'pagar' detectada. Validando fechas.
+[2025-11-13 22:51:29] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Buen Fin",
+            "quantity": 1,
+            "unit_price": 6,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://sandysgym.com/index.php?page=gracias",
+        "failure": "https://sandysgym.com/index.php?page=pago_fallido",
+        "pending": "https://sandysgym.com/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_10743",
+    "notification_url": "https://sandysgym.com/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 10743,
+        "id_socio_beneficiario": 10743,
+        "id_servicio": 254,
+        "fecha_ini": "14-12-2025",
+        "fecha_fin": "13-01-2026",
+        "codigo_usado": null,
+        "subtotal": 300,
+        "monto_pagado": 6,
+        "descuento_aplicado": 294,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-13 22:51:29] Preferencia Creada. ID: 2958194482-daf1d9b6-9088-4b2a-a2e6-1dee031c0a09, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-daf1d9b6-9088-4b2a-a2e6-1dee031c0a09
+[2025-11-13 22:51:29] Cache de metadata guardada para pref_id=2958194482-daf1d9b6-9088-4b2a-a2e6-1dee031c0a09 a las 2025-11-13 22:51:29
+[2025-11-13 22:52:02] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:52:02] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:52:02] Datos POST: servicio=254-1, socio_benef=10743, accion=preview, codigo=N/A
+[2025-11-13 22:52:02] Fechas POST: inicio=14-12-2025, fin=13-01-2026
+[2025-11-13 22:52:02] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:52:02] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 22:52:04] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:52:04] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:52:04] Datos POST: servicio=254-1, socio_benef=10743, accion=pagar, codigo=N/A
+[2025-11-13 22:52:04] Fechas POST: inicio=14-12-2025, fin=13-01-2026
+[2025-11-13 22:52:04] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:52:04] Acción 'pagar' detectada. Validando fechas.
+[2025-11-13 22:52:04] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Buen Fin",
+            "quantity": 1,
+            "unit_price": 6,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://sandysgym.com/index.php?page=gracias",
+        "failure": "https://sandysgym.com/index.php?page=pago_fallido",
+        "pending": "https://sandysgym.com/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_10743",
+    "notification_url": "https://sandysgym.com/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 10743,
+        "id_socio_beneficiario": 10743,
+        "id_servicio": 254,
+        "fecha_ini": "14-12-2025",
+        "fecha_fin": "13-01-2026",
+        "codigo_usado": null,
+        "subtotal": 300,
+        "monto_pagado": 6,
+        "descuento_aplicado": 294,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-13 22:52:04] Preferencia Creada. ID: 2958194482-85a89c28-6e3a-4f4f-8ff9-81df2f8b49c1, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-85a89c28-6e3a-4f4f-8ff9-81df2f8b49c1
+[2025-11-13 22:52:04] Cache de metadata guardada para pref_id=2958194482-85a89c28-6e3a-4f4f-8ff9-81df2f8b49c1 a las 2025-11-13 22:52:04
+[2025-11-13 22:52:09] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:52:09] Datos de Sesión: id_socio_pagador=9379, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:52:09] Datos POST: servicio=254-1, socio_benef=9379, accion=preview, codigo=N/A
+[2025-11-13 22:52:09] Fechas POST: inicio=01-01-2026, fin=31-01-2026
+[2025-11-13 22:52:09] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:52:09] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 22:52:16] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:52:16] Datos de Sesión: id_socio_pagador=9379, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:52:16] Datos POST: servicio=254-1, socio_benef=9379, accion=pagar, codigo=N/A
+[2025-11-13 22:52:16] Fechas POST: inicio=01-01-2026, fin=31-01-2026
+[2025-11-13 22:52:16] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:52:16] Acción 'pagar' detectada. Validando fechas.
+[2025-11-13 22:52:16] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Buen Fin",
+            "quantity": 1,
+            "unit_price": 6,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://sandysgym.com/index.php?page=gracias",
+        "failure": "https://sandysgym.com/index.php?page=pago_fallido",
+        "pending": "https://sandysgym.com/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_9379",
+    "notification_url": "https://sandysgym.com/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 9379,
+        "id_socio_beneficiario": 9379,
+        "id_servicio": 254,
+        "fecha_ini": "01-01-2026",
+        "fecha_fin": "31-01-2026",
+        "codigo_usado": null,
+        "subtotal": 300,
+        "monto_pagado": 6,
+        "descuento_aplicado": 294,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-13 22:52:16] Preferencia Creada. ID: 2958194482-d9c3f96e-a63e-4151-8b12-e085bc4ff7ac, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-d9c3f96e-a63e-4151-8b12-e085bc4ff7ac
+[2025-11-13 22:52:16] Cache de metadata guardada para pref_id=2958194482-d9c3f96e-a63e-4151-8b12-e085bc4ff7ac a las 2025-11-13 22:52:16
+[2025-11-13 22:54:51] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:54:51] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:54:51] Datos POST: servicio=254-1, socio_benef=10743, accion=preview, codigo=N/A
+[2025-11-13 22:54:51] Fechas POST: inicio=14-12-2025, fin=13-01-2026
+[2025-11-13 22:54:51] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:54:51] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-13 22:54:52] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-13 22:54:52] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-13 22:54:52] Datos POST: servicio=254-1, socio_benef=10743, accion=pagar, codigo=N/A
+[2025-11-13 22:54:52] Fechas POST: inicio=14-12-2025, fin=13-01-2026
+[2025-11-13 22:54:52] BaseURL calculada: https://sandysgym.com
+[2025-11-13 22:54:52] Acción 'pagar' detectada. Validando fechas.
+[2025-11-13 22:54:52] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Buen Fin",
+            "quantity": 1,
+            "unit_price": 6,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://sandysgym.com/index.php?page=gracias",
+        "failure": "https://sandysgym.com/index.php?page=pago_fallido",
+        "pending": "https://sandysgym.com/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_10743",
+    "notification_url": "https://sandysgym.com/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 10743,
+        "id_socio_beneficiario": 10743,
+        "id_servicio": 254,
+        "fecha_ini": "14-12-2025",
+        "fecha_fin": "13-01-2026",
+        "codigo_usado": null,
+        "subtotal": 300,
+        "monto_pagado": 6,
+        "descuento_aplicado": 294,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-13 22:54:53] Preferencia Creada. ID: 2958194482-0415ca8e-4be6-4f8f-a542-ebf391d6f4a4, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-0415ca8e-4be6-4f8f-a542-ebf391d6f4a4
+[2025-11-13 22:54:53] Cache de metadata guardada para pref_id=2958194482-0415ca8e-4be6-4f8f-a542-ebf391d6f4a4 a las 2025-11-13 22:54:53
+[2025-11-14 19:18:23] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-14 19:18:23] Datos de Sesión: id_socio_pagador=9379, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-14 19:18:23] Datos POST: servicio=254-1, socio_benef=9379, accion=preview, codigo=N/A
+[2025-11-14 19:18:23] Fechas POST: inicio=01-01-2026, fin=31-01-2026
+[2025-11-14 19:18:23] BaseURL calculada: https://sandysgym.com
+[2025-11-14 19:18:23] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-14 19:18:32] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-14 19:18:32] Datos de Sesión: id_socio_pagador=9379, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-14 19:18:32] Datos POST: servicio=254-1, socio_benef=9379, accion=pagar, codigo=N/A
+[2025-11-14 19:18:32] Fechas POST: inicio=01-01-2026, fin=31-01-2026
+[2025-11-14 19:18:32] BaseURL calculada: https://sandysgym.com
+[2025-11-14 19:18:32] Acción 'pagar' detectada. Validando fechas.
+[2025-11-14 19:18:32] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Buen Fin",
+            "quantity": 1,
+            "unit_price": 6,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://sandysgym.com/index.php?page=gracias",
+        "failure": "https://sandysgym.com/index.php?page=pago_fallido",
+        "pending": "https://sandysgym.com/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_9379",
+    "notification_url": "https://sandysgym.com/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 9379,
+        "id_socio_beneficiario": 9379,
+        "id_servicio": 254,
+        "fecha_ini": "01-01-2026",
+        "fecha_fin": "31-01-2026",
+        "codigo_usado": null,
+        "subtotal": 300,
+        "monto_pagado": 6,
+        "descuento_aplicado": 294,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-14 19:18:32] Preferencia Creada. ID: 2958194482-75a8c180-2c78-483a-ae89-90542b9911c2, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-75a8c180-2c78-483a-ae89-90542b9911c2
+[2025-11-14 19:18:32] Cache de metadata guardada para pref_id=2958194482-75a8c180-2c78-483a-ae89-90542b9911c2 a las 2025-11-14 19:18:32
+[2025-11-15 13:45:05] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-15 13:45:05] Datos de Sesión: id_socio_pagador=9379, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-15 13:45:05] Datos POST: servicio=254-1, socio_benef=9379, accion=preview, codigo=N/A
+[2025-11-15 13:45:05] Fechas POST: inicio=01-01-2026, fin=31-01-2026
+[2025-11-15 13:45:05] BaseURL calculada: https://sandysgym.com
+[2025-11-15 13:45:05] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-15 13:45:09] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-15 13:45:09] Datos de Sesión: id_socio_pagador=9379, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-15 13:45:09] Datos POST: servicio=254-1, socio_benef=9379, accion=pagar, codigo=N/A
+[2025-11-15 13:45:09] Fechas POST: inicio=01-01-2026, fin=31-01-2026
+[2025-11-15 13:45:09] BaseURL calculada: https://sandysgym.com
+[2025-11-15 13:45:09] Acción 'pagar' detectada. Validando fechas.
+[2025-11-15 13:45:09] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Buen Fin",
+            "quantity": 1,
+            "unit_price": 6,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://sandysgym.com/index.php?page=gracias",
+        "failure": "https://sandysgym.com/index.php?page=pago_fallido",
+        "pending": "https://sandysgym.com/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_9379",
+    "notification_url": "https://sandysgym.com/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 9379,
+        "id_socio_beneficiario": 9379,
+        "id_servicio": 254,
+        "fecha_ini": "01-01-2026",
+        "fecha_fin": "31-01-2026",
+        "codigo_usado": null,
+        "subtotal": 300,
+        "monto_pagado": 6,
+        "descuento_aplicado": 294,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-15 13:45:10] Preferencia Creada. ID: 2958194482-e8d336b1-96a4-40e2-bcb7-9fd20f79b042, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-e8d336b1-96a4-40e2-bcb7-9fd20f79b042
+[2025-11-15 13:45:10] Cache de metadata guardada para pref_id=2958194482-e8d336b1-96a4-40e2-bcb7-9fd20f79b042 a las 2025-11-15 13:45:10
+[2025-11-19 20:42:38] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-19 20:42:38] Datos de Sesión: id_socio_pagador=9379, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-19 20:42:38] Datos POST: servicio=167-1, socio_benef=9379, accion=preview, codigo=N/A
+[2025-11-19 20:42:38] Fechas POST: inicio=01-01-2026, fin=31-01-2026
+[2025-11-19 20:42:38] BaseURL calculada: https://sandysgym.com
+[2025-11-19 20:42:38] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-19 20:42:41] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-19 20:42:41] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-19 20:42:41] Datos POST: servicio=167-1, socio_benef=10743, accion=preview, codigo=N/A
+[2025-11-19 20:42:41] Fechas POST: inicio=14-01-2026, fin=13-02-2026
+[2025-11-19 20:42:41] BaseURL calculada: https://sandysgym.com
+[2025-11-19 20:42:41] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-19 20:42:49] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-19 20:42:49] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-19 20:42:49] Datos POST: servicio=167-1, socio_benef=10743, accion=pagar, codigo=N/A
+[2025-11-19 20:42:49] Fechas POST: inicio=14-01-2026, fin=13-02-2026
+[2025-11-19 20:42:49] BaseURL calculada: https://sandysgym.com
+[2025-11-19 20:42:49] Acción 'pagar' detectada. Validando fechas.
+[2025-11-19 20:42:49] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "Mensualidad por pareja",
+            "quantity": 1,
+            "unit_price": 15,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://sandysgym.com/index.php?page=gracias",
+        "failure": "https://sandysgym.com/index.php?page=pago_fallido",
+        "pending": "https://sandysgym.com/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_10743",
+    "notification_url": "https://sandysgym.com/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 10743,
+        "id_socio_beneficiario": 10743,
+        "id_servicio": 167,
+        "fecha_ini": "14-01-2026",
+        "fecha_fin": "13-02-2026",
+        "codigo_usado": null,
+        "subtotal": 750,
+        "monto_pagado": 15,
+        "descuento_aplicado": 735,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-19 20:42:49] Preferencia Creada. ID: 2958194482-d9257468-a674-45b8-974e-0acb6c0cf3b4, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-d9257468-a674-45b8-974e-0acb6c0cf3b4
+[2025-11-19 20:42:49] Cache de metadata guardada para pref_id=2958194482-d9257468-a674-45b8-974e-0acb6c0cf3b4 a las 2025-11-19 20:42:49
+[2025-11-20 11:47:28] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-20 11:47:28] Datos de Sesión: id_socio_pagador=9379, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-20 11:47:28] Datos POST: servicio=167-1, socio_benef=9379, accion=preview, codigo=N/A
+[2025-11-20 11:47:28] Fechas POST: inicio=01-01-2026, fin=31-01-2026
+[2025-11-20 11:47:28] BaseURL calculada: https://sandysgym.com
+[2025-11-20 11:47:28] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-20 11:47:53] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-20 11:47:53] Datos de Sesión: id_socio_pagador=9379, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-20 11:47:53] Datos POST: servicio=123-1, socio_benef=9379, accion=preview, codigo=N/A
+[2025-11-20 11:47:53] Fechas POST: inicio=01-01-2026, fin=31-01-2026
+[2025-11-20 11:47:53] BaseURL calculada: https://sandysgym.com
+[2025-11-20 11:47:53] Acción 'preview' detectada. Devolviendo cálculo.
+[2025-11-20 11:48:05] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-20 11:48:05] Datos de Sesión: id_socio_pagador=9379, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-20 11:48:05] Datos POST: servicio=123-1, socio_benef=9379, accion=pagar, codigo=N/A
+[2025-11-20 11:48:05] Fechas POST: inicio=01-01-2026, fin=31-01-2026
+[2025-11-20 11:48:05] BaseURL calculada: https://sandysgym.com
+[2025-11-20 11:48:05] Acción 'pagar' detectada. Validando fechas.
+[2025-11-20 11:48:05] Enviando la siguiente data a MP: {
+    "items": [
+        {
+            "title": "plan  3 integrantes",
+            "quantity": 1,
+            "unit_price": 21,
+            "currency_id": "MXN"
+        }
+    ],
+    "back_urls": {
+        "success": "https://sandysgym.com/index.php?page=gracias",
+        "failure": "https://sandysgym.com/index.php?page=pago_fallido",
+        "pending": "https://sandysgym.com/index.php?page=gracias"
+    },
+    "auto_return": "approved",
+    "external_reference": "SOCIO_9379",
+    "notification_url": "https://sandysgym.com/api/webhook_mercadopago.php",
+    "metadata": {
+        "id_socio_pagador": 9379,
+        "id_socio_beneficiario": 9379,
+        "id_servicio": 123,
+        "fecha_ini": "01-01-2026",
+        "fecha_fin": "31-01-2026",
+        "codigo_usado": null,
+        "subtotal": 1050,
+        "monto_pagado": 21,
+        "descuento_aplicado": 1029,
+        "tipo_promo": null,
+        "id_empresa": 1,
+        "id_usuario": 99
+    }
+}
+[2025-11-20 11:48:05] Preferencia Creada. ID: 2958194482-433d6867-f38d-422c-ba5c-7cdbfd8ed3fc, URL: https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=2958194482-433d6867-f38d-422c-ba5c-7cdbfd8ed3fc
+[2025-11-20 11:48:05] Cache de metadata guardada para pref_id=2958194482-433d6867-f38d-422c-ba5c-7cdbfd8ed3fc a las 2025-11-20 11:48:05
+[2025-11-25 18:27:22] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2025-11-25 18:27:22] Datos de Sesión: id_socio_pagador=10743, id_empresa=1, id_usuario=99, id_consorcio=1
+[2025-11-25 18:27:22] Datos POST: servicio=241-3, socio_benef=10743, accion=preview, codigo=N/A
+[2025-11-25 18:27:22] Fechas POST: inicio=14-02-2026, fin=13-05-2026
+[2025-11-25 18:27:22] BaseURL calculada: https://sandysgym.com
+[2025-11-25 18:27:22] Acción 'preview' detectada. Devolviendo cálculo.

@@ -1,0 +1,383 @@
+<?php
+// --- INCLUDES ---
+require_once __DIR__ . '/../conn.php';
+include('./api/select_data.php'); // Asegura que $selSocioData esté disponible
+
+// --- OPTIMIZACIÓN DE LÓGICA DE MEMBRESÍA ---
+date_default_timezone_set('America/Mexico_City');
+
+// 1. Inicializar variables
+$mensajeAlerta = '';
+$estadoMembresia = '';
+$claseEstado = '';
+$iconoEstado = '';
+$miembroActivo = false;
+$nombreSocio = htmlspecialchars(explode(' ', $selSocioData['soc_nombres'])[0]); 
+
+// 2. Consultar el último pago activo del socio
+$socioId = $selSocioData['soc_id_socio'];
+$query = "SELECT pag_fecha_fin FROM san_pagos WHERE pag_id_socio = :socioId AND pag_status = 'A' ORDER BY pag_fecha_fin DESC LIMIT 1";
+$stmt = $conn->prepare($query);
+$stmt->bindParam(':socioId', $socioId, PDO::PARAM_INT);
+$stmt->execute();
+$fechaFin = $stmt->fetchColumn();
+
+// 3. Calcular estado
+if ($fechaFin) {
+    $currentDate = new DateTime();
+    $fechaFinDate = new DateTime($fechaFin);
+
+    if ($currentDate > $fechaFinDate) {
+        // Expirada
+        $miembroActivo = false;
+        $mensajeAlerta = "Tu membresía ha finalizado. ¡Reactívala para no perderte de nada!";
+        $estadoMembresia = "Membresía Finalizada";
+        $claseEstado = "status-expired";
+        $iconoEstado = "fa-times-circle";
+    } else {
+        // Activa
+        $miembroActivo = true;
+        $interval = $currentDate->diff($fechaFinDate);
+        $diasRestantes = $interval->days;
+
+        if ($diasRestantes <= 3) {
+            $mensajeAlerta = "¡Atención! A tu membresía le quedan solo $diasRestantes día(s). ¡Renuévala pronto!";
+            $estadoMembresia = "Vence en $diasRestantes día(s)";
+            $claseEstado = "status-warning";
+            $iconoEstado = "fa-exclamation-triangle";
+        } else {
+            $estadoMembresia = "Membresía Activa";
+            $claseEstado = "status-active";
+            $iconoEstado = "fa-check-circle";
+        }
+    }
+} else {
+    $miembroActivo = false;
+    $estadoMembresia = "Sin membresía activa";
+    $claseEstado = "status-inactive";
+    $iconoEstado = "fa-user-times"; // Nuevo icono para sin membresía
+    $mensajeAlerta = "No tienes una membresía activa. ¡Adquiere una para acceder a todos los beneficios!";
+}
+?>
+
+<style>
+    /* --- Base y Fondo --- */
+    body {
+        background-color: #0f0f0f; /* Negro profundo */
+        color: #e0e0e0; /* Texto claro por defecto */
+        font-family: 'Muli', sans-serif;
+    }
+
+    /* --- Hero Section (Bienvenida) --- */
+    .user-hero {
+        position: relative;
+        padding: 80px 0 60px;
+        /* Fondo con imagen y gradiente más oscuro */
+        background: linear-gradient(0deg, #0f0f0f 0%, rgba(15,15,15,0.7) 50%, #0f0f0f 100%), url('./assets/img/hero/hero-user.jpg') no-repeat center center;
+        background-size: cover;
+        border-bottom: 1px solid #222; /* Borde sutil */
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+    }
+
+    .hero-title {
+        font-family: 'Oswald', sans-serif;
+        font-size: 42px;
+        color: #fff;
+        text-transform: uppercase;
+        margin-bottom: 15px;
+        letter-spacing: 1.5px; /* Más espaciado para un look premium */
+        text-shadow: 0 4px 15px rgba(0,0,0,0.7); /* Sombra más pronunciada */
+    }
+
+    /* Badge de Estado - Colores más vivos y bordes definidos */
+    .membership-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 25px;
+        border-radius: 50px;
+        font-size: 15px;
+        font-weight: 700;
+        text-transform: uppercase;
+        backdrop-filter: blur(5px);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.3); /* Sombra suave */
+    }
+    
+    .status-active { background: rgba(34, 197, 94, 0.25); color: #4ade80; border: 1px solid #4ade80; } /* Verde más brillante */
+    .status-warning { background: rgba(234, 179, 8, 0.25); color: #facc15; border: 1px solid #facc15; } /* Amarillo más vivo */
+    .status-expired { background: rgba(239, 68, 68, 0.25); color: #f87171; border: 1px solid #f87171; } /* Rojo más intenso */
+    .status-inactive { background: rgba(107, 114, 128, 0.25); color: #9ca3af; border: 1px solid #9ca3af; } /* Gris neutro */
+
+    /* --- Alertas --- */
+    .alert-custom {
+        background: rgba(234, 179, 8, 0.15); /* Fondo más transparente */
+        border: 1px solid rgba(234, 179, 8, 0.4); /* Borde más visible */
+        color: #facc15;
+        border-radius: 12px;
+        padding: 18px 25px; /* Más padding */
+        margin-top: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        font-size: 15px; /* Texto un poco más grande */
+        font-weight: 500;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+    }
+    .alert-custom i { font-size: 20px; }
+
+
+    /* --- Grid de Opciones --- */
+    .options-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 25px;
+        margin-top: 50px; /* Más espacio */
+        margin-bottom: 60px;
+    }
+
+    /* Tarjeta de Opción - Estilo más Premium */
+    .option-card {
+        background-color: #1c1c1c; /* Fondo ligeramente más claro para contraste */
+        border: 1px solid #2a2a2a; /* Borde más oscuro */
+        border-radius: 16px;
+        padding: 35px 20px;
+        text-align: center;
+        color: #e0e0e0; /* Texto claro */
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.4); /* Sombra más definida */
+    }
+
+    .option-card:hover {
+        background-color: #2a2a2a; /* Fondo más oscuro al hover */
+        border-color: #ef4444; /* Borde rojo vivo */
+        transform: translateY(-8px); /* Más levantado */
+        box-shadow: 0 15px 40px rgba(239, 68, 68, 0.25); /* Sombra roja brillante */
+        color: #fff; /* Texto blanco puro */
+    }
+
+    /* Icono dentro de la tarjeta - Más dinámico */
+    .card-icon {
+        width: 70px;
+        height: 70px;
+        background-color: #252525; /* Fondo del círculo */
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        transition: all 0.3s;
+        border: 2px solid transparent; /* Borde para el efecto */
+    }
+    .card-icon i {
+        font-size: 30px; /* Icono un poco más grande */
+        color: #ef4444; /* Rojo primario */
+        transition: all 0.3s;
+    }
+
+    .option-card:hover .card-icon {
+        background-color: #ef4444; /* Círculo rojo */
+        border-color: #fff; /* Borde blanco alrededor del círculo rojo */
+        transform: scale(1.1); /* Efecto de crecimiento sutil */
+    }
+    .option-card:hover .card-icon i {
+        color: #fff; /* Icono blanco */
+    }
+
+    /* Texto tarjeta */
+    .card-title {
+        font-family: 'Oswald', sans-serif;
+        font-size: 19px; /* Título un poco más grande */
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin: 0;
+        color: #e0e0e0; /* Color inicial del texto */
+        transition: color 0.3s;
+    }
+    .option-card:hover .card-title {
+        color: #fff; /* Texto blanco en hover */
+    }
+
+    /* Tarjeta Deshabilitada - Estilo más atenuado */
+    .option-card.disabled {
+        opacity: 0.4; /* Más opaco */
+        pointer-events: none;
+        filter: grayscale(80%); /* Más gris */
+        transform: none !important; /* Quitar animación hover */
+        box-shadow: none !important;
+        border-color: #333 !important;
+    }
+    .option-card.disabled .card-icon {
+        background-color: #333; /* Icono desactivado */
+        border-color: transparent;
+    }
+    .option-card.disabled .card-icon i {
+        color: #888; /* Icono gris */
+    }
+    .option-card.disabled .card-title {
+        color: #aaa; /* Título gris */
+    }
+    
+    /* --- Sección Accesos Rápidos --- */
+    .history-section {
+        border-top: 1px solid #222;
+        padding-top: 40px;
+        margin-bottom: 80px; /* Más espacio abajo */
+    }
+    
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+    .section-title {
+        font-family: 'Oswald', sans-serif;
+        font-size: 26px; /* Título de sección más grande */
+        color: #fff;
+        margin: 0;
+        letter-spacing: 1px;
+    }
+    .quick-access-card {
+        background: #1a1a1a;
+        border-radius: 12px;
+        padding: 30px;
+        text-align: center;
+        border: 1px solid #333;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+    }
+    .quick-access-card p {
+        color: #9ca3af; /* Texto secundario más visible */
+        margin: 0;
+        font-size: 15px;
+    }
+    .btn-link-red {
+        color: #ef4444;
+        text-decoration: none;
+        font-size: 16px; /* Botón de link más grande */
+        font-weight: 700;
+        transition: color 0.2s;
+        border-bottom: 2px solid transparent; /* Efecto de subrayado */
+    }
+    .btn-link-red:hover { 
+        color: #ff6b6b; 
+        text-decoration: none; 
+        border-color: #ff6b6b; /* Subrayado en hover */
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .hero-title { font-size: 38px; }
+        .membership-badge { font-size: 13px; padding: 8px 18px; }
+        .alert-custom { font-size: 13px; padding: 12px 20px; }
+        .alert-custom i { font-size: 16px; }
+
+        .options-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; } /* Ajuste para móviles */
+        .option-card { padding: 25px 10px; }
+        .card-icon { width: 60px; height: 60px; margin-bottom: 15px; }
+        .card-icon i { font-size: 24px; }
+        .card-title { font-size: 16px; letter-spacing: 0.5px; }
+
+        .section-title { font-size: 22px; }
+        .quick-access-card { padding: 20px; }
+        .quick-access-card p { font-size: 14px; }
+        .btn-link-red { font-size: 14px; }
+    }
+</style>
+
+<br><br><br>
+
+<section class="user-hero">
+    <div class="container">
+        <div class="hero-content">
+            <h1 class="hero-title">¡HOLA, <?php echo strtoupper($nombreSocio); ?>!</h1>
+            
+            <div class="membership-badge <?php echo $claseEstado; ?>">
+                <i class="fas <?php echo $iconoEstado; ?>"></i>
+                <span><?php echo $estadoMembresia; ?></span>
+            </div>
+
+            <?php if ($mensajeAlerta): ?>
+                <div class="alert-custom">
+                    <i class="fas fa-bell"></i>
+                    <span><?php echo $mensajeAlerta; ?></span>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    
+    <section class="options-grid">
+        
+        <a href="index.php?page=user_pago_membresia" class="option-card">
+            <div class="card-icon">
+                <i class="fas fa-credit-card"></i> </div>
+            <h3 class="card-title">Pagar Membresía</h3>
+        </a>
+
+        <a href="index.php?page=mis_pagos" class="option-card">
+            <div class="card-icon">
+                <i class="fas fa-receipt"></i>
+            </div>
+            <h3 class="card-title">Historial de Pagos</h3>
+        </a>
+
+        <a href="index.php?page=user_rutina" class="option-card <?php echo !$miembroActivo ? 'disabled' : ''; ?>">
+            <div class="card-icon">
+                <i class="fas fa-dumbbell"></i>
+            </div>
+            <h3 class="card-title">Mis Rutinas</h3>
+        </a>
+
+        <a href="index.php?page=user_information" class="option-card">
+            <div class="card-icon">
+                <i class="fas fa-user-circle"></i>
+            </div>
+            <h3 class="card-title">Mi Perfil</h3>
+        </a>
+
+        <a href="index.php?page=user_monedero" class="option-card">
+            <div class="card-icon">
+                <i class="fas fa-wallet"></i>
+            </div>
+            <h3 class="card-title">Monedero</h3>
+        </a>
+
+        <a href="index.php?page=user_calculator" class="option-card">
+            <div class="card-icon">
+                <i class="fas fa-calculator"></i>
+            </div>
+            <h3 class="card-title">Calculadora IMC</h3>
+        </a>
+
+    </section>
+
+    <div class="history-section">
+        <div class="section-header">
+            <h4 class="section-title">Accesos Rápidos</h4>
+        </div>
+        <div class="quick-access-card">
+            <p>
+                ¿Necesitas ayuda con tu plan de entrenamiento o tienes alguna consulta? <br>
+                <a href="https://wa.me/TUNUMERODEWHATSAPP?text=Hola,%20tengo%20una%20pregunta%20sobre%20mi%20membresía/rutina." target="_blank" class="btn-link-red">
+                    <i class="fab fa-whatsapp mr-2"></i> Contáctanos por WhatsApp
+                </a>
+            </p>
+        </div>
+    </div>
+
+</div>

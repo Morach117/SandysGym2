@@ -1,0 +1,18 @@
+<?php
+
+$host = "db5002171142.hosting-data.io";
+$user = "dbu577361";
+$pass = "Sandys_empresas_2";
+$db = "dbs1756575";
+$conn = null;
+
+try {
+  $conn = new PDO("mysql:host=$host;dbname=$db;", $user, $pass, [
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    PDO::ATTR_EMULATE_PREPARES => false,
+  ]);
+} catch (Exception $e) {
+  echo $e->getMessage();
+}
+?>

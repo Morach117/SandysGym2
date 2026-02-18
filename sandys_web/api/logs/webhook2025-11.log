@@ -1,0 +1,489 @@
+[2025-11-13 05:41:44] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 05:41:44] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 05:41:44] Body decodificado. Acción: N/A Tipo: merchant_order
+[2025-11-13 05:41:44] INFO: Evento 'merchant_order' recibido. (No se procesa).
+[2025-11-13 05:42:53] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 05:42:53] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 05:42:53] Body decodificado. Acción: N/A Tipo: merchant_order
+[2025-11-13 05:42:53] INFO: Evento 'merchant_order' recibido. (No se procesa).
+[2025-11-13 05:42:54] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 05:42:54] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 05:42:54] Body decodificado. Acción: payment.created Tipo: payment
+[2025-11-13 05:42:54] Obteniendo detalles del pago 133030036551 desde MP...
+[2025-11-13 05:42:54] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 05:42:54] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 05:42:54] Body decodificado. Acción: N/A Tipo: payment
+[2025-11-13 05:42:54] Obteniendo detalles del pago 133030036551 desde MP...
+[2025-11-13 05:42:54] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 05:42:54] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 05:42:54] Body decodificado. Acción: N/A Tipo: merchant_order
+[2025-11-13 05:42:54] INFO: Evento 'merchant_order' recibido. (No se procesa).
+[2025-11-13 05:42:55] Detalles obtenidos. Status: approved
+[2025-11-13 05:42:55] Pago APROBADO. Verificando duplicado...
+[2025-11-13 05:42:55] Pago APROBADO. Verificando duplicado...
+[2025-11-13 05:42:55] Pago NUEVO. Resolviendo metadata para registrar en BD...
+[2025-11-13 05:42:55] Pago NUEVO. Resolviendo metadata para registrar en BD...
+[2025-11-13 05:42:55] [Metadata] Vacía en Payment. Intentando Preference...
+[2025-11-13 05:42:55] [Metadata] Vacía en Payment. Intentando Preference...
+[2025-11-13 05:42:55] [Metadata] Payment no trae preference_id.
+[2025-11-13 05:42:55] [Metadata] Payment no trae preference_id.
+[2025-11-13 05:42:55] [Metadata] Recuperada de BD por external_reference=SOCIO_5857 (último registro).
+[2025-11-13 05:42:55] [Metadata] Resultado final: {"id_socio_pagador":5857,"id_socio_beneficiario":5857,"id_servicio":129,"fecha_ini":"12-11-2025","fecha_fin":"11-12-2025","codigo_usado":null,"subtotal":380,"monto_pagado":342,"descuento_aplicado":38,"tipo_promo":null,"id_empresa":1,"id_usuario":99}
+[2025-11-13 05:42:55] [Metadata] Recuperada de BD por external_reference=SOCIO_5857 (último registro).
+[2025-11-13 05:42:55] [registrar_pago_completo_pdo] Iniciando registro... Metadata CRUDA: {"id_socio_pagador":5857,"id_socio_beneficiario":5857,"id_servicio":129,"fecha_ini":"12-11-2025","fecha_fin":"11-12-2025","codigo_usado":null,"subtotal":380,"monto_pagado":342,"descuento_aplicado":38,"tipo_promo":null,"id_empresa":1,"id_usuario":99}
+[2025-11-13 05:42:55] [Metadata] Resultado final: {"id_socio_pagador":5857,"id_socio_beneficiario":5857,"id_servicio":129,"fecha_ini":"12-11-2025","fecha_fin":"11-12-2025","codigo_usado":null,"subtotal":380,"monto_pagado":342,"descuento_aplicado":38,"tipo_promo":null,"id_empresa":1,"id_usuario":99}
+[2025-11-13 05:42:55] [registrar_pago_completo_pdo] Iniciando registro... Metadata CRUDA: {"id_socio_pagador":5857,"id_socio_beneficiario":5857,"id_servicio":129,"fecha_ini":"12-11-2025","fecha_fin":"11-12-2025","codigo_usado":null,"subtotal":380,"monto_pagado":342,"descuento_aplicado":38,"tipo_promo":null,"id_empresa":1,"id_usuario":99}
+[2025-11-13 05:42:55] [Registro] Vars (antes de validar FKs): Benef=5857, Pagador=5857, Importe=342, Ini=2025-11-12, Fin=2025-12-11, Serv=129, Usuario=99, Empresa=1
+[2025-11-13 05:42:55] [Registro] id_usuario=99 no existe. Buscando fallback...
+[2025-11-13 05:42:55] [Registro] id_usuario=99 no existe. Buscando fallback...
+[2025-11-13 05:42:55] [Registro] Usando MP_FALLBACK_USER_ID=1
+[2025-11-13 05:42:55] [Registro] Usando MP_FALLBACK_USER_ID=1
+[2025-11-13 05:42:55] [Registro] Vars (validadas): Empresa=1, Usuario=1, Servicio=129
+[2025-11-13 05:42:55] [Registro] Vars (validadas): Empresa=1, Usuario=1, Servicio=129
+[2025-11-13 05:42:55] [Registro] Transacción iniciada.
+[2025-11-13 05:42:55] [Registro] Transacción iniciada.
+[2025-11-13 05:42:55] [Registro] Lógica de monedero/bonificación (si aplica) completada.
+[2025-11-13 05:42:55] [Registro] Lógica de monedero/bonificación (si aplica) completada.
+[2025-11-13 05:42:55] [Registro] Insertando en san_pagos...
+[2025-11-13 05:42:55] [Registro] Insertando en san_pagos...
+[2025-11-13 05:42:55] [Registro] ÉXITO: san_pagos ID=14605
+[2025-11-13 05:42:55] [Registro] COMMIT.
+[2025-11-13 05:42:55] ÉXITO: Pago guardado en san_pagos ID: 14605
+[2025-11-13 05:42:55] Enviando email de confirmación...
+[2025-11-13 05:42:55] [Email] Preparando email para Pago ID: 14605
+[2025-11-13 05:42:55] [Email] Enviando a: morach117@gmail.com
+[2025-11-13 05:42:55] [Registro] ROLLBACK por error: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '133030036551' for key 'ux_san_pagos_pag_referencia_mp'
+[2025-11-13 05:42:55] ERROR en procesamiento (PaymentID: 133030036551): SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '133030036551' for key 'ux_san_pagos_pag_referencia_mp'
+[2025-11-13 05:42:57] [Email] EmailService::send ejecutado correctamente.
+[2025-11-13 05:42:57] Email de confirmación disparado.
+[2025-11-13 05:42:57] Webhook procesado OK. Respondiendo 200.
+[2025-11-13 05:43:39] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 05:43:39] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 05:43:39] Body decodificado. Acción: payment.created Tipo: payment
+[2025-11-13 05:43:39] Obteniendo detalles del pago 133030036551 desde MP...
+[2025-11-13 05:43:39] Detalles obtenidos. Status: approved
+[2025-11-13 05:43:39] Pago APROBADO. Verificando duplicado...
+[2025-11-13 05:43:39] ADVERTENCIA: Pago duplicado (Payment ID: 133030036551). Ignorado.
+[2025-11-13 05:43:39] Webhook procesado OK. Respondiendo 200.
+[2025-11-12 23:24:16] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-12 23:24:16] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-12 23:24:16] Body decodificado. Acción: N/A Tipo: merchant_order
+[2025-11-12 23:24:16] INFO: Evento 'merchant_order' recibido. (No se procesa).
+[2025-11-12 23:24:17] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-12 23:24:17] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-12 23:24:17] Body decodificado. Acción: N/A Tipo: payment
+[2025-11-12 23:24:17] Obteniendo detalles del pago 133031756275 desde MP...
+[2025-11-12 23:24:17] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-12 23:24:17] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-12 23:24:17] Body decodificado. Acción: N/A Tipo: merchant_order
+[2025-11-12 23:24:17] INFO: Evento 'merchant_order' recibido. (No se procesa).
+[2025-11-12 23:24:17] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-12 23:24:17] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-12 23:24:17] Body decodificado. Acción: payment.created Tipo: payment
+[2025-11-12 23:24:17] Obteniendo detalles del pago 133031756275 desde MP...
+[2025-11-12 23:24:17] Detalles obtenidos. Status: approved
+[2025-11-12 23:24:17] Pago APROBADO. Verificando duplicado...
+[2025-11-12 23:24:17] Pago NUEVO. Resolviendo metadata para registrar en BD...
+[2025-11-12 23:24:17] [Metadata] Vacía en Payment. Intentando Preference...
+[2025-11-12 23:24:17] [Metadata] Payment no trae preference_id.
+[2025-11-12 23:24:17] [Metadata] Recuperada de BD por external_reference=SOCIO_5857 (último registro).
+[2025-11-12 23:24:17] [Metadata] Resultado final: {"id_socio_pagador":5857,"id_socio_beneficiario":5857,"id_servicio":129,"fecha_ini":"12-11-2025","fecha_fin":"11-12-2025","codigo_usado":null,"subtotal":380,"monto_pagado":342,"descuento_aplicado":38,"tipo_promo":null,"id_empresa":1,"id_usuario":99}
+[2025-11-12 23:24:17] [registrar_pago_completo_pdo] Iniciando registro... Metadata CRUDA: {"id_socio_pagador":5857,"id_socio_beneficiario":5857,"id_servicio":129,"fecha_ini":"12-11-2025","fecha_fin":"11-12-2025","codigo_usado":null,"subtotal":380,"monto_pagado":342,"descuento_aplicado":38,"tipo_promo":null,"id_empresa":1,"id_usuario":99}
+[2025-11-12 23:24:17] [Registro] Vars (antes de validar FKs): Benef=5857, Pagador=5857, Importe=342, Ini=2025-11-12, Fin=2025-12-11, Serv=129, Usuario=99, Empresa=1
+[2025-11-12 23:24:17] [Registro] id_usuario=99 no existe. Buscando fallback...
+[2025-11-12 23:24:17] [Registro] Usando MP_FALLBACK_USER_ID=1
+[2025-11-12 23:24:17] [Registro] Vars (validadas): Empresa=1, Usuario=1, Servicio=129
+[2025-11-12 23:24:17] [Registro] Transacción iniciada.
+[2025-11-12 23:24:17] [Registro] Lógica de monedero/bonificación (si aplica) completada.
+[2025-11-12 23:24:17] [Registro] Insertando en san_pagos...
+[2025-11-12 23:24:17] [Registro] ÉXITO: san_pagos ID=14607
+[2025-11-12 23:24:17] [Registro] COMMIT.
+[2025-11-12 23:24:17] ÉXITO: Pago guardado en san_pagos ID: 14607
+[2025-11-12 23:24:17] Enviando email de confirmación...
+[2025-11-12 23:24:17] [Email] Preparando email para Pago ID: 14607
+[2025-11-12 23:24:18] Detalles obtenidos. Status: approved
+[2025-11-12 23:24:18] Pago APROBADO. Verificando duplicado...
+[2025-11-12 23:24:18] ADVERTENCIA: Pago duplicado (Payment ID: 133031756275). Ignorado.
+[2025-11-12 23:24:18] Webhook procesado OK. Respondiendo 200.
+[2025-11-12 23:24:19] [Email] Email enviado correctamente a morach117@gmail.com (Recibo 14607).
+[2025-11-12 23:24:19] Email de confirmación disparado.
+[2025-11-12 23:24:19] Webhook procesado OK. Respondiendo 200.
+[2025-11-12 23:40:22] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-12 23:40:22] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-12 23:40:22] Body decodificado. Acción: N/A Tipo: merchant_order
+[2025-11-12 23:40:22] INFO: Evento 'merchant_order' recibido. (No se procesa).
+[2025-11-12 23:40:23] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-12 23:40:23] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-12 23:40:23] Body decodificado. Acción: N/A Tipo: payment
+[2025-11-12 23:40:23] Obteniendo detalles del pago 133032272289 desde MP...
+[2025-11-12 23:40:23] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-12 23:40:23] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-12 23:40:23] Body decodificado. Acción: payment.created Tipo: payment
+[2025-11-12 23:40:23] Obteniendo detalles del pago 133032272289 desde MP...
+[2025-11-12 23:40:23] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-12 23:40:23] Body decodificado. Acción: N/A Tipo: merchant_order
+[2025-11-12 23:40:23] INFO: Evento 'merchant_order' recibido. (No se procesa).
+[2025-11-12 23:40:24] Detalles obtenidos. Status: approved
+[2025-11-12 23:40:24] Pago APROBADO. Verificando duplicado...
+[2025-11-12 23:40:24] Pago NUEVO. Resolviendo metadata para registrar en BD...
+[2025-11-12 23:40:24] [Metadata] Vacía en Payment. Intentando Preference...
+[2025-11-12 23:40:24] [Metadata] Payment no trae preference_id.
+[2025-11-12 23:40:24] [Metadata] Recuperada de BD por external_reference=SOCIO_5857 (último registro).
+[2025-11-12 23:40:24] [Metadata] Resultado final: {"id_socio_pagador":5857,"id_socio_beneficiario":5857,"id_servicio":129,"fecha_ini":"12-11-2025","fecha_fin":"11-12-2025","codigo_usado":null,"subtotal":380,"monto_pagado":342,"descuento_aplicado":38,"tipo_promo":null,"id_empresa":1,"id_usuario":99}
+[2025-11-12 23:40:24] [registrar_pago_completo_pdo] Iniciando registro... Metadata CRUDA: {"id_socio_pagador":5857,"id_socio_beneficiario":5857,"id_servicio":129,"fecha_ini":"12-11-2025","fecha_fin":"11-12-2025","codigo_usado":null,"subtotal":380,"monto_pagado":342,"descuento_aplicado":38,"tipo_promo":null,"id_empresa":1,"id_usuario":99}
+[2025-11-12 23:40:24] [Registro] Vars (antes de validar FKs): Benef=5857, Pagador=5857, Importe=342, Ini=2025-11-12, Fin=2025-12-11, Serv=129, Usuario=99, Empresa=1
+[2025-11-12 23:40:24] [Registro] id_usuario=99 no existe. Buscando fallback...
+[2025-11-12 23:40:24] [Registro] Usando MP_FALLBACK_USER_ID=1
+[2025-11-12 23:40:24] [Registro] Vars (validadas): Empresa=1, Usuario=1, Servicio=129
+[2025-11-12 23:40:24] [Registro] Transacción iniciada.
+[2025-11-12 23:40:24] [Registro] Lógica de monedero/bonificación (si aplica) completada.
+[2025-11-12 23:40:24] [Registro] Insertando en san_pagos...
+[2025-11-12 23:40:24] [Registro] ÉXITO: san_pagos ID=14608
+[2025-11-12 23:40:24] [Registro] COMMIT.
+[2025-11-12 23:40:24] ÉXITO: Pago guardado en san_pagos ID: 14608
+[2025-11-12 23:40:24] Enviando email de confirmación...
+[2025-11-12 23:40:24] [Email] Preparando email para Pago ID: 14608
+[2025-11-12 23:40:24] [Email] Enviando a: morach117@gmail.com
+[2025-11-12 23:40:24] Detalles obtenidos. Status: approved
+[2025-11-12 23:40:24] Pago APROBADO. Verificando duplicado...
+[2025-11-12 23:40:24] ADVERTENCIA: Pago duplicado (Payment ID: 133032272289). Ignorado.
+[2025-11-12 23:40:24] Webhook procesado OK. Respondiendo 200.
+[2025-11-12 23:40:25] [Email] EmailService::send ejecutado correctamente.
+[2025-11-12 23:40:25] Email de confirmación disparado.
+[2025-11-12 23:40:25] Webhook procesado OK. Respondiendo 200.
+[2025-11-13 00:12:27] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 00:12:27] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 00:12:27] Body decodificado. Acción: N/A Tipo: merchant_order
+[2025-11-13 00:12:27] INFO: Evento 'merchant_order' recibido. (No se procesa).
+[2025-11-13 00:12:28] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 00:12:28] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 00:12:28] Body decodificado. Acción: payment.created Tipo: payment
+[2025-11-13 00:12:28] Obteniendo detalles del pago 133640935610 desde MP...
+[2025-11-13 00:12:28] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 00:12:28] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 00:12:28] Body decodificado. Acción: N/A Tipo: payment
+[2025-11-13 00:12:28] Obteniendo detalles del pago 133640935610 desde MP...
+[2025-11-13 00:12:28] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 00:12:28] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 00:12:28] Body decodificado. Acción: N/A Tipo: merchant_order
+[2025-11-13 00:12:28] INFO: Evento 'merchant_order' recibido. (No se procesa).
+[2025-11-13 00:12:28] Detalles obtenidos. Status: approved
+[2025-11-13 00:12:28] Pago APROBADO. Verificando duplicado...
+[2025-11-13 00:12:28] ERROR en procesamiento (PaymentID: 133640935610): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pag_referencia_mp' in 'where clause'
+[2025-11-13 00:12:28] Detalles obtenidos. Status: approved
+[2025-11-13 00:12:28] Pago APROBADO. Verificando duplicado...
+[2025-11-13 00:12:28] ERROR en procesamiento (PaymentID: 133640935610): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pag_referencia_mp' in 'where clause'
+[2025-11-13 00:13:13] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 00:13:13] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 00:13:13] Body decodificado. Acción: N/A Tipo: payment
+[2025-11-13 00:13:13] Obteniendo detalles del pago 133640935610 desde MP...
+[2025-11-13 00:13:13] Detalles obtenidos. Status: approved
+[2025-11-13 00:13:13] Pago APROBADO. Verificando duplicado...
+[2025-11-13 00:13:13] ERROR en procesamiento (PaymentID: 133640935610): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pag_referencia_mp' in 'where clause'
+[2025-11-13 00:13:13] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 00:13:13] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 00:13:13] Body decodificado. Acción: N/A Tipo: payment
+[2025-11-13 00:13:13] Obteniendo detalles del pago 133640935610 desde MP...
+[2025-11-13 00:13:13] Detalles obtenidos. Status: approved
+[2025-11-13 00:13:13] Pago APROBADO. Verificando duplicado...
+[2025-11-13 00:13:13] ERROR en procesamiento (PaymentID: 133640935610): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pag_referencia_mp' in 'where clause'
+[2025-11-13 00:13:14] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 00:13:14] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 00:13:14] Body decodificado. Acción: payment.created Tipo: payment
+[2025-11-13 00:13:14] Obteniendo detalles del pago 133640935610 desde MP...
+[2025-11-13 00:13:15] Detalles obtenidos. Status: approved
+[2025-11-13 00:13:15] Pago APROBADO. Verificando duplicado...
+[2025-11-13 00:13:15] ERROR en procesamiento (PaymentID: 133640935610): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pag_referencia_mp' in 'where clause'
+[2025-11-13 00:13:15] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 00:13:15] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 00:13:15] Body decodificado. Acción: payment.created Tipo: payment
+[2025-11-13 00:13:15] Obteniendo detalles del pago 133640935610 desde MP...
+[2025-11-13 00:13:15] Detalles obtenidos. Status: approved
+[2025-11-13 00:13:15] Pago APROBADO. Verificando duplicado...
+[2025-11-13 00:13:15] ERROR en procesamiento (PaymentID: 133640935610): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pag_referencia_mp' in 'where clause'
+[2025-11-13 00:15:56] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 00:15:56] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 00:15:56] Body decodificado. Acción: N/A Tipo: merchant_order
+[2025-11-13 00:15:56] INFO: Evento 'merchant_order' recibido. (No se procesa).
+[2025-11-13 00:15:57] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 00:15:57] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 00:15:57] Body decodificado. Acción: payment.created Tipo: payment
+[2025-11-13 00:15:57] Obteniendo detalles del pago 133641197512 desde MP...
+[2025-11-13 00:15:57] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 00:15:57] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 00:15:57] Body decodificado. Acción: N/A Tipo: payment
+[2025-11-13 00:15:57] Obteniendo detalles del pago 133641197512 desde MP...
+[2025-11-13 00:15:57] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 00:15:57] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 00:15:57] Body decodificado. Acción: N/A Tipo: merchant_order
+[2025-11-13 00:15:57] INFO: Evento 'merchant_order' recibido. (No se procesa).
+[2025-11-13 00:15:57] Detalles obtenidos. Status: approved
+[2025-11-13 00:15:57] Pago APROBADO. Verificando duplicado...
+[2025-11-13 00:15:57] Pago NUEVO. Resolviendo metadata para registrar en BD...
+[2025-11-13 00:15:57] [Metadata] Vacía en Payment. Intentando Preference...
+[2025-11-13 00:15:57] [Metadata] Payment no trae preference_id.
+[2025-11-13 00:15:57] [Metadata] Recuperada de BD por external_reference=SOCIO_9380 (último registro).
+[2025-11-13 00:15:57] [Metadata] Resultado final: {"subtotal":400,"fecha_fin":"31-12-2025","fecha_ini":"01-12-2025","id_empresa":1,"id_usuario":99,"tipo_promo":null,"id_servicio":1,"codigo_usado":null,"monto_pagado":360,"id_socio_pagador":9380,"descuento_aplicado":40,"id_socio_beneficiario":9380}
+[2025-11-13 00:15:57] [registrar_pago_completo_pdo] Iniciando registro... Metadata CRUDA: {"subtotal":400,"fecha_fin":"31-12-2025","fecha_ini":"01-12-2025","id_empresa":1,"id_usuario":99,"tipo_promo":null,"id_servicio":1,"codigo_usado":null,"monto_pagado":360,"id_socio_pagador":9380,"descuento_aplicado":40,"id_socio_beneficiario":9380}
+[2025-11-13 00:15:57] Detalles obtenidos. Status: approved
+[2025-11-13 00:15:57] [Registro] Vars (antes de validar FKs): Benef=9380, Pagador=9380, Importe=360, Ini=2025-12-01, Fin=2025-12-31, Serv=1, Usuario=99, Empresa=1
+[2025-11-13 00:15:57] Pago APROBADO. Verificando duplicado...
+[2025-11-13 00:15:57] Pago NUEVO. Resolviendo metadata para registrar en BD...
+[2025-11-13 00:15:57] [Metadata] Vacía en Payment. Intentando Preference...
+[2025-11-13 00:15:57] [Metadata] Payment no trae preference_id.
+[2025-11-13 00:15:57] [Metadata] Recuperada de BD por external_reference=SOCIO_9380 (último registro).
+[2025-11-13 00:15:57] [Metadata] Resultado final: {"subtotal":400,"fecha_fin":"31-12-2025","fecha_ini":"01-12-2025","id_empresa":1,"id_usuario":99,"tipo_promo":null,"id_servicio":1,"codigo_usado":null,"monto_pagado":360,"id_socio_pagador":9380,"descuento_aplicado":40,"id_socio_beneficiario":9380}
+[2025-11-13 00:15:57] [registrar_pago_completo_pdo] Iniciando registro... Metadata CRUDA: {"subtotal":400,"fecha_fin":"31-12-2025","fecha_ini":"01-12-2025","id_empresa":1,"id_usuario":99,"tipo_promo":null,"id_servicio":1,"codigo_usado":null,"monto_pagado":360,"id_socio_pagador":9380,"descuento_aplicado":40,"id_socio_beneficiario":9380}
+[2025-11-13 00:15:57] [Registro] Vars (antes de validar FKs): Benef=9380, Pagador=9380, Importe=360, Ini=2025-12-01, Fin=2025-12-31, Serv=1, Usuario=99, Empresa=1
+[2025-11-13 00:15:57] [Registro] id_usuario=99 no existe. Buscando fallback...
+[2025-11-13 00:15:57] [Registro] Usando MP_FALLBACK_USER_ID=1
+[2025-11-13 00:15:57] [Registro] Vars (validadas): Empresa=1, Usuario=1, Servicio=1
+[2025-11-13 00:15:57] [Registro] id_usuario=99 no existe. Buscando fallback...
+[2025-11-13 00:15:57] [Registro] Usando MP_FALLBACK_USER_ID=1
+[2025-11-13 00:15:57] [Registro] Transacción iniciada.
+[2025-11-13 00:15:57] [Registro] Vars (validadas): Empresa=1, Usuario=1, Servicio=1
+[2025-11-13 00:15:57] [Registro] Lógica de monedero/bonificación (si aplica) completada.
+[2025-11-13 00:15:57] [Registro] Insertando en san_pagos...
+[2025-11-13 00:15:57] [Registro] Transacción iniciada.
+[2025-11-13 00:15:57] [Registro] Lógica de monedero/bonificación (si aplica) completada.
+[2025-11-13 00:15:57] [Registro] Insertando en san_pagos...
+[2025-11-13 00:15:57] [Registro] ÉXITO: san_pagos ID=16079
+[2025-11-13 00:15:57] [Registro] COMMIT.
+[2025-11-13 00:15:57] ÉXITO: Pago guardado en san_pagos ID: 16079
+[2025-11-13 00:15:57] Enviando email de confirmación...
+[2025-11-13 00:15:57] [Email] Preparando email para Pago ID: 16079
+[2025-11-13 00:15:57] [Email] Enviando a: morach117@gmail.com
+[2025-11-13 00:15:57] [Registro] ROLLBACK por error: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '133641197512' for key 'ux_san_pagos_pag_referencia_mp'
+[2025-11-13 00:15:57] ERROR en procesamiento (PaymentID: 133641197512): SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '133641197512' for key 'ux_san_pagos_pag_referencia_mp'
+[2025-11-13 00:15:57] [Email] EmailService::send ejecutado correctamente.
+[2025-11-13 00:15:57] Email de confirmación disparado.
+[2025-11-13 00:15:57] Webhook procesado OK. Respondiendo 200.
+[2025-11-13 00:16:40] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 00:16:40] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 00:16:40] Body decodificado. Acción: N/A Tipo: payment
+[2025-11-13 00:16:40] Obteniendo detalles del pago 133641197512 desde MP...
+[2025-11-13 00:16:40] Detalles obtenidos. Status: approved
+[2025-11-13 00:16:40] Pago APROBADO. Verificando duplicado...
+[2025-11-13 00:16:40] ADVERTENCIA: Pago duplicado (Payment ID: 133641197512). Ignorado.
+[2025-11-13 00:16:40] Webhook procesado OK. Respondiendo 200.
+[2025-11-13 00:30:27] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 00:30:27] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 00:30:27] Body decodificado. Acción: payment.created Tipo: payment
+[2025-11-13 00:30:27] Obteniendo detalles del pago 133640935610 desde MP...
+[2025-11-13 00:30:27] Detalles obtenidos. Status: approved
+[2025-11-13 00:30:27] Pago APROBADO. Verificando duplicado...
+[2025-11-13 00:30:27] Pago NUEVO. Resolviendo metadata para registrar en BD...
+[2025-11-13 00:30:27] [Metadata] Vacía en Payment. Intentando Preference...
+[2025-11-13 00:30:27] [Metadata] Payment no trae preference_id.
+[2025-11-13 00:30:27] [Metadata] Recuperada de BD por external_reference=SOCIO_9380 (último registro).
+[2025-11-13 00:30:27] [Metadata] Resultado final: {"subtotal":400,"fecha_fin":"31-12-2025","fecha_ini":"01-12-2025","id_empresa":1,"id_usuario":99,"tipo_promo":null,"id_servicio":1,"codigo_usado":null,"monto_pagado":360,"id_socio_pagador":9380,"descuento_aplicado":40,"id_socio_beneficiario":9380}
+[2025-11-13 00:30:27] [registrar_pago_completo_pdo] Iniciando registro... Metadata CRUDA: {"subtotal":400,"fecha_fin":"31-12-2025","fecha_ini":"01-12-2025","id_empresa":1,"id_usuario":99,"tipo_promo":null,"id_servicio":1,"codigo_usado":null,"monto_pagado":360,"id_socio_pagador":9380,"descuento_aplicado":40,"id_socio_beneficiario":9380}
+[2025-11-13 00:30:27] [Registro] Vars (antes de validar FKs): Benef=9380, Pagador=9380, Importe=360, Ini=2025-12-01, Fin=2025-12-31, Serv=1, Usuario=99, Empresa=1
+[2025-11-13 00:30:27] [Registro] id_usuario=99 no existe. Buscando fallback...
+[2025-11-13 00:30:27] [Registro] Usando MP_FALLBACK_USER_ID=1
+[2025-11-13 00:30:27] [Registro] Vars (validadas): Empresa=1, Usuario=1, Servicio=1
+[2025-11-13 00:30:27] [Registro] Transacción iniciada.
+[2025-11-13 00:30:27] [Registro] Lógica de monedero/bonificación (si aplica) completada.
+[2025-11-13 00:30:27] [Registro] Insertando en san_pagos...
+[2025-11-13 00:30:27] [Registro] ÉXITO: san_pagos ID=16081
+[2025-11-13 00:30:27] [Registro] COMMIT.
+[2025-11-13 00:30:27] ÉXITO: Pago guardado en san_pagos ID: 16081
+[2025-11-13 00:30:27] Enviando email de confirmación...
+[2025-11-13 00:30:27] [Email] Preparando email para Pago ID: 16081
+[2025-11-13 00:30:27] [Email] Enviando a: morach117@gmail.com
+[2025-11-13 00:30:27] [Email] EmailService::send ejecutado correctamente.
+[2025-11-13 00:30:27] Email de confirmación disparado.
+[2025-11-13 00:30:27] Webhook procesado OK. Respondiendo 200.
+[2025-11-13 00:30:27] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 00:30:27] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 00:30:27] Body decodificado. Acción: N/A Tipo: payment
+[2025-11-13 00:30:27] Obteniendo detalles del pago 133640935610 desde MP...
+[2025-11-13 00:30:27] Detalles obtenidos. Status: approved
+[2025-11-13 00:30:27] Pago APROBADO. Verificando duplicado...
+[2025-11-13 00:30:27] ADVERTENCIA: Pago duplicado (Payment ID: 133640935610). Ignorado.
+[2025-11-13 00:30:27] Webhook procesado OK. Respondiendo 200.
+[2025-11-13 22:32:58] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 22:32:58] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 22:32:58] Body decodificado. Acción: N/A Tipo: merchant_order
+[2025-11-13 22:32:58] INFO: Evento 'merchant_order' recibido. (No se procesa).
+[2025-11-13 22:41:24] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 22:41:24] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 22:41:24] Body decodificado. Acción: N/A Tipo: merchant_order
+[2025-11-13 22:41:24] INFO: Evento 'merchant_order' recibido. (No se procesa).
+[2025-11-13 22:41:24] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 22:41:24] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 22:41:24] Body decodificado. Acción: payment.created Tipo: payment
+[2025-11-13 22:41:24] Obteniendo detalles del pago 133776838930 desde MP...
+[2025-11-13 22:41:24] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 22:41:24] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 22:41:24] Body decodificado. Acción: N/A Tipo: payment
+[2025-11-13 22:41:24] Obteniendo detalles del pago 133776838930 desde MP...
+[2025-11-13 22:41:24] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 22:41:24] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 22:41:24] Body decodificado. Acción: N/A Tipo: merchant_order
+[2025-11-13 22:41:24] INFO: Evento 'merchant_order' recibido. (No se procesa).
+[2025-11-13 22:41:24] Detalles obtenidos. Status: approved
+[2025-11-13 22:41:24] Pago APROBADO. Verificando duplicado...
+[2025-11-13 22:41:24] Pago NUEVO. Resolviendo metadata para registrar en BD...
+[2025-11-13 22:41:24] [Metadata] Vacía en Payment. Intentando Preference...
+[2025-11-13 22:41:24] [Metadata] Payment no trae preference_id.
+[2025-11-13 22:41:24] [Metadata] Recuperada de BD por external_reference=SOCIO_9380 (último registro).
+[2025-11-13 22:41:24] [Metadata] Resultado final: {"subtotal":400,"fecha_fin":"31-12-2025","fecha_ini":"01-12-2025","id_empresa":1,"id_usuario":99,"tipo_promo":null,"id_servicio":1,"codigo_usado":null,"monto_pagado":360,"id_socio_pagador":9380,"descuento_aplicado":40,"id_socio_beneficiario":9380}
+[2025-11-13 22:41:24] [registrar_pago_completo_pdo] Iniciando registro... Metadata CRUDA: {"subtotal":400,"fecha_fin":"31-12-2025","fecha_ini":"01-12-2025","id_empresa":1,"id_usuario":99,"tipo_promo":null,"id_servicio":1,"codigo_usado":null,"monto_pagado":360,"id_socio_pagador":9380,"descuento_aplicado":40,"id_socio_beneficiario":9380}
+[2025-11-13 22:41:24] [Registro] Vars (antes de validar FKs): Benef=9380, Pagador=9380, Importe=360, Ini=2025-12-01, Fin=2025-12-31, Serv=1, Usuario=99, Empresa=1
+[2025-11-13 22:41:24] [Registro] id_usuario=99 no existe. Buscando fallback...
+[2025-11-13 22:41:24] [Registro] Usando MP_FALLBACK_USER_ID=1
+[2025-11-13 22:41:24] [Registro] Vars (validadas): Empresa=1, Usuario=1, Servicio=1
+[2025-11-13 22:41:24] [Registro] Transacción iniciada.
+[2025-11-13 22:41:24] [Registro] Lógica de monedero/bonificación (si aplica) completada.
+[2025-11-13 22:41:24] [Registro] Insertando en san_pagos...
+[2025-11-13 22:41:24] [Registro] ÉXITO: san_pagos ID=16086
+[2025-11-13 22:41:24] [Registro] COMMIT.
+[2025-11-13 22:41:24] ÉXITO: Pago guardado en san_pagos ID: 16086
+[2025-11-13 22:41:24] Enviando email de confirmación...
+[2025-11-13 22:41:24] [Email] Preparando email para Pago ID: 16086
+[2025-11-13 22:41:24] [Email] Enviando a: morach117@gmail.com
+[2025-11-13 22:41:24] Detalles obtenidos. Status: approved
+[2025-11-13 22:41:24] Pago APROBADO. Verificando duplicado...
+[2025-11-13 22:41:24] ADVERTENCIA: Pago duplicado (Payment ID: 133776838930). Ignorado.
+[2025-11-13 22:41:24] Webhook procesado OK. Respondiendo 200.
+[2025-11-13 22:41:25] [Email] EmailService::send ejecutado correctamente.
+[2025-11-13 22:41:25] Email de confirmación disparado.
+[2025-11-13 22:41:25] Webhook procesado OK. Respondiendo 200.
+[2025-11-13 22:52:26] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 22:52:26] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 22:52:26] Body decodificado. Acción: N/A Tipo: merchant_order
+[2025-11-13 22:52:26] INFO: Evento 'merchant_order' recibido. (No se procesa).
+[2025-11-13 22:56:16] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 22:56:16] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 22:56:16] Body decodificado. Acción: N/A Tipo: merchant_order
+[2025-11-13 22:56:16] INFO: Evento 'merchant_order' recibido. (No se procesa).
+[2025-11-13 22:56:17] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 22:56:17] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 22:56:17] Body decodificado. Acción: payment.created Tipo: payment
+[2025-11-13 22:56:17] Obteniendo detalles del pago 133169147187 desde MP...
+[2025-11-13 22:56:17] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 22:56:17] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 22:56:17] Body decodificado. Acción: N/A Tipo: payment
+[2025-11-13 22:56:17] Obteniendo detalles del pago 133169147187 desde MP...
+[2025-11-13 22:56:17] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-13 22:56:17] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-13 22:56:17] Body decodificado. Acción: N/A Tipo: merchant_order
+[2025-11-13 22:56:17] INFO: Evento 'merchant_order' recibido. (No se procesa).
+[2025-11-13 22:56:17] Detalles obtenidos. Status: approved
+[2025-11-13 22:56:17] Pago APROBADO. Verificando duplicado...
+[2025-11-13 22:56:17] Pago NUEVO. Resolviendo metadata para registrar en BD...
+[2025-11-13 22:56:17] [Metadata] Vacía en Payment. Intentando Preference...
+[2025-11-13 22:56:17] [Metadata] Payment no trae preference_id.
+[2025-11-13 22:56:17] [Metadata] Recuperada de BD por external_reference=SOCIO_10743 (último registro).
+[2025-11-13 22:56:17] [Metadata] Resultado final: {"subtotal":300,"fecha_fin":"13-01-2026","fecha_ini":"14-12-2025","id_empresa":1,"id_usuario":99,"tipo_promo":null,"id_servicio":254,"codigo_usado":null,"monto_pagado":6,"id_socio_pagador":10743,"descuento_aplicado":294,"id_socio_beneficiario":10743}
+[2025-11-13 22:56:17] [registrar_pago_completo_pdo] Iniciando registro... Metadata CRUDA: {"subtotal":300,"fecha_fin":"13-01-2026","fecha_ini":"14-12-2025","id_empresa":1,"id_usuario":99,"tipo_promo":null,"id_servicio":254,"codigo_usado":null,"monto_pagado":6,"id_socio_pagador":10743,"descuento_aplicado":294,"id_socio_beneficiario":10743}
+[2025-11-13 22:56:17] [Registro] Vars (antes de validar FKs): Benef=10743, Pagador=10743, Importe=6, Ini=2025-12-14, Fin=2026-01-13, Serv=254, Usuario=99, Empresa=1
+[2025-11-13 22:56:17] [Registro] id_usuario=99 no existe. Buscando fallback...
+[2025-11-13 22:56:17] [Registro] Usando MP_FALLBACK_USER_ID=1
+[2025-11-13 22:56:17] [Registro] Vars (validadas): Empresa=1, Usuario=1, Servicio=254
+[2025-11-13 22:56:17] [Registro] Transacción iniciada.
+[2025-11-13 22:56:17] [Registro] Lógica de monedero/bonificación (si aplica) completada.
+[2025-11-13 22:56:17] [Registro] Insertando en san_pagos...
+[2025-11-13 22:56:17] [Registro] ÉXITO: san_pagos ID=16088
+[2025-11-13 22:56:17] [Registro] COMMIT.
+[2025-11-13 22:56:17] ÉXITO: Pago guardado en san_pagos ID: 16088
+[2025-11-13 22:56:17] Enviando email de confirmación...
+[2025-11-13 22:56:17] [Email] Preparando email para Pago ID: 16088
+[2025-11-13 22:56:17] [Email] Enviando a: dorianlara317@gmail.com
+[2025-11-13 22:56:17] Detalles obtenidos. Status: approved
+[2025-11-13 22:56:17] Pago APROBADO. Verificando duplicado...
+[2025-11-13 22:56:17] ADVERTENCIA: Pago duplicado (Payment ID: 133169147187). Ignorado.
+[2025-11-13 22:56:17] Webhook procesado OK. Respondiendo 200.
+[2025-11-13 22:56:17] [Email] EmailService::send ejecutado correctamente.
+[2025-11-13 22:56:17] Email de confirmación disparado.
+[2025-11-13 22:56:17] Webhook procesado OK. Respondiendo 200.
+[2025-11-14 19:18:45] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-14 19:18:45] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-14 19:18:45] Body decodificado. Acción: N/A Tipo: merchant_order
+[2025-11-14 19:18:45] INFO: Evento 'merchant_order' recibido. (No se procesa).
+[2025-11-14 19:18:55] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-14 19:18:55] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-14 19:18:55] Body decodificado. Acción: N/A Tipo: merchant_order
+[2025-11-14 19:18:55] INFO: Evento 'merchant_order' recibido. (No se procesa).
+[2025-11-15 13:45:16] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-15 13:45:16] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-15 13:45:16] Body decodificado. Acción: N/A Tipo: merchant_order
+[2025-11-15 13:45:16] INFO: Evento 'merchant_order' recibido. (No se procesa).
+[2025-11-15 13:45:31] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-15 13:45:31] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-15 13:45:31] Body decodificado. Acción: N/A Tipo: merchant_order
+[2025-11-15 13:45:31] INFO: Evento 'merchant_order' recibido. (No se procesa).
+[2025-11-19 20:43:17] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-19 20:43:17] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-19 20:43:17] Body decodificado. Acción: N/A Tipo: merchant_order
+[2025-11-19 20:43:17] INFO: Evento 'merchant_order' recibido. (No se procesa).
+[2025-11-19 20:43:18] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-19 20:43:18] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-19 20:43:18] Body decodificado. Acción: N/A Tipo: payment
+[2025-11-19 20:43:18] Obteniendo detalles del pago 133937150285 desde MP...
+[2025-11-19 20:43:18] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-19 20:43:18] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-19 20:43:18] Body decodificado. Acción: payment.created Tipo: payment
+[2025-11-19 20:43:18] Obteniendo detalles del pago 133937150285 desde MP...
+[2025-11-19 20:43:18] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-19 20:43:18] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-19 20:43:18] Body decodificado. Acción: N/A Tipo: merchant_order
+[2025-11-19 20:43:18] INFO: Evento 'merchant_order' recibido. (No se procesa).
+[2025-11-19 20:43:18] Detalles obtenidos. Status: approved
+[2025-11-19 20:43:18] Detalles obtenidos. Status: approved
+[2025-11-19 20:43:18] Pago APROBADO. Verificando duplicado...
+[2025-11-19 20:43:18] Pago APROBADO. Verificando duplicado...
+[2025-11-19 20:43:18] Pago NUEVO. Resolviendo metadata para registrar en BD...
+[2025-11-19 20:43:18] [Metadata] Vacía en Payment. Intentando Preference...
+[2025-11-19 20:43:18] [Metadata] Payment no trae preference_id.
+[2025-11-19 20:43:18] Pago NUEVO. Resolviendo metadata para registrar en BD...
+[2025-11-19 20:43:18] [Metadata] Vacía en Payment. Intentando Preference...
+[2025-11-19 20:43:18] [Metadata] Payment no trae preference_id.
+[2025-11-19 20:43:18] [Metadata] Recuperada de BD por external_reference=SOCIO_10743 (último registro).
+[2025-11-19 20:43:18] [Metadata] Resultado final: {"subtotal":750,"fecha_fin":"13-02-2026","fecha_ini":"14-01-2026","id_empresa":1,"id_usuario":99,"tipo_promo":null,"id_servicio":167,"codigo_usado":null,"monto_pagado":15,"id_socio_pagador":10743,"descuento_aplicado":735,"id_socio_beneficiario":10743}
+[2025-11-19 20:43:18] [registrar_pago_completo_pdo] Iniciando registro... Metadata CRUDA: {"subtotal":750,"fecha_fin":"13-02-2026","fecha_ini":"14-01-2026","id_empresa":1,"id_usuario":99,"tipo_promo":null,"id_servicio":167,"codigo_usado":null,"monto_pagado":15,"id_socio_pagador":10743,"descuento_aplicado":735,"id_socio_beneficiario":10743}
+[2025-11-19 20:43:18] [Registro] Vars (antes de validar FKs): Benef=10743, Pagador=10743, Importe=15, Ini=2026-01-14, Fin=2026-02-13, Serv=167, Usuario=99, Empresa=1
+[2025-11-19 20:43:18] [Metadata] Recuperada de BD por external_reference=SOCIO_10743 (último registro).
+[2025-11-19 20:43:18] [Metadata] Resultado final: {"subtotal":750,"fecha_fin":"13-02-2026","fecha_ini":"14-01-2026","id_empresa":1,"id_usuario":99,"tipo_promo":null,"id_servicio":167,"codigo_usado":null,"monto_pagado":15,"id_socio_pagador":10743,"descuento_aplicado":735,"id_socio_beneficiario":10743}
+[2025-11-19 20:43:18] [registrar_pago_completo_pdo] Iniciando registro... Metadata CRUDA: {"subtotal":750,"fecha_fin":"13-02-2026","fecha_ini":"14-01-2026","id_empresa":1,"id_usuario":99,"tipo_promo":null,"id_servicio":167,"codigo_usado":null,"monto_pagado":15,"id_socio_pagador":10743,"descuento_aplicado":735,"id_socio_beneficiario":10743}
+[2025-11-19 20:43:18] [Registro] Vars (antes de validar FKs): Benef=10743, Pagador=10743, Importe=15, Ini=2026-01-14, Fin=2026-02-13, Serv=167, Usuario=99, Empresa=1
+[2025-11-19 20:43:18] [Registro] id_usuario=99 no existe. Buscando fallback...
+[2025-11-19 20:43:18] [Registro] Usando MP_FALLBACK_USER_ID=1
+[2025-11-19 20:43:18] [Registro] Vars (validadas): Empresa=1, Usuario=1, Servicio=167
+[2025-11-19 20:43:18] [Registro] Transacción iniciada.
+[2025-11-19 20:43:18] [Registro] Lógica de monedero/bonificación (si aplica) completada.
+[2025-11-19 20:43:18] [Registro] Insertando en san_pagos...
+[2025-11-19 20:43:18] [Registro] ÉXITO: san_pagos ID=16142
+[2025-11-19 20:43:18] [Registro] id_usuario=99 no existe. Buscando fallback...
+[2025-11-19 20:43:18] [Registro] Usando MP_FALLBACK_USER_ID=1
+[2025-11-19 20:43:18] [Registro] Vars (validadas): Empresa=1, Usuario=1, Servicio=167
+[2025-11-19 20:43:18] [Registro] Transacción iniciada.
+[2025-11-19 20:43:18] [Registro] Lógica de monedero/bonificación (si aplica) completada.
+[2025-11-19 20:43:18] [Registro] Insertando en san_pagos...
+[2025-11-19 20:43:18] [Registro] COMMIT.
+[2025-11-19 20:43:18] ÉXITO: Pago guardado en san_pagos ID: 16142
+[2025-11-19 20:43:18] Enviando email de confirmación...
+[2025-11-19 20:43:18] [Email] Preparando email para Pago ID: 16142
+[2025-11-19 20:43:18] [Email] Enviando a: dorianlara317@gmail.com
+[2025-11-19 20:43:18] [Registro] ROLLBACK por error: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '133937150285' for key 'ux_san_pagos_pag_referencia_mp'
+[2025-11-19 20:43:18] ERROR en procesamiento (PaymentID: 133937150285): SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '133937150285' for key 'ux_san_pagos_pag_referencia_mp'
+[2025-11-19 20:43:18] [Email] EmailService::send ejecutado correctamente.
+[2025-11-19 20:43:18] Email de confirmación disparado.
+[2025-11-19 20:43:18] Webhook procesado OK. Respondiendo 200.
+[2025-11-19 20:43:57] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-19 20:43:57] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-19 20:43:57] Body decodificado. Acción: payment.created Tipo: payment
+[2025-11-19 20:43:57] Obteniendo detalles del pago 133937150285 desde MP...
+[2025-11-19 20:43:58] Detalles obtenidos. Status: approved
+[2025-11-19 20:43:58] Pago APROBADO. Verificando duplicado...
+[2025-11-19 20:43:58] ADVERTENCIA: Pago duplicado (Payment ID: 133937150285). Ignorado.
+[2025-11-19 20:43:58] Webhook procesado OK. Respondiendo 200.
+[2025-11-20 11:49:37] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-20 11:49:37] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-20 11:49:37] Body decodificado. Acción: N/A Tipo: merchant_order
+[2025-11-20 11:49:37] INFO: Evento 'merchant_order' recibido. (No se procesa).
+[2025-11-20 11:49:38] --- INICIO DE NOTIFICACIÓN ---
+[2025-11-20 11:49:38] AVISO: Validación de firma SKIPPEADA por MP_WEBHOOK_SKIP_VALIDATION=TRUE (solo DEV).
+[2025-11-20 11:49:38] Body decodificado. Acción: N/A Tipo: merchant_order
+[2025-11-20 11:49:38] INFO: Evento 'merchant_order' recibido. (No se procesa).

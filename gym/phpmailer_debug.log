@@ -1,0 +1,924 @@
+2024-06-20 17:10:54 [2] SERVER -> CLIENT: 220 perfora.net (mreueus004) Nemesis ESMTP Service ready
+
+2024-06-20 17:10:54 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2024-06-20 17:10:54 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-SIZE 140000000
+250 STARTTLS
+
+2024-06-20 17:10:54 [1] CLIENT -> SERVER: STARTTLS
+
+2024-06-20 17:10:54 [2] SERVER -> CLIENT: 220 OK
+
+2024-06-20 17:10:54 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2024-06-20 17:10:54 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-AUTH LOGIN PLAIN
+250 SIZE 140000000
+
+2024-06-20 17:10:54 [1] CLIENT -> SERVER: AUTH LOGIN
+
+2024-06-20 17:10:54 [2] SERVER -> CLIENT: 334 VXNlcm5hbWU6
+
+2024-06-20 17:10:54 [1] CLIENT -> SERVER: [credentials hidden]
+2024-06-20 17:10:54 [2] SERVER -> CLIENT: 334 UGFzc3dvcmQ6
+
+2024-06-20 17:10:54 [1] CLIENT -> SERVER: [credentials hidden]
+2024-06-20 17:10:54 [2] SERVER -> CLIENT: 235 Authentication succeeded
+
+2024-06-20 17:10:54 [1] CLIENT -> SERVER: MAIL FROM:<administracion@sandysgym.com>
+
+2024-06-20 17:10:54 [2] SERVER -> CLIENT: 250 Requested mail action okay, completed
+
+2024-06-20 17:10:54 [1] CLIENT -> SERVER: RCPT TO:<jesus_gp2@hotmail.com>
+
+2024-06-20 17:10:54 [2] SERVER -> CLIENT: 250 OK
+
+2024-06-20 17:10:54 [1] CLIENT -> SERVER: DATA
+
+2024-06-20 17:10:54 [2] SERVER -> CLIENT: 354 Start mail input; end with <CRLF>.<CRLF>
+
+2024-06-20 17:10:54 [1] CLIENT -> SERVER: Date: Thu, 20 Jun 2024 17:10:54 -0600
+
+2024-06-20 17:10:54 [1] CLIENT -> SERVER: To: Jesus <jesus_gp2@hotmail.com>
+
+2024-06-20 17:10:54 [1] CLIENT -> SERVER: From: Sandys Gym <administracion@sandysgym.com>
+
+2024-06-20 17:10:54 [1] CLIENT -> SERVER: Subject: =?iso-8859-1?Q?Actualizaci=C3=B3n_de_Saldo_de_Prepago?=
+
+2024-06-20 17:10:54 [1] CLIENT -> SERVER: Message-ID: <Amr1hg2lCaDQkWAtPocS99fnRKMLRZXF34NHKnnk@sergym.com>
+
+2024-06-20 17:10:54 [1] CLIENT -> SERVER: X-Mailer: PHPMailer 6.9.1 (https://github.com/PHPMailer/PHPMailer)
+
+2024-06-20 17:10:54 [1] CLIENT -> SERVER: MIME-Version: 1.0
+
+2024-06-20 17:10:54 [1] CLIENT -> SERVER: Content-Type: text/html; charset=iso-8859-1
+
+2024-06-20 17:10:54 [1] CLIENT -> SERVER: Content-Transfer-Encoding: 8bit
+
+2024-06-20 17:10:54 [1] CLIENT -> SERVER: 
+
+2024-06-20 17:10:54 [1] CLIENT -> SERVER: 
+
+2024-06-20 17:10:54 [1] CLIENT -> SERVER:             <h1 style="color: #333;">Actualización de Saldo de Prepago</h1>
+
+2024-06-20 17:10:54 [1] CLIENT -> SERVER:             <p>Hola Jesus,</p>
+
+2024-06-20 17:10:54 [1] CLIENT -> SERVER:             <p>Se ha realizado un abono a tu cuenta prepago de: <strong>1</strong></p>
+
+2024-06-20 17:10:54 [1] CLIENT -> SERVER:             <p>Se ha aplicado un incremento de: <strong>0</strong></p>
+
+2024-06-20 17:10:54 [1] CLIENT -> SERVER:             <p>Tu nuevo saldo es: <strong>1</strong></p>
+
+2024-06-20 17:10:54 [1] CLIENT -> SERVER:             <p>¡Gracias por ser parte de Sandys Gym!</p>
+
+2024-06-20 17:10:54 [1] CLIENT -> SERVER:         
+
+2024-06-20 17:10:54 [1] CLIENT -> SERVER: 
+
+2024-06-20 17:10:54 [1] CLIENT -> SERVER: .
+
+2024-06-20 17:10:54 [2] SERVER -> CLIENT: 250 Requested mail action okay, completed: id=1MdvNi-1ssw8G0Qju-00k87e
+
+2024-06-20 17:10:54 [1] CLIENT -> SERVER: QUIT
+
+2024-06-20 17:10:54 [2] SERVER -> CLIENT: 221 perfora.net Service closing transmission channel
+
+2024-06-20 21:58:57 [2] SERVER -> CLIENT: 220 perfora.net (mreueus003) Nemesis ESMTP Service ready
+
+2024-06-20 21:58:57 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2024-06-20 21:58:57 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-SIZE 140000000
+250 STARTTLS
+
+2024-06-20 21:58:57 [1] CLIENT -> SERVER: STARTTLS
+
+2024-06-20 21:58:57 [2] SERVER -> CLIENT: 220 OK
+
+2024-06-20 21:58:57 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2024-06-20 21:58:57 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-AUTH LOGIN PLAIN
+250 SIZE 140000000
+
+2024-06-20 21:58:57 [1] CLIENT -> SERVER: AUTH LOGIN
+
+2024-06-20 21:58:57 [2] SERVER -> CLIENT: 334 VXNlcm5hbWU6
+
+2024-06-20 21:58:57 [1] CLIENT -> SERVER: [credentials hidden]
+2024-06-20 21:58:57 [2] SERVER -> CLIENT: 334 UGFzc3dvcmQ6
+
+2024-06-20 21:58:57 [1] CLIENT -> SERVER: [credentials hidden]
+2024-06-20 21:58:57 [2] SERVER -> CLIENT: 235 Authentication succeeded
+
+2024-06-20 21:58:57 [1] CLIENT -> SERVER: MAIL FROM:<administracion@sandysgym.com>
+
+2024-06-20 21:58:57 [2] SERVER -> CLIENT: 250 Requested mail action okay, completed
+
+2024-06-20 21:58:57 [1] CLIENT -> SERVER: RCPT TO:<jesus_gp2@hotmail.com>
+
+2024-06-20 21:58:57 [2] SERVER -> CLIENT: 250 OK
+
+2024-06-20 21:58:57 [1] CLIENT -> SERVER: DATA
+
+2024-06-20 21:58:57 [2] SERVER -> CLIENT: 354 Start mail input; end with <CRLF>.<CRLF>
+
+2024-06-20 21:58:57 [1] CLIENT -> SERVER: Date: Thu, 20 Jun 2024 21:58:57 -0600
+
+2024-06-20 21:58:57 [1] CLIENT -> SERVER: To: Jesus <jesus_gp2@hotmail.com>
+
+2024-06-20 21:58:57 [1] CLIENT -> SERVER: From: Sandys Gym <administracion@sandysgym.com>
+
+2024-06-20 21:58:57 [1] CLIENT -> SERVER: Subject: =?iso-8859-1?Q?Actualizaci=C3=B3n_de_Saldo_de_Prepago?=
+
+2024-06-20 21:58:57 [1] CLIENT -> SERVER: Message-ID: <Q6r79luKrZaVGtFhylSqioiSraMK71wvUdwYe5wHklI@sergym.com>
+
+2024-06-20 21:58:57 [1] CLIENT -> SERVER: X-Mailer: PHPMailer 6.9.1 (https://github.com/PHPMailer/PHPMailer)
+
+2024-06-20 21:58:57 [1] CLIENT -> SERVER: MIME-Version: 1.0
+
+2024-06-20 21:58:57 [1] CLIENT -> SERVER: Content-Type: text/html; charset=iso-8859-1
+
+2024-06-20 21:58:57 [1] CLIENT -> SERVER: Content-Transfer-Encoding: 8bit
+
+2024-06-20 21:58:57 [1] CLIENT -> SERVER: 
+
+2024-06-20 21:58:57 [1] CLIENT -> SERVER: 
+
+2024-06-20 21:58:57 [1] CLIENT -> SERVER:             <h1 style="color: #333;">Actualización de Saldo de Prepago</h1>
+
+2024-06-20 21:58:57 [1] CLIENT -> SERVER:             <p>Hola Jesus,</p>
+
+2024-06-20 21:58:57 [1] CLIENT -> SERVER:             <p>Se ha realizado un abono a tu cuenta prepago de: <strong>10</strong></p>
+
+2024-06-20 21:58:57 [1] CLIENT -> SERVER:             <p>Se ha aplicado un incremento de: <strong>0</strong></p>
+
+2024-06-20 21:58:57 [1] CLIENT -> SERVER:             <p>Tu nuevo saldo es: <strong>11</strong></p>
+
+2024-06-20 21:58:57 [1] CLIENT -> SERVER:             <p>¡Gracias por ser parte de Sandys Gym!</p>
+
+2024-06-20 21:58:57 [1] CLIENT -> SERVER:         
+
+2024-06-20 21:58:57 [1] CLIENT -> SERVER: 
+
+2024-06-20 21:58:57 [1] CLIENT -> SERVER: .
+
+2024-06-20 21:58:57 [2] SERVER -> CLIENT: 250 Requested mail action okay, completed: id=0MQgmZ-1rvNPQ21lN-00R5rt
+
+2024-06-20 21:58:57 [1] CLIENT -> SERVER: QUIT
+
+2024-06-20 21:58:57 [2] SERVER -> CLIENT: 221 perfora.net Service closing transmission channel
+
+2024-06-20 22:00:00 [2] SERVER -> CLIENT: 220 perfora.net (mreueus004) Nemesis ESMTP Service ready
+
+2024-06-20 22:00:00 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2024-06-20 22:00:00 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-SIZE 140000000
+250 STARTTLS
+
+2024-06-20 22:00:00 [1] CLIENT -> SERVER: STARTTLS
+
+2024-06-20 22:00:00 [2] SERVER -> CLIENT: 220 OK
+
+2024-06-20 22:00:00 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2024-06-20 22:00:00 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-AUTH LOGIN PLAIN
+250 SIZE 140000000
+
+2024-06-20 22:00:00 [1] CLIENT -> SERVER: AUTH LOGIN
+
+2024-06-20 22:00:00 [2] SERVER -> CLIENT: 334 VXNlcm5hbWU6
+
+2024-06-20 22:00:00 [1] CLIENT -> SERVER: [credentials hidden]
+2024-06-20 22:00:00 [2] SERVER -> CLIENT: 334 UGFzc3dvcmQ6
+
+2024-06-20 22:00:00 [1] CLIENT -> SERVER: [credentials hidden]
+2024-06-20 22:00:00 [2] SERVER -> CLIENT: 235 Authentication succeeded
+
+2024-06-20 22:00:00 [1] CLIENT -> SERVER: MAIL FROM:<administracion@sandysgym.com>
+
+2024-06-20 22:00:00 [2] SERVER -> CLIENT: 250 Requested mail action okay, completed
+
+2024-06-20 22:00:00 [1] CLIENT -> SERVER: RCPT TO:<jesus_gp2@hotmail.com>
+
+2024-06-20 22:00:01 [2] SERVER -> CLIENT: 250 OK
+
+2024-06-20 22:00:01 [1] CLIENT -> SERVER: DATA
+
+2024-06-20 22:00:01 [2] SERVER -> CLIENT: 354 Start mail input; end with <CRLF>.<CRLF>
+
+2024-06-20 22:00:01 [1] CLIENT -> SERVER: Date: Thu, 20 Jun 2024 22:00:00 -0600
+
+2024-06-20 22:00:01 [1] CLIENT -> SERVER: To: Jesus <jesus_gp2@hotmail.com>
+
+2024-06-20 22:00:01 [1] CLIENT -> SERVER: From: Sandys Gym <administracion@sandysgym.com>
+
+2024-06-20 22:00:01 [1] CLIENT -> SERVER: Subject: =?iso-8859-1?Q?Actualizaci=C3=B3n_de_Saldo_de_Prepago?=
+
+2024-06-20 22:00:01 [1] CLIENT -> SERVER: Message-ID: <n7rDh6xoacPNS9eyrOgfjhuGMHRsHniVM6BgwV0iU@sergym.com>
+
+2024-06-20 22:00:01 [1] CLIENT -> SERVER: X-Mailer: PHPMailer 6.9.1 (https://github.com/PHPMailer/PHPMailer)
+
+2024-06-20 22:00:01 [1] CLIENT -> SERVER: MIME-Version: 1.0
+
+2024-06-20 22:00:01 [1] CLIENT -> SERVER: Content-Type: text/html; charset=iso-8859-1
+
+2024-06-20 22:00:01 [1] CLIENT -> SERVER: Content-Transfer-Encoding: 8bit
+
+2024-06-20 22:00:01 [1] CLIENT -> SERVER: 
+
+2024-06-20 22:00:01 [1] CLIENT -> SERVER: 
+
+2024-06-20 22:00:01 [1] CLIENT -> SERVER:             <h1 style="color: #333;">Actualización de Saldo de Prepago</h1>
+
+2024-06-20 22:00:01 [1] CLIENT -> SERVER:             <p>Hola Jesus,</p>
+
+2024-06-20 22:00:01 [1] CLIENT -> SERVER:             <p>Se ha realizado un abono a tu cuenta prepago de: <strong>10</strong></p>
+
+2024-06-20 22:00:01 [1] CLIENT -> SERVER:             <p>Se ha aplicado un incremento de: <strong>1</strong></p>
+
+2024-06-20 22:00:01 [1] CLIENT -> SERVER:             <p>Tu nuevo saldo es: <strong>22</strong></p>
+
+2024-06-20 22:00:01 [1] CLIENT -> SERVER:             <p>¡Gracias por ser parte de Sandys Gym!</p>
+
+2024-06-20 22:00:01 [1] CLIENT -> SERVER:         
+
+2024-06-20 22:00:01 [1] CLIENT -> SERVER: 
+
+2024-06-20 22:00:01 [1] CLIENT -> SERVER: .
+
+2024-06-20 22:00:01 [2] SERVER -> CLIENT: 250 Requested mail action okay, completed: id=1M4rgB-1sKEat48nf-00AVc3
+
+2024-06-20 22:00:01 [1] CLIENT -> SERVER: QUIT
+
+2024-06-20 22:00:01 [2] SERVER -> CLIENT: 221 perfora.net Service closing transmission channel
+
+2024-06-21 14:16:53 [2] SERVER -> CLIENT: 220 perfora.net (mreueus004) Nemesis ESMTP Service ready
+
+2024-06-21 14:16:53 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2024-06-21 14:16:53 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-SIZE 140000000
+250 STARTTLS
+
+2024-06-21 14:16:53 [1] CLIENT -> SERVER: STARTTLS
+
+2024-06-21 14:16:53 [2] SERVER -> CLIENT: 220 OK
+
+2024-06-21 14:16:53 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2024-06-21 14:16:53 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-AUTH LOGIN PLAIN
+250 SIZE 140000000
+
+2024-06-21 14:16:53 [1] CLIENT -> SERVER: AUTH LOGIN
+
+2024-06-21 14:16:53 [2] SERVER -> CLIENT: 334 VXNlcm5hbWU6
+
+2024-06-21 14:16:53 [1] CLIENT -> SERVER: [credentials hidden]
+2024-06-21 14:16:53 [2] SERVER -> CLIENT: 334 UGFzc3dvcmQ6
+
+2024-06-21 14:16:53 [1] CLIENT -> SERVER: [credentials hidden]
+2024-06-21 14:16:53 [2] SERVER -> CLIENT: 235 Authentication succeeded
+
+2024-06-21 14:16:53 [1] CLIENT -> SERVER: MAIL FROM:<administracion@sandysgym.com>
+
+2024-06-21 14:16:53 [2] SERVER -> CLIENT: 250 Requested mail action okay, completed
+
+2024-06-21 14:16:53 [1] CLIENT -> SERVER: RCPT TO:<jesus_gp2@hotmail.com>
+
+2024-06-21 14:16:53 [2] SERVER -> CLIENT: 250 OK
+
+2024-06-21 14:16:53 [1] CLIENT -> SERVER: DATA
+
+2024-06-21 14:16:53 [2] SERVER -> CLIENT: 354 Start mail input; end with <CRLF>.<CRLF>
+
+2024-06-21 14:16:53 [1] CLIENT -> SERVER: Date: Fri, 21 Jun 2024 14:16:53 -0600
+
+2024-06-21 14:16:53 [1] CLIENT -> SERVER: To: Jesus <jesus_gp2@hotmail.com>
+
+2024-06-21 14:16:53 [1] CLIENT -> SERVER: From: Sandys Gym <administracion@sandysgym.com>
+
+2024-06-21 14:16:53 [1] CLIENT -> SERVER: Subject: =?iso-8859-1?Q?Actualizaci=C3=B3n_de_Saldo_de_Prepago?=
+
+2024-06-21 14:16:53 [1] CLIENT -> SERVER: Message-ID: <4pZCkZlo6EGS67U9kvQrfAgBSgLwmeMqD0j1LaGWGVc@sergym.com>
+
+2024-06-21 14:16:53 [1] CLIENT -> SERVER: X-Mailer: PHPMailer 6.9.1 (https://github.com/PHPMailer/PHPMailer)
+
+2024-06-21 14:16:53 [1] CLIENT -> SERVER: MIME-Version: 1.0
+
+2024-06-21 14:16:53 [1] CLIENT -> SERVER: Content-Type: text/html; charset=iso-8859-1
+
+2024-06-21 14:16:53 [1] CLIENT -> SERVER: Content-Transfer-Encoding: 8bit
+
+2024-06-21 14:16:53 [1] CLIENT -> SERVER: 
+
+2024-06-21 14:16:53 [1] CLIENT -> SERVER: 
+
+2024-06-21 14:16:53 [1] CLIENT -> SERVER:             <h1 style="color: #333;">Actualización de Saldo de Prepago</h1>
+
+2024-06-21 14:16:53 [1] CLIENT -> SERVER:             <p>Hola Jesus,</p>
+
+2024-06-21 14:16:53 [1] CLIENT -> SERVER:             <p>Se ha realizado un abono a tu cuenta prepago de: <strong>4.5</strong></p>
+
+2024-06-21 14:16:53 [1] CLIENT -> SERVER:             <p>Se ha aplicado un incremento de: <strong>0.45</strong></p>
+
+2024-06-21 14:16:53 [1] CLIENT -> SERVER:             <p>Tu nuevo saldo es: <strong>30.45</strong></p>
+
+2024-06-21 14:16:53 [1] CLIENT -> SERVER:             <p>¡Gracias por ser parte de Sandys Gym!</p>
+
+2024-06-21 14:16:53 [1] CLIENT -> SERVER:         
+
+2024-06-21 14:16:53 [1] CLIENT -> SERVER: 
+
+2024-06-21 14:16:53 [1] CLIENT -> SERVER: .
+
+2024-06-21 14:16:53 [2] SERVER -> CLIENT: 250 Requested mail action okay, completed: id=1MNcUJ-1s18Ag1aBf-00XZgO
+
+2024-06-21 14:16:53 [1] CLIENT -> SERVER: QUIT
+
+2024-06-21 14:16:53 [2] SERVER -> CLIENT: 221 perfora.net Service closing transmission channel
+
+2024-06-26 21:28:41 [2] SERVER -> CLIENT: 220 perfora.net (mreueus003) Nemesis ESMTP Service ready
+
+2024-06-26 21:28:41 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2024-06-26 21:28:41 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-SIZE 140000000
+250 STARTTLS
+
+2024-06-26 21:28:41 [1] CLIENT -> SERVER: STARTTLS
+
+2024-06-26 21:28:41 [2] SERVER -> CLIENT: 220 OK
+
+2024-06-26 21:28:41 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2024-06-26 21:28:41 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-AUTH LOGIN PLAIN
+250 SIZE 140000000
+
+2024-06-26 21:28:41 [1] CLIENT -> SERVER: AUTH LOGIN
+
+2024-06-26 21:28:41 [2] SERVER -> CLIENT: 334 VXNlcm5hbWU6
+
+2024-06-26 21:28:41 [1] CLIENT -> SERVER: [credentials hidden]
+2024-06-26 21:28:41 [2] SERVER -> CLIENT: 334 UGFzc3dvcmQ6
+
+2024-06-26 21:28:41 [1] CLIENT -> SERVER: [credentials hidden]
+2024-06-26 21:28:41 [2] SERVER -> CLIENT: 235 Authentication succeeded
+
+2024-06-26 21:28:41 [1] CLIENT -> SERVER: MAIL FROM:<administracion@sandysgym.com>
+
+2024-06-26 21:28:41 [2] SERVER -> CLIENT: 250 Requested mail action okay, completed
+
+2024-06-26 21:28:41 [1] CLIENT -> SERVER: RCPT TO:<jesus_gp2@hotmail.com>
+
+2024-06-26 21:28:41 [2] SERVER -> CLIENT: 250 OK
+
+2024-06-26 21:28:41 [1] CLIENT -> SERVER: DATA
+
+2024-06-26 21:28:41 [2] SERVER -> CLIENT: 354 Start mail input; end with <CRLF>.<CRLF>
+
+2024-06-26 21:28:41 [1] CLIENT -> SERVER: Date: Wed, 26 Jun 2024 21:28:41 -0600
+
+2024-06-26 21:28:41 [1] CLIENT -> SERVER: To: Jesus <jesus_gp2@hotmail.com>
+
+2024-06-26 21:28:41 [1] CLIENT -> SERVER: From: Sandys Gym <administracion@sandysgym.com>
+
+2024-06-26 21:28:41 [1] CLIENT -> SERVER: Subject: =?iso-8859-1?Q?Actualizaci=C3=B3n_de_Saldo_de_Prepago?=
+
+2024-06-26 21:28:41 [1] CLIENT -> SERVER: Message-ID: <slvkgXFB00mt9JnIvgI71LS5DGDVsETrmXbeZDXOc@sergym.com>
+
+2024-06-26 21:28:41 [1] CLIENT -> SERVER: X-Mailer: PHPMailer 6.9.1 (https://github.com/PHPMailer/PHPMailer)
+
+2024-06-26 21:28:41 [1] CLIENT -> SERVER: MIME-Version: 1.0
+
+2024-06-26 21:28:41 [1] CLIENT -> SERVER: Content-Type: text/html; charset=iso-8859-1
+
+2024-06-26 21:28:41 [1] CLIENT -> SERVER: Content-Transfer-Encoding: 8bit
+
+2024-06-26 21:28:41 [1] CLIENT -> SERVER: 
+
+2024-06-26 21:28:41 [1] CLIENT -> SERVER: 
+
+2024-06-26 21:28:41 [1] CLIENT -> SERVER:             <h1 style="color: #333;">Actualización de Saldo de Prepago</h1>
+
+2024-06-26 21:28:41 [1] CLIENT -> SERVER:             <p>Hola Jesus,</p>
+
+2024-06-26 21:28:41 [1] CLIENT -> SERVER:             <p>Se ha realizado un abono a tu cuenta prepago de: <strong>10</strong></p>
+
+2024-06-26 21:28:41 [1] CLIENT -> SERVER:             <p>Se ha aplicado un incremento de: <strong>0</strong></p>
+
+2024-06-26 21:28:41 [1] CLIENT -> SERVER:             <p>Tu nuevo saldo es: <strong>16.95</strong></p>
+
+2024-06-26 21:28:41 [1] CLIENT -> SERVER:             <p>¡Gracias por ser parte de Sandys Gym!</p>
+
+2024-06-26 21:28:41 [1] CLIENT -> SERVER:         
+
+2024-06-26 21:28:41 [1] CLIENT -> SERVER: 
+
+2024-06-26 21:28:41 [1] CLIENT -> SERVER: .
+
+2024-06-26 21:28:42 [2] SERVER -> CLIENT: 250 Requested mail action okay, completed: id=0M0ORH-1sb1ts40zd-00rOWD
+
+2024-06-26 21:28:42 [1] CLIENT -> SERVER: QUIT
+
+2024-06-26 21:28:42 [2] SERVER -> CLIENT: 221 perfora.net Service closing transmission channel
+
+2024-06-27 13:25:06 [2] SERVER -> CLIENT: 220 perfora.net (mreueus004) Nemesis ESMTP Service ready
+
+2024-06-27 13:25:06 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2024-06-27 13:25:06 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-SIZE 140000000
+250 STARTTLS
+
+2024-06-27 13:25:06 [1] CLIENT -> SERVER: STARTTLS
+
+2024-06-27 13:25:06 [2] SERVER -> CLIENT: 220 OK
+
+2024-06-27 13:25:06 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2024-06-27 13:25:06 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-AUTH LOGIN PLAIN
+250 SIZE 140000000
+
+2024-06-27 13:25:06 [1] CLIENT -> SERVER: AUTH LOGIN
+
+2024-06-27 13:25:06 [2] SERVER -> CLIENT: 334 VXNlcm5hbWU6
+
+2024-06-27 13:25:06 [1] CLIENT -> SERVER: [credentials hidden]
+2024-06-27 13:25:06 [2] SERVER -> CLIENT: 334 UGFzc3dvcmQ6
+
+2024-06-27 13:25:06 [1] CLIENT -> SERVER: [credentials hidden]
+2024-06-27 13:25:06 [2] SERVER -> CLIENT: 235 Authentication succeeded
+
+2024-06-27 13:25:06 [1] CLIENT -> SERVER: MAIL FROM:<administracion@sandysgym.com>
+
+2024-06-27 13:25:06 [2] SERVER -> CLIENT: 250 Requested mail action okay, completed
+
+2024-06-27 13:25:06 [1] CLIENT -> SERVER: RCPT TO:<jesus_gp2@hotmail.com>
+
+2024-06-27 13:25:06 [2] SERVER -> CLIENT: 250 OK
+
+2024-06-27 13:25:06 [1] CLIENT -> SERVER: DATA
+
+2024-06-27 13:25:06 [2] SERVER -> CLIENT: 354 Start mail input; end with <CRLF>.<CRLF>
+
+2024-06-27 13:25:06 [1] CLIENT -> SERVER: Date: Thu, 27 Jun 2024 13:25:06 -0600
+
+2024-06-27 13:25:06 [1] CLIENT -> SERVER: To: Jesus <jesus_gp2@hotmail.com>
+
+2024-06-27 13:25:06 [1] CLIENT -> SERVER: From: Sandys Gym <administracion@sandysgym.com>
+
+2024-06-27 13:25:06 [1] CLIENT -> SERVER: Subject: =?iso-8859-1?Q?Actualizaci=C3=B3n_de_Saldo_de_Prepago?=
+
+2024-06-27 13:25:06 [1] CLIENT -> SERVER: Message-ID: <MJ3RoFIq7tyYhHiGlUnbIf5dYmKBzwfn62FX4m2Iw4@sergym.com>
+
+2024-06-27 13:25:06 [1] CLIENT -> SERVER: X-Mailer: PHPMailer 6.9.1 (https://github.com/PHPMailer/PHPMailer)
+
+2024-06-27 13:25:06 [1] CLIENT -> SERVER: MIME-Version: 1.0
+
+2024-06-27 13:25:06 [1] CLIENT -> SERVER: Content-Type: text/html; charset=iso-8859-1
+
+2024-06-27 13:25:06 [1] CLIENT -> SERVER: Content-Transfer-Encoding: 8bit
+
+2024-06-27 13:25:06 [1] CLIENT -> SERVER: 
+
+2024-06-27 13:25:06 [1] CLIENT -> SERVER: 
+
+2024-06-27 13:25:06 [1] CLIENT -> SERVER:             <h1 style="color: #333;">Actualización de Saldo de Prepago</h1>
+
+2024-06-27 13:25:06 [1] CLIENT -> SERVER:             <p>Hola Jesus,</p>
+
+2024-06-27 13:25:06 [1] CLIENT -> SERVER:             <p>Se ha realizado un abono a tu cuenta prepago de: <strong>1</strong></p>
+
+2024-06-27 13:25:06 [1] CLIENT -> SERVER:             <p>Se ha aplicado un incremento de: <strong>0</strong></p>
+
+2024-06-27 13:25:06 [1] CLIENT -> SERVER:             <p>Tu nuevo saldo es: <strong>17.95</strong></p>
+
+2024-06-27 13:25:06 [1] CLIENT -> SERVER:             <p>¡Gracias por ser parte de Sandys Gym!</p>
+
+2024-06-27 13:25:06 [1] CLIENT -> SERVER:         
+
+2024-06-27 13:25:06 [1] CLIENT -> SERVER: 
+
+2024-06-27 13:25:06 [1] CLIENT -> SERVER: .
+
+2024-06-27 13:25:06 [2] SERVER -> CLIENT: 250 Requested mail action okay, completed: id=1MJmjN-1s2tz919sP-00Sbg1
+
+2024-06-27 13:25:06 [1] CLIENT -> SERVER: QUIT
+
+2024-06-27 13:25:06 [2] SERVER -> CLIENT: 221 perfora.net Service closing transmission channel
+
+2025-05-02 18:38:44 [2] Invalid address:  (to): 
+2025-05-02 18:38:44 [ERROR] Invalid address:  (to): 
+2025-05-02 18:45:24 [2] Invalid address:  (to): 
+2025-05-02 18:45:24 [ERROR] Invalid address:  (to): 
+2025-05-02 18:46:31 [2] Invalid address:  (to): 
+2025-05-02 18:46:31 [ERROR] Invalid address:  (to): 
+2025-09-24 10:47:28 [2] SERVER -> CLIENT: 220 perfora.net (mreueus004) Nemesis ESMTP Service ready
+
+2025-09-24 10:47:28 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2025-09-24 10:47:28 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-SIZE 141557760
+250 STARTTLS
+
+2025-09-24 10:47:28 [1] CLIENT -> SERVER: STARTTLS
+
+2025-09-24 10:47:28 [2] SERVER -> CLIENT: 220 OK
+
+2025-09-24 10:47:28 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2025-09-24 10:47:28 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-AUTH PLAIN LOGIN
+250 SIZE 141557760
+
+2025-09-24 10:47:28 [1] CLIENT -> SERVER: AUTH LOGIN
+
+2025-09-24 10:47:28 [2] SERVER -> CLIENT: 334 VXNlcm5hbWU6
+
+2025-09-24 10:47:28 [1] CLIENT -> SERVER: [credentials hidden]
+2025-09-24 10:47:28 [2] SERVER -> CLIENT: 334 UGFzc3dvcmQ6
+
+2025-09-24 10:47:28 [1] CLIENT -> SERVER: [credentials hidden]
+2025-09-24 10:47:28 [2] SERVER -> CLIENT: 535 Authentication credentials invalid
+
+2025-09-24 10:47:28 [1] SMTP ERROR: Password command failed: 535 Authentication credentials invalid
+
+2025-09-24 10:47:28 [2] SMTP Error: Could not authenticate.
+2025-09-24 10:47:28 [1] CLIENT -> SERVER: QUIT
+
+2025-09-24 10:47:28 [2] SERVER -> CLIENT: 221 perfora.net Service closing transmission channel
+
+2025-09-24 10:47:28 [2] SMTP Error: Could not authenticate.
+2025-09-24 10:47:28 [ERROR] SMTP Error: Could not authenticate.
+2025-09-24 11:04:15 [2] SERVER -> CLIENT: 220 perfora.net (mreueus003) Nemesis ESMTP Service ready
+
+2025-09-24 11:04:15 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2025-09-24 11:04:15 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-SIZE 141557760
+250 STARTTLS
+
+2025-09-24 11:04:15 [1] CLIENT -> SERVER: STARTTLS
+
+2025-09-24 11:04:15 [2] SERVER -> CLIENT: 220 OK
+
+2025-09-24 11:04:15 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2025-09-24 11:04:15 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-AUTH PLAIN LOGIN
+250 SIZE 141557760
+
+2025-09-24 11:04:15 [1] CLIENT -> SERVER: AUTH LOGIN
+
+2025-09-24 11:04:15 [2] SERVER -> CLIENT: 334 VXNlcm5hbWU6
+
+2025-09-24 11:04:15 [1] CLIENT -> SERVER: [credentials hidden]
+2025-09-24 11:04:15 [2] SERVER -> CLIENT: 334 UGFzc3dvcmQ6
+
+2025-09-24 11:04:15 [1] CLIENT -> SERVER: [credentials hidden]
+2025-09-24 11:04:15 [2] SERVER -> CLIENT: 535 Authentication credentials invalid
+
+2025-09-24 11:04:15 [1] SMTP ERROR: Password command failed: 535 Authentication credentials invalid
+
+2025-09-24 11:04:15 [2] SMTP Error: Could not authenticate.
+2025-09-24 11:04:15 [1] CLIENT -> SERVER: QUIT
+
+2025-09-24 11:04:15 [2] SERVER -> CLIENT: 221 perfora.net Service closing transmission channel
+
+2025-09-24 11:04:15 [2] SMTP Error: Could not authenticate.
+2025-09-24 11:04:15 [ERROR] SMTP Error: Could not authenticate.
+2025-09-24 11:16:18 [2] SERVER -> CLIENT: 220 perfora.net (mreueus002) Nemesis ESMTP Service ready
+
+2025-09-24 11:16:18 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2025-09-24 11:16:18 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-SIZE 141557760
+250 STARTTLS
+
+2025-09-24 11:16:18 [1] CLIENT -> SERVER: STARTTLS
+
+2025-09-24 11:16:18 [2] SERVER -> CLIENT: 220 OK
+
+2025-09-24 11:16:18 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2025-09-24 11:16:18 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-AUTH PLAIN LOGIN
+250 SIZE 141557760
+
+2025-09-24 11:16:18 [1] CLIENT -> SERVER: AUTH LOGIN
+
+2025-09-24 11:16:18 [2] SERVER -> CLIENT: 334 VXNlcm5hbWU6
+
+2025-09-24 11:16:18 [1] CLIENT -> SERVER: [credentials hidden]
+2025-09-24 11:16:18 [2] SERVER -> CLIENT: 334 UGFzc3dvcmQ6
+
+2025-09-24 11:16:18 [1] CLIENT -> SERVER: [credentials hidden]
+2025-09-24 11:16:18 [2] SERVER -> CLIENT: 535 Authentication credentials invalid
+
+2025-09-24 11:16:18 [1] SMTP ERROR: Password command failed: 535 Authentication credentials invalid
+
+2025-09-24 11:16:18 [2] SMTP Error: Could not authenticate.
+2025-09-24 11:16:18 [1] CLIENT -> SERVER: QUIT
+
+2025-09-24 11:16:18 [2] SERVER -> CLIENT: 221 perfora.net Service closing transmission channel
+
+2025-09-24 11:16:18 [2] SMTP Error: Could not authenticate.
+2025-09-24 11:16:18 [ERROR] SMTP Error: Could not authenticate.
+2025-09-24 23:47:12 [2] SERVER -> CLIENT: 220 perfora.net (mreueus002) Nemesis ESMTP Service ready
+
+2025-09-24 23:47:12 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2025-09-24 23:47:12 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-SIZE 141557760
+250 STARTTLS
+
+2025-09-24 23:47:12 [1] CLIENT -> SERVER: STARTTLS
+
+2025-09-24 23:47:12 [2] SERVER -> CLIENT: 220 OK
+
+2025-09-24 23:47:12 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2025-09-24 23:47:12 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-AUTH PLAIN LOGIN
+250 SIZE 141557760
+
+2025-09-24 23:47:12 [1] CLIENT -> SERVER: AUTH LOGIN
+
+2025-09-24 23:47:12 [2] SERVER -> CLIENT: 334 VXNlcm5hbWU6
+
+2025-09-24 23:47:12 [1] CLIENT -> SERVER: [credentials hidden]
+2025-09-24 23:47:12 [2] SERVER -> CLIENT: 334 UGFzc3dvcmQ6
+
+2025-09-24 23:47:12 [1] CLIENT -> SERVER: [credentials hidden]
+2025-09-24 23:47:12 [2] SERVER -> CLIENT: 535 Authentication credentials invalid
+
+2025-09-24 23:47:12 [1] SMTP ERROR: Password command failed: 535 Authentication credentials invalid
+
+2025-09-24 23:47:12 [2] SMTP Error: Could not authenticate.
+2025-09-24 23:47:12 [1] CLIENT -> SERVER: QUIT
+
+2025-09-24 23:47:12 [2] SERVER -> CLIENT: 221 perfora.net Service closing transmission channel
+
+2025-09-24 23:47:12 [2] SMTP Error: Could not authenticate.
+2025-09-24 23:47:12 [ERROR] SMTP Error: Could not authenticate.
+2025-09-25 11:29:25 [2] SERVER -> CLIENT: 220 perfora.net (mreueus003) Nemesis ESMTP Service ready
+
+2025-09-25 11:29:25 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2025-09-25 11:29:25 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-SIZE 141557760
+250 STARTTLS
+
+2025-09-25 11:29:25 [1] CLIENT -> SERVER: STARTTLS
+
+2025-09-25 11:29:25 [2] SERVER -> CLIENT: 220 OK
+
+2025-09-25 11:29:25 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2025-09-25 11:29:25 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-AUTH PLAIN LOGIN
+250 SIZE 141557760
+
+2025-09-25 11:29:25 [1] CLIENT -> SERVER: AUTH LOGIN
+
+2025-09-25 11:29:25 [2] SERVER -> CLIENT: 334 VXNlcm5hbWU6
+
+2025-09-25 11:29:25 [1] CLIENT -> SERVER: [credentials hidden]
+2025-09-25 11:29:25 [2] SERVER -> CLIENT: 334 UGFzc3dvcmQ6
+
+2025-09-25 11:29:25 [1] CLIENT -> SERVER: [credentials hidden]
+2025-09-25 11:29:25 [2] SERVER -> CLIENT: 535 Authentication credentials invalid
+
+2025-09-25 11:29:25 [1] SMTP ERROR: Password command failed: 535 Authentication credentials invalid
+
+2025-09-25 11:29:25 [2] SMTP Error: Could not authenticate.
+2025-09-25 11:29:25 [1] CLIENT -> SERVER: QUIT
+
+2025-09-25 11:29:25 [2] SERVER -> CLIENT: 221 perfora.net Service closing transmission channel
+
+2025-09-25 11:29:25 [2] SMTP Error: Could not authenticate.
+2025-09-25 11:29:25 [ERROR] SMTP Error: Could not authenticate.
+2025-09-25 14:26:40 [2] SERVER -> CLIENT: 220 perfora.net (mreueus003) Nemesis ESMTP Service ready
+
+2025-09-25 14:26:40 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2025-09-25 14:26:40 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-SIZE 141557760
+250 STARTTLS
+
+2025-09-25 14:26:40 [1] CLIENT -> SERVER: STARTTLS
+
+2025-09-25 14:26:40 [2] SERVER -> CLIENT: 220 OK
+
+2025-09-25 14:26:40 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2025-09-25 14:26:40 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-AUTH PLAIN LOGIN
+250 SIZE 141557760
+
+2025-09-25 14:26:40 [1] CLIENT -> SERVER: AUTH LOGIN
+
+2025-09-25 14:26:40 [2] SERVER -> CLIENT: 334 VXNlcm5hbWU6
+
+2025-09-25 14:26:40 [1] CLIENT -> SERVER: [credentials hidden]
+2025-09-25 14:26:40 [2] SERVER -> CLIENT: 334 UGFzc3dvcmQ6
+
+2025-09-25 14:26:40 [1] CLIENT -> SERVER: [credentials hidden]
+2025-09-25 14:26:40 [2] SERVER -> CLIENT: 535 Authentication credentials invalid
+
+2025-09-25 14:26:40 [1] SMTP ERROR: Password command failed: 535 Authentication credentials invalid
+
+2025-09-25 14:26:40 [2] SMTP Error: Could not authenticate.
+2025-09-25 14:26:40 [1] CLIENT -> SERVER: QUIT
+
+2025-09-25 14:26:40 [2] SERVER -> CLIENT: 221 perfora.net Service closing transmission channel
+
+2025-09-25 14:26:40 [2] SMTP Error: Could not authenticate.
+2025-09-25 14:26:40 [ERROR] SMTP Error: Could not authenticate.
+2025-09-26 09:36:13 [2] SERVER -> CLIENT: 220 perfora.net (mreueus002) Nemesis ESMTP Service ready
+
+2025-09-26 09:36:13 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2025-09-26 09:36:13 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-SIZE 141557760
+250 STARTTLS
+
+2025-09-26 09:36:13 [1] CLIENT -> SERVER: STARTTLS
+
+2025-09-26 09:36:13 [2] SERVER -> CLIENT: 220 OK
+
+2025-09-26 09:36:13 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2025-09-26 09:36:13 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-AUTH PLAIN LOGIN
+250 SIZE 141557760
+
+2025-09-26 09:36:13 [1] CLIENT -> SERVER: AUTH LOGIN
+
+2025-09-26 09:36:13 [2] SERVER -> CLIENT: 334 VXNlcm5hbWU6
+
+2025-09-26 09:36:13 [1] CLIENT -> SERVER: [credentials hidden]
+2025-09-26 09:36:13 [2] SERVER -> CLIENT: 334 UGFzc3dvcmQ6
+
+2025-09-26 09:36:13 [1] CLIENT -> SERVER: [credentials hidden]
+2025-09-26 09:36:13 [2] SERVER -> CLIENT: 535 Authentication credentials invalid
+
+2025-09-26 09:36:13 [1] SMTP ERROR: Password command failed: 535 Authentication credentials invalid
+
+2025-09-26 09:36:13 [2] SMTP Error: Could not authenticate.
+2025-09-26 09:36:13 [1] CLIENT -> SERVER: QUIT
+
+2025-09-26 09:36:13 [2] SERVER -> CLIENT: 221 perfora.net Service closing transmission channel
+
+2025-09-26 09:36:13 [2] SMTP Error: Could not authenticate.
+2025-09-26 09:36:13 [ERROR] SMTP Error: Could not authenticate.
+2025-09-26 09:48:27 [2] SERVER -> CLIENT: 220 perfora.net (mreueus003) Nemesis ESMTP Service ready
+
+2025-09-26 09:48:27 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2025-09-26 09:48:27 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-SIZE 141557760
+250 STARTTLS
+
+2025-09-26 09:48:27 [1] CLIENT -> SERVER: STARTTLS
+
+2025-09-26 09:48:27 [2] SERVER -> CLIENT: 220 OK
+
+2025-09-26 09:48:27 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2025-09-26 09:48:27 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-AUTH PLAIN LOGIN
+250 SIZE 141557760
+
+2025-09-26 09:48:27 [1] CLIENT -> SERVER: AUTH LOGIN
+
+2025-09-26 09:48:27 [2] SERVER -> CLIENT: 334 VXNlcm5hbWU6
+
+2025-09-26 09:48:27 [1] CLIENT -> SERVER: [credentials hidden]
+2025-09-26 09:48:27 [2] SERVER -> CLIENT: 334 UGFzc3dvcmQ6
+
+2025-09-26 09:48:27 [1] CLIENT -> SERVER: [credentials hidden]
+2025-09-26 09:48:27 [2] SERVER -> CLIENT: 535 Authentication credentials invalid
+
+2025-09-26 09:48:27 [1] SMTP ERROR: Password command failed: 535 Authentication credentials invalid
+
+2025-09-26 09:48:27 [2] SMTP Error: Could not authenticate.
+2025-09-26 09:48:27 [1] CLIENT -> SERVER: QUIT
+
+2025-09-26 09:48:27 [2] SERVER -> CLIENT: 221 perfora.net Service closing transmission channel
+
+2025-09-26 09:48:27 [2] SMTP Error: Could not authenticate.
+2025-09-26 09:48:27 [ERROR] SMTP Error: Could not authenticate.
+2025-09-26 10:48:00 [2] SERVER -> CLIENT: 220 perfora.net (mreueus003) Nemesis ESMTP Service ready
+
+2025-09-26 10:48:00 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2025-09-26 10:48:00 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-SIZE 141557760
+250 STARTTLS
+
+2025-09-26 10:48:00 [1] CLIENT -> SERVER: STARTTLS
+
+2025-09-26 10:48:00 [2] SERVER -> CLIENT: 220 OK
+
+2025-09-26 10:48:00 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2025-09-26 10:48:00 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-AUTH PLAIN LOGIN
+250 SIZE 141557760
+
+2025-09-26 10:48:00 [1] CLIENT -> SERVER: AUTH LOGIN
+
+2025-09-26 10:48:00 [2] SERVER -> CLIENT: 334 VXNlcm5hbWU6
+
+2025-09-26 10:48:00 [1] CLIENT -> SERVER: [credentials hidden]
+2025-09-26 10:48:00 [2] SERVER -> CLIENT: 334 UGFzc3dvcmQ6
+
+2025-09-26 10:48:00 [1] CLIENT -> SERVER: [credentials hidden]
+2025-09-26 10:48:00 [2] SERVER -> CLIENT: 535 Authentication credentials invalid
+
+2025-09-26 10:48:00 [1] SMTP ERROR: Password command failed: 535 Authentication credentials invalid
+
+2025-09-26 10:48:00 [2] SMTP Error: Could not authenticate.
+2025-09-26 10:48:00 [1] CLIENT -> SERVER: QUIT
+
+2025-09-26 10:48:00 [2] SERVER -> CLIENT: 221 perfora.net Service closing transmission channel
+
+2025-09-26 10:48:00 [2] SMTP Error: Could not authenticate.
+2025-09-26 10:48:00 [ERROR] SMTP Error: Could not authenticate.
+2025-09-26 11:00:00 [2] SERVER -> CLIENT: 220 perfora.net (mreueus003) Nemesis ESMTP Service ready
+
+2025-09-26 11:00:00 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2025-09-26 11:00:00 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-SIZE 141557760
+250 STARTTLS
+
+2025-09-26 11:00:00 [1] CLIENT -> SERVER: STARTTLS
+
+2025-09-26 11:00:00 [2] SERVER -> CLIENT: 220 OK
+
+2025-09-26 11:00:00 [1] CLIENT -> SERVER: EHLO sergym.com
+
+2025-09-26 11:00:00 [2] SERVER -> CLIENT: 250-perfora.net Hello sergym.com [74.208.58.226]
+250-8BITMIME
+250-AUTH PLAIN LOGIN
+250 SIZE 141557760
+
+2025-09-26 11:00:00 [1] CLIENT -> SERVER: AUTH LOGIN
+
+2025-09-26 11:00:00 [2] SERVER -> CLIENT: 334 VXNlcm5hbWU6
+
+2025-09-26 11:00:00 [1] CLIENT -> SERVER: [credentials hidden]
+2025-09-26 11:00:00 [2] SERVER -> CLIENT: 334 UGFzc3dvcmQ6
+
+2025-09-26 11:00:00 [1] CLIENT -> SERVER: [credentials hidden]
+2025-09-26 11:00:00 [2] SERVER -> CLIENT: 535 Authentication credentials invalid
+
+2025-09-26 11:00:00 [1] SMTP ERROR: Password command failed: 535 Authentication credentials invalid
+
+2025-09-26 11:00:00 [2] SMTP Error: Could not authenticate.
+2025-09-26 11:00:00 [1] CLIENT -> SERVER: QUIT
+
+2025-09-26 11:00:00 [2] SERVER -> CLIENT: 221 perfora.net Service closing transmission channel
+
+2025-09-26 11:00:00 [2] SMTP Error: Could not authenticate.
+2025-09-26 11:00:00 [ERROR] SMTP Error: Could not authenticate.

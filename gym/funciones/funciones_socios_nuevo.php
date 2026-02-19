@@ -4,7 +4,32 @@
         global $conexion, $id_usuario, $id_empresa, $id_consorcio;
 
         $mensaje = array();
+        
+        // 1. Capturamos variables generales
         $correo = request_var('soc_correo', '');
+        
+        // Validación del descuento
+        $descuento = request_var('soc_descuento', '');
+        if($descuento === '') {
+            $descuento = 0;
+        }
+
+        // --- CORRECCIÓN DE FECHA (AQUÍ ESTABA EL PROBLEMA) ---
+        // 1. Intentamos capturar el MES seleccionado (del select nuevo)
+        $mes_nacimiento = request_var('soc_mes_nacimiento', '');
+        
+        // 2. Intentamos capturar la FECHA completa (por si acaso)
+        $fecha_nac = request_var('soc_fecha_nacimiento', '');
+
+        // Lógica de conversión:
+        if (!empty($mes_nacimiento)) {
+            // Si tenemos mes, construimos la fecha: Año 2000, Mes X, Día 01
+            $fecha_nac = "2000-" . str_pad($mes_nacimiento, 2, "0", STR_PAD_LEFT) . "-01";
+        } elseif (empty($fecha_nac)) {
+            // Si no hay mes Y tampoco hay fecha completa, ponemos la default para evitar error SQL
+            $fecha_nac = '1900-01-01';
+        }
+        // -----------------------------------------------------
 
         $datos_sql = array(
             'soc_nombres'           => strtoupper(request_var('soc_nombres', '')),
@@ -18,22 +43,26 @@
             'soc_correo'            => $correo,
             'soc_emer_tel'          => request_var('soc_emer_tel', ''),
             'soc_observaciones'     => strtoupper(request_var('soc_observaciones', '')),
-            'soc_descuento'         => request_var('soc_descuento', ''), // Nuevo campo de descuento
-            'soc_fecha_nacimiento'  => request_var('soc_fecha_nacimiento', ''), // Nuevo campo de fecha de nacimiento
+            'soc_descuento'         => $descuento,
+            'soc_fecha_nacimiento'  => $fecha_nac,
+            
+            // Campos obligatorios por defecto
+            'san_password'          => '12345', 
+            'is_active'             => 0,       
+            
             'soc_id_usuario'        => $id_usuario,
             'soc_id_empresa'        => $id_empresa,
             'soc_id_consorcio'      => $id_consorcio
         );
 
+        // --- VALIDACIÓN DE CORREO EXISTENTE ---
         if (!empty($correo)) {
-            // Verificar si el correo ya existe en la base de datos
             $correo_escaped = mysqli_real_escape_string($conexion, $correo);
-            $correo_query = "SELECT COUNT(*) as total FROM san_socios WHERE soc_correo = '$correo_escaped'";
+            $correo_query = "SELECT count(*) as total FROM san_socios WHERE soc_correo = '$correo_escaped' LIMIT 1";
             $correo_resultado = mysqli_query($conexion, $correo_query);
 
             if ($correo_resultado) {
                 $correo_fila = mysqli_fetch_assoc($correo_resultado);
-
                 if ($correo_fila['total'] > 0) {
                     $mensaje['num'] = 2;
                     $mensaje['msj'] = "El correo ingresado ya ha sido capturado para otro socio, es necesario cambiarlo.";
@@ -46,7 +75,9 @@
             }
         }
 
+        // --- INSERCIÓN EN BASE DE DATOS ---
         $query = construir_insert('san_socios', $datos_sql);
+        
         $resultado = mysqli_query($conexion, $query);
 
         if ($resultado) {
@@ -54,7 +85,7 @@
             $mensaje['msj'] = "Registro guardado correctamente.";
         } else {
             $mensaje['num'] = 3;
-            $mensaje['msj'] = "No se ha podido guardar la información de este socio. " . mysqli_error($conexion);
+            $mensaje['msj'] = "Error SQL: " . mysqli_error($conexion);
         }
 
         return $mensaje;

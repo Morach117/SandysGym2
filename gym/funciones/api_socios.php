@@ -5,7 +5,7 @@ require_once '../../funciones_globales/funciones_conexion.php';
 require_once '../../funciones_globales/funciones_comunes.php';
 
 // --- <<< CAMBIO #1: ESTABLECER ZONA HORARIA DE PHP >>> ---
-// Esto asegura que todas las funciones de fecha en PHP usen la hora del centro de México.
+// Se usa la función nativa de PHP, NO una consulta de base de datos.
 date_default_timezone_set('America/Mexico_City');
 
 // Establecer conexión a la BD
@@ -16,11 +16,9 @@ if (!$conexion) {
     echo json_encode(['error' => 'No se pudo establecer la conexión con la base de datos.']);
     exit;
 }
-
 // --- <<< CAMBIO #2: ESTABLECER ZONA HORARIA DE LA CONEXIÓN MYSQL >>> ---
 // Sincroniza la sesión de la base de datos con la zona horaria de PHP.
-mysqli_query($conexion, "SET time_zone = 'America/Mexico_City'");
-
+mysqli_query($conexion, "SET time_zone = '-06:00'");
 
 session_start();
 $id_empresa = isset($_SESSION['id_empresa']) ? intval($_SESSION['id_empresa']) : 1; 

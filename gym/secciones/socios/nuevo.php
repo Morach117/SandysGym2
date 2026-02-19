@@ -9,7 +9,12 @@
 <hr/>
 
 <?php
-    // Aquí se deberían incluir las funciones de validación y guardado de datos
+    // Array auxiliar para los meses
+    $meses = [
+        1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril', 
+        5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto', 
+        9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'
+    ];
 
     // Inicializar variables
     $soc_nombres            = isset($_POST['soc_nombres']) ? $_POST['soc_nombres'] : '';
@@ -24,11 +29,27 @@
     $soc_emer_tel           = isset($_POST['soc_emer_tel']) ? $_POST['soc_emer_tel'] : '';
     $soc_observaciones      = isset($_POST['soc_observaciones']) ? $_POST['soc_observaciones'] : '';
     $soc_descuento          = isset($_POST['soc_descuento']) ? $_POST['soc_descuento'] : '';
-    $soc_fecha_nacimiento   = isset($_POST['soc_fecha_nacimiento']) ? $_POST['soc_fecha_nacimiento'] : '';
+    
+    // Capturamos el mes seleccionado
+    $soc_mes_nacimiento     = isset($_POST['soc_mes_nacimiento']) ? $_POST['soc_mes_nacimiento'] : '';
 
     // Procesar el formulario cuando se envíe
     if(isset($_POST['enviar'])) {
-        // Validar los datos
+        
+        // --- CONVERSIÓN DE MES A FECHA SQL ---
+        if(!empty($soc_mes_nacimiento)){
+            // Construimos una fecha ficticia: Año 2000, Día 01, y el Mes seleccionado.
+            // Esto satisface el campo DATE de la BD sin pedir el año real.
+            $fecha_sql = "2000-" . str_pad($soc_mes_nacimiento, 2, "0", STR_PAD_LEFT) . "-01";
+            
+            // Asignamos esto a la variable que espera tu función de guardar
+            $_POST['soc_fecha_nacimiento'] = $fecha_sql;
+        } else {
+            $_POST['soc_fecha_nacimiento'] = NULL;
+        }
+        // -------------------------------------
+
+        // Validar los datos (tus funciones usarán $_POST['soc_fecha_nacimiento'] que acabamos de crear)
         $validar = validar_registro_socios();
         
         if($validar['num'] == 1) {
@@ -133,21 +154,25 @@
     </div>
 
     <div class="row">
-    <label class="col-md-2" <?php if ($_SESSION['sans_rol'] != 'S') echo 'style="display: none;"'; ?>>Descuento (%)</label>
-    <div class="col-md-4">
-        <input type="number" class="form-control" name="soc_descuento" min="0" max="100" value="<?= $soc_descuento ?>" <?php if ($_SESSION['sans_rol'] != 'S') echo 'style="display: none;"'; ?> />
+        <label class="col-md-2" <?php if ($_SESSION['sans_rol'] != 'S') echo 'style="display: none;"'; ?>>Descuento (%)</label>
+        <div class="col-md-4">
+            <input type="number" class="form-control" name="soc_descuento" min="0" max="100" value="<?= $soc_descuento ?>" <?php if ($_SESSION['sans_rol'] != 'S') echo 'style="display: none;"'; ?> />
+        </div>
     </div>
-</div>
 
-
-
-<div class="row">
-    <label class="col-md-2">Fecha de Nacimiento</label>
-    <div class="col-md-4">
-        <input type="date" class="form-control" name="soc_fecha_nacimiento" value="<?= $soc_fecha_nacimiento ?>" />
+    <div class="row">
+        <label class="col-md-2">Mes de Nacimiento</label>
+        <div class="col-md-4">
+            <select class="form-control" name="soc_mes_nacimiento">
+                <option value="">-- Seleccionar Mes --</option>
+                <?php foreach($meses as $num => $nombre): ?>
+                    <option value="<?= $num ?>" <?= ($soc_mes_nacimiento == $num) ? 'selected' : '' ?>>
+                        <?= $nombre ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
     </div>
-</div>
-
 
     <div class="row text-center">
         <div class="col-md-12">

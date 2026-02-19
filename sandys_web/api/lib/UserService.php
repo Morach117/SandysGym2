@@ -1,6 +1,8 @@
 <?php
 // /api/lib/UserService.php
 
+require_once __DIR__ . '/EmailService.php';
+
 class UserService {
     private $conn;
 
@@ -9,123 +11,169 @@ class UserService {
     }
 
     // --- FUNCIONES DE BÚSQUEDA ---
-
     private function findUserByEmail($email) {
-        $checkStmt = $this->conn->prepare("SELECT soc_id_socio FROM san_socios WHERE soc_correo = ?");
-        $checkStmt->execute([$email]);
-        return $checkStmt->fetch();
+        $stmt = $this->conn->prepare("SELECT soc_id_socio FROM san_socios WHERE soc_correo = ?");
+        $stmt->execute([$email]);
+        return $stmt->fetch();
     }
 
-    /**
-     * Busca un socio por teléfono QUE AÚN NO TENGA CUENTA VALIDADA.
-     */
     private function findUserByPhone($telefono) {
-        // <-- ACTUALIZADO: Comprueba el status de validación, no si el correo está vacío -->
-        $query = "SELECT soc_id_socio FROM san_socios 
-                  WHERE TRIM(soc_tel_cel) = ? 
-                  AND (soc_correo_status = 0 OR soc_correo_status IS NULL)";
-        
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute([$telefono]);
+        $tel = preg_replace('/[^0-9]/', '', $telefono);
+        $stmt = $this->conn->prepare("SELECT soc_id_socio FROM san_socios WHERE REPLACE(REPLACE(REPLACE(REPLACE(soc_tel_cel, ' ', ''), '-', ''), '(', ''), ')', '') = ? AND (soc_correo_status = 0 OR soc_correo_status IS NULL)");
+        $stmt->execute([$tel]);
         return $stmt->fetch();
     }
+    
+    private function findPadrino($telefono) {
+        $tel = preg_replace('/[^0-9]/', '', $telefono);
+        $stmt = $this->conn->prepare("SELECT soc_id_socio, soc_nombres, soc_correo FROM san_socios WHERE REPLACE(REPLACE(REPLACE(REPLACE(soc_tel_cel, ' ', ''), '-', ''), '(', ''), ')', '') = ?");
+        $stmt->execute([$tel]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 
-    /**
-     * Busca un socio por nombre completo QUE AÚN NO TENGA CUENTA VALIDADA.
-     */
     private function findUserByName($name, $paternal, $maternal) {
-        
-        // <-- ACTUALIZADO: Comprueba el status de validación, no si el correo está vacío -->
-        $query = "SELECT soc_id_socio FROM san_socios 
-                  WHERE UPPER(TRIM(soc_nombres)) = UPPER(?) 
-                    AND UPPER(TRIM(soc_apepat)) = UPPER(?) 
-                    AND (soc_correo_status = 0 OR soc_correo_status IS NULL)";
-        
-        $params = [$name, $paternal];
-
-        // SÓLO si el usuario escribió un apellido materno, lo añadimos a la búsqueda.
-        if (!empty($maternal)) {
-            $query .= " AND UPPER(TRIM(soc_apemat)) = UPPER(?)";
-            $params[] = $maternal;
-        }
-
-        $query .= " LIMIT 1";
-
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute($params);
+        $q = "SELECT soc_id_socio FROM san_socios WHERE UPPER(TRIM(soc_nombres)) = UPPER(?) AND UPPER(TRIM(soc_apepat)) = UPPER(?) AND (soc_correo_status = 0 OR soc_correo_status IS NULL)";
+        $p = [$name, $paternal];
+        if (!empty($maternal)) { $q .= " AND UPPER(TRIM(soc_apemat)) = UPPER(?)"; $p[] = $maternal; }
+        $q .= " LIMIT 1";
+        $stmt = $this->conn->prepare($q);
+        $stmt->execute($p);
         return $stmt->fetch();
     }
 
-    // --- FIN FUNCIONES DE BÚSQUEDA ---
-
-
     /**
-     * Registra un usuario nuevo o ACTUALIZA un socio existente sin cuenta.
+     * REGISTRO PRINCIPAL
      */
-    public function registerOrUpdate($name, $paternal, $maternal, $email, $rawPassword, $telefono) {
+    public function registerOrUpdate($name, $paternal, $maternal, $email, $rawPassword, $telefono, $genero, $fecha_nacimiento_sql, $referral_code = null) {
         
         $password = password_hash($rawPassword, PASSWORD_DEFAULT);
-        $validation_code = substr(str_shuffle("0123456789"), 0, 4);
-        $fecha_captura = date("Y-m-d H:i:s");
+        $val_code = substr(str_shuffle("0123456789"), 0, 4);
+        $fecha = date("Y-m-d H:i:s");
         
+        // 1. LÓGICA REFERIDO
+        $idPadrino = 0;
+        $saldoInicial = 0.00; 
+        $datosPadrino = null;
+
+        if (!empty($referral_code)) {
+            $ref_clean = preg_replace('/[^0-9]/', '', $referral_code);
+            $tel_clean = preg_replace('/[^0-9]/', '', $telefono);
+
+            if ($ref_clean !== $tel_clean) {
+                $datosPadrino = $this->findPadrino($ref_clean);
+                if ($datosPadrino) {
+                    $idPadrino = $datosPadrino['soc_id_socio'];
+                    $saldoInicial = 35.00; 
+                }
+            }
+        }
+
+        $genero_db = !empty($genero) ? strtoupper(substr($genero, 0, 1)) : 'M';
         $userByEmail = $this->findUserByEmail($email);
 
         try {
             if ($userByEmail) {
-                // CASO 1: El correo YA EXISTE.
-                // Actualiza el socio encontrado por correo.
-                $query = "UPDATE san_socios 
-                          SET san_password = ?, validation_code = ?, soc_nombres = ?, soc_apepat = ?, soc_apemat = ?, soc_fecha_captura = ?, soc_tel_cel = ?, soc_correo_status = 0
-                          WHERE soc_correo = ?"; // <-- Añade soc_correo_status = 0 para forzar re-validación
-                $stmt = $this->conn->prepare($query);
-                $stmt->execute([$password, $validation_code, $name, $paternal, $maternal, $fecha_captura, $telefono, $email]);
+                // UPDATE
+                $sql = "UPDATE san_socios SET san_password=?, validation_code=?, soc_nombres=?, soc_apepat=?, soc_apemat=?, soc_fecha_captura=?, soc_tel_cel=?, soc_genero=?, soc_fecha_nacimiento=?, soc_correo_status=0 WHERE soc_correo=?";
+                $this->conn->prepare($sql)->execute([$password, $val_code, $name, $paternal, $maternal, $fecha, $telefono, $genero_db, $fecha_nacimiento_sql, $email]);
             
             } else {
-                // CASO 2: El correo es NUEVO.
-                // Buscamos si el socio ya existe (por teléfono o nombre) para no duplicarlo.
+                // INSERT NUEVO
+                $query = "INSERT INTO san_socios (
+                            soc_nombres, soc_apepat, soc_apemat, soc_correo, san_password, 
+                            soc_fecha_captura, soc_fecha_nacimiento, soc_genero, 
+                            validation_code, soc_id_usuario, soc_id_empresa, soc_id_consorcio, 
+                            soc_tel_cel, soc_correo_status, is_active,
+                            soc_id_referido_por, soc_mon_saldo 
+                          ) VALUES (
+                            ?, ?, ?, ?, ?, 
+                            ?, ?, ?, 
+                            ?, 1, 1, 1, 
+                            ?, 0, 0,
+                            ?, ? 
+                          )";
                 
-                $socio_id_to_update = false;
+                $stmt = $this->conn->prepare($query);
+                $stmt->execute([
+                    $name, $paternal, $maternal, $email, $password, 
+                    $fecha, $fecha_nacimiento_sql, $genero_db, 
+                    $val_code, $telefono,
+                    $idPadrino, $saldoInicial 
+                ]);
                 
-                // 2.1. Buscar por teléfono (función ya actualizada)
-                $userByPhone = $this->findUserByPhone($telefono);
-                
-                if ($userByPhone) {
-                    $socio_id_to_update = $userByPhone['soc_id_socio'];
-                } else {
-                    // 2.2. Si no, buscar por nombre (función ya actualizada)
-                    $userByName = $this->findUserByName($name, $paternal, $maternal);
-                    if ($userByName) {
-                        $socio_id_to_update = $userByName['soc_id_socio'];
-                    }
+                $idNuevoSocio = $this->conn->lastInsertId();
+
+                // HISTORIAL NUEVO USUARIO
+                if ($saldoInicial > 0 && $idNuevoSocio) {
+                    $this->registrarHistorial($idNuevoSocio, $saldoInicial, "Bono de Bienvenida (Referido)", 1);
                 }
 
-                if ($socio_id_to_update) {
-                    // CASO 3: ENCONTRAMOS AL SOCIO (por tel o nombre).
-                    // Actualizamos su registro con la nueva info digital.
-                    $query = "UPDATE san_socios 
-                              SET san_password = ?, validation_code = ?, soc_nombres = ?, soc_apepat = ?, soc_apemat = ?, 
-                                  soc_fecha_captura = ?, soc_correo = ?, soc_tel_cel = ?, soc_correo_status = 0
-                              WHERE soc_id_socio = ?"; // <-- Añade soc_correo_status = 0
-                    $stmt = $this->conn->prepare($query);
-                    $stmt->execute([$password, $validation_code, $name, $paternal, $maternal, $fecha_captura, $email, $telefono, $socio_id_to_update]);
-                
-                } else {
-                    // CASO 4: NO ENCONTRAMOS NADA.
-                    // Este es un socio 100% nuevo. Lo insertamos.
-                    $query = "INSERT INTO san_socios 
-                                (soc_nombres, soc_apepat, soc_apemat, soc_correo, san_password, soc_fecha_captura, 
-                                 soc_fecha_nacimiento, validation_code, soc_id_usuario, soc_id_empresa, soc_id_consorcio, soc_tel_cel, soc_correo_status) 
-                              VALUES (?, ?, ?, ?, ?, ?, '0000-00-00', ?, 17, 1, 1, ?, 0)"; // <-- Añade soc_correo_status = 0
-                    $stmt = $this->conn->prepare($query);
-                    $stmt->execute([$name, $paternal, $maternal, $email, $password, $fecha_captura, $validation_code, $telefono]);
+                // RECOMPENSA PADRINO
+                if ($idPadrino > 0) {
+                    $this->darRecompensaPadrino($idPadrino, $datosPadrino, "$name $paternal");
                 }
             }
-            
-            return $validation_code; // Devolvemos el código en todos los casos de éxito
+            return $val_code;
 
         } catch (PDOException $e) {
-            // log_error("PDOException en UserService: " . $e->getMessage()); 
+            error_log("Error UserService: " . $e->getMessage()); 
             return false;
+        }
+    }
+
+    // --- FUNCIONES PRIVADAS ---
+
+    private function registrarHistorial($idSocio, $monto, $concepto, $idSistema) {
+        $fecha = date('Y-m-d H:i:s');
+        $stmt = $this->conn->prepare("SELECT soc_mon_saldo FROM san_socios WHERE soc_id_socio = ?");
+        $stmt->execute([$idSocio]);
+        $saldo = $stmt->fetchColumn();
+
+        $sql = "INSERT INTO san_prepago_detalle (pred_id_socio, pred_fecha, pred_movimiento, pred_importe, pred_saldo, pred_descripcion, pred_id_usuario) VALUES (?, ?, 'A', ?, ?, ?, ?)";
+        $this->conn->prepare($sql)->execute([$idSocio, $fecha, $monto, $saldo, $concepto, $idSistema]);
+    }
+
+    private function darRecompensaPadrino($idPadrino, $padrinoData, $nombreNuevoSocio) {
+        $monto = 35.00;
+        $idSistema = 1; 
+
+        try {
+            // 1. Update Saldo
+            $this->conn->prepare("UPDATE san_socios SET soc_mon_saldo = soc_mon_saldo + ? WHERE soc_id_socio = ?")->execute([$monto, $idPadrino]);
+            
+            // 2. Historial
+            $this->registrarHistorial($idPadrino, $monto, "Referido: $nombreNuevoSocio", $idSistema);
+
+            // 3. Email (Lógica Mejorada con Plantilla)
+            if (!empty($padrinoData['soc_correo'])) {
+                
+                // Obtenemos el nuevo saldo REAL de la base de datos para mostrarlo en el correo
+                $stmtSaldo = $this->conn->prepare("SELECT soc_mon_saldo FROM san_socios WHERE soc_id_socio = ?");
+                $stmtSaldo->execute([$idPadrino]);
+                $nuevoSaldo = $stmtSaldo->fetchColumn();
+
+                // Variables para la plantilla
+                $nombrePadrino = $padrinoData['soc_nombres'];
+                $asunto = "¡Ganaste $" . number_format($monto, 0) . " MXN! 💰";
+
+                // --- AQUÍ ESTÁ LA MAGIA DEL TEMPLATE ---
+                ob_start();
+                $rutaPlantilla = __DIR__ . '/../templates/referral_notification.php';
+                
+                if (file_exists($rutaPlantilla)) {
+                    include $rutaPlantilla;
+                } else {
+                    // Fallback simple por si borran el archivo
+                    echo "<h1>¡Felicidades $nombrePadrino!</h1><p>Tu referido $nombreNuevoSocio se registró. Ganaste $$monto.</p>";
+                }
+                
+                $mensajeHTML = ob_get_clean();
+                // ---------------------------------------
+
+                @EmailService::send($padrinoData['soc_correo'], $nombrePadrino, $asunto, $mensajeHTML);
+            }
+        } catch (Exception $e) {
+            error_log("Error bono padrino: " . $e->getMessage());
         }
     }
 }

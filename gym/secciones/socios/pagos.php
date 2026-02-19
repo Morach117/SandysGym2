@@ -5,16 +5,21 @@ $pag_fecha_pago = request_var('pag_fecha_pago', date('d-m-Y'));
 $pag_fecha_ini = request_var('pag_fecha_ini', '');
 $pag_fecha_fin = request_var('pag_fecha_fin', '');
 $id_socio = request_var('id_socio', 0);
+
+// Variables de integrantes
 $integrante1 = request_var('integrante1', 0);
 $integrante2 = request_var('integrante2', 0);
 $pareja = request_var('pareja', 0);
 $referidos = request_var('referidos', '');
+
+// Fechas integrantes
 $pag_fecha_ini1 = request_var('pag_fecha_ini1', '');
 $pag_fecha_fin1 = request_var('pag_fecha_fin1', '');
 $pag_fecha_ini2 = request_var('pag_fecha_ini2', '');
 $pag_fecha_fin2 = request_var('pag_fecha_fin2', '');
 $pag_fecha_ini_pareja = request_var('pag_fecha_ini_pareja', '');
 $pag_fecha_fin_pareja = request_var('pag_fecha_fin_pareja', '');
+
 $id_pago = request_var('IDP', 0);
 $pag_efectivo = request_var('pag_efectivo', '');
 $pag_tarjeta = request_var('pag_tarjeta', '');
@@ -28,7 +33,7 @@ $volver = ".?s=socios";
 
 $codigo_promocion = isset($_POST['codigo_promocion']) ? $_POST['codigo_promocion'] : '';
 
-//para el paginado
+// Para el paginado
 $pag_opciones = request_var('pag_opciones', 0);
 $pag_busqueda = request_var('pag_busqueda', '');
 $pag_fechai = request_var('pag_fechai', '');
@@ -37,26 +42,14 @@ $pag_item = request_var('item', '');
 $pag_blq = request_var('blq', 0);
 $pag_pag = request_var('pag', 0);
 
-if ($pag_item)
-    $volver .= "&i=$pag_item";
-
-if ($pag_opciones)
-    $volver .= "&pag_opciones=$pag_opciones";
-
-if ($pag_busqueda)
-    $volver .= "&pag_busqueda=$pag_busqueda";
-
-if ($pag_fechai)
-    $volver .= "&pag_fechai=$pag_fechai";
-
-if ($pag_fechaf)
-    $volver .= "&pag_fechaf=$pag_fechaf";
-
-if ($pag_blq)
-    $volver .= "&bql=$pag_blq";
-
-if ($pag_pag)
-    $volver .= "&pag=$pag_pag";
+// Construcción de URL de retorno
+if ($pag_item) $volver .= "&i=$pag_item";
+if ($pag_opciones) $volver .= "&pag_opciones=$pag_opciones";
+if ($pag_busqueda) $volver .= "&pag_busqueda=$pag_busqueda";
+if ($pag_fechai) $volver .= "&pag_fechai=$pag_fechai";
+if ($pag_fechaf) $volver .= "&pag_fechaf=$pag_fechaf";
+if ($pag_blq) $volver .= "&bql=$pag_blq";
+if ($pag_pag) $volver .= "&pag=$pag_pag";
 
 if (!$id_socio) {
     header("Location: .?s=socios");
@@ -73,17 +66,11 @@ if ($id_pago && $token) {
 
 $servicios = obtener_servicios($servicio);
 
-/*MEN PARCIAL solo se utiliza en socios es decir en s=socio y todos los item(i) que lo puedan contener. index,  js, funciones
-configuracion, configuracion -> mensualidades*/
 if ($servicio) {
     list($id_servicio, $meses) = explode('-', $servicio);
-
-    $servicio_cve = obtener_servicio($id_servicio);
-
-    $servicio_cve = $servicio_cve['clave'];
-
-    if ($servicio_cve == 'MEN PARCIAL')
-        $class_oculto = '';
+    $datos_servicio = obtener_servicio($id_servicio);
+    $servicio_cve = $datos_servicio['clave'];
+    if ($servicio_cve == 'MEN PARCIAL') $class_oculto = '';
 }
 
 if (file_exists("../imagenes/avatar/$id_socio.jpg"))
@@ -93,14 +80,13 @@ else
 
 if ($eliminar) {
     $mensaje = eliminar_pago_socio();
-
     if ($mensaje['num'] == 1)
         mostrar_mensaje_div($mensaje['msj'], 'success');
     else
         mostrar_mensaje_div($mensaje['num'] . ". " . $mensaje['msj'], 'danger');
 }
 
-//solo superadministrador
+// Solo superadministrador
 if ($rol == 'S') {
     $op_fecha_pago = "<div class='row'>
                         <label class='col-md-5'>Fecha pago</label>
@@ -116,7 +102,6 @@ if ($enviar) {
 
     if ($validar['num'] == 1) {
         $exito = guardar_pago_socio();
-
         if ($exito['num'] == 1) {
             header("Location: .?s=socios&i=pagos&id_socio=$exito[IDS]&IDP=$exito[IDP]&token=$exito[tkn]");
             exit;
@@ -168,7 +153,9 @@ $archivo_img = nombre_archivo_imagen($id_socio);
         <label class="col-md-9">
             <?= $archivo_img ?>
         </label>
-        <input type="hidden" id="id_socio" value="<?= $id_socio ?>" />
+        <input type="hidden" id="id_socio" name="id_socio" value="<?= $id_socio ?>" />
+        <input type="hidden" id="fecha_nacimiento_hidden" value="<?= $nombre['soc_fecha_nacimiento'] ?>" />
+        <input type="hidden" id="descuento_cliente_hidden" value="<?= $nombre['soc_descuento'] ?>" />
     </div>
 
     <div class="row">
@@ -176,8 +163,7 @@ $archivo_img = nombre_archivo_imagen($id_socio);
             <div class="row">
                 <label class="col-md-5">Fecha de pago</label>
                 <div class="col-md-7">
-                    <input type="text" class="form-control" value="<?= fecha_generica(date('d-m-Y')); ?>"
-                        readonly="on" />
+                    <input type="text" class="form-control" value="<?= fecha_generica(date('d-m-Y')); ?>" readonly="on" />
                 </div>
             </div>
 
@@ -186,29 +172,13 @@ $archivo_img = nombre_archivo_imagen($id_socio);
             <div class="row">
                 <label class="col-md-5">Servicio</label>
                 <div class="col-md-7">
-                    <select class="form-control" name="servicio" id="servicio"
-                        onchange="calcular_servicio(); abrirModalSiPlanTresIntegrantes();" required>
+                    <select class="form-control" name="servicio" id="servicio" required>
                         <?= $servicios ?>
                     </select>
                 </div>
             </div>
-            <script>
-                $(document).ready(function() {
-                    $('#servicio').change(function() {
-                        var servicioSeleccionado = $(this).val();
 
-                        if (servicioSeleccionado === '123-1') {
-                            $('#modalSeleccionIntegrantes').modal('show');
-                        } else if (servicioSeleccionado === '167-1') {
-                            $('#modalMensualidadPareja').modal('show');
-                        }
-                    });
-                });
-            </script>
-
-            <!-- Modal Selección de Integrantes -->
-            <div class="modal fade" id="modalSeleccionIntegrantes" tabindex="-1" role="dialog"
-                aria-labelledby="modalSeleccionIntegrantesLabel" aria-hidden="true">
+            <div class="modal fade" id="modalSeleccionIntegrantes" tabindex="-1" role="dialog" aria-labelledby="modalSeleccionIntegrantesLabel" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -220,72 +190,53 @@ $archivo_img = nombre_archivo_imagen($id_socio);
                         <div class="modal-body">
                             <p>Por favor, selecciona los 2 integrantes restantes para el plan:</p>
 
-                            <!-- Integrante 1 -->
                             <div class="form-group">
                                 <label for="buscarIntegrante1">Buscar Integrante 1:</label>
-                                <input type="text" class="form-control" id="buscarIntegrante1"
-                                    placeholder="Buscar socio...">
+                                <input type="text" class="form-control" id="buscarIntegrante1" placeholder="Buscar socio...">
                                 <select class="form-control mt-2" id="integrante1" name="integrante1">
                                     <option value="">Selecciona un socio</option>
                                 </select>
                             </div>
 
-                            <!-- Fechas para Integrante 1 -->
                             <div id="seleccionFechas1" style="display: none;">
                                 <hr>
                                 <div class="row">
                                     <label class="col-md-5">Fecha inicial Integrante 1</label>
                                     <div class="col-md-7">
-                                        <input type="text" class="form-control" name="pag_fecha_ini1"
-                                            id="pag_fecha_ini1" value="<?= $pag_fecha_ini1 ?>"
-                                            onchange="calcular_servicio()" required="required" maxlength="10"
-                                            autocomplete="off" readonly="on" />
+                                        <input type="text" class="form-control" name="pag_fecha_ini1" id="pag_fecha_ini1" value="<?= $pag_fecha_ini1 ?>" maxlength="10" autocomplete="off" readonly="on" />
                                     </div>
                                 </div>
-
                                 <div class="row mt-2">
                                     <label class="col-md-5">Fecha vencimiento Integrante 1</label>
                                     <div class="col-md-7">
-                                        <input type="text" class="form-control" name="pag_fecha_fin1"
-                                            id="pag_fecha_fin1" value="<?= $pag_fecha_fin1 ?>" autocomplete="off"
-                                            readonly="on" />
+                                        <input type="text" class="form-control" name="pag_fecha_fin1" id="pag_fecha_fin1" value="<?= $pag_fecha_fin1 ?>" autocomplete="off" readonly="on" />
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Integrante 2 -->
                             <div class="form-group mt-3">
                                 <label for="buscarIntegrante2">Buscar Integrante 2:</label>
-                                <input type="text" class="form-control" id="buscarIntegrante2"
-                                    placeholder="Buscar socio...">
+                                <input type="text" class="form-control" id="buscarIntegrante2" placeholder="Buscar socio...">
                                 <select class="form-control mt-2" id="integrante2" name="integrante2">
                                     <option value="">Selecciona un socio</option>
                                 </select>
                             </div>
 
-                            <!-- Fechas para Integrante 2 -->
                             <div id="seleccionFechas2" style="display: none;">
                                 <hr>
                                 <div class="row">
                                     <label class="col-md-5">Fecha inicial Integrante 2</label>
                                     <div class="col-md-7">
-                                        <input type="text" class="form-control" name="pag_fecha_ini2"
-                                            id="pag_fecha_ini2" onchange="calcular_servicio()" required="required"
-                                            maxlength="10" value="<?= $pag_fecha_ini2 ?>" autocomplete="off"
-                                            readonly="on" />
+                                        <input type="text" class="form-control" name="pag_fecha_ini2" id="pag_fecha_ini2" maxlength="10" value="<?= $pag_fecha_ini2 ?>" autocomplete="off" readonly="on" />
                                     </div>
                                 </div>
-
                                 <div class="row mt-2">
                                     <label class="col-md-5">Fecha vencimiento Integrante 2</label>
                                     <div class="col-md-7">
-                                        <input type="text" class="form-control" name="pag_fecha_fin2"
-                                            id="pag_fecha_fin2" value="<?= $pag_fecha_fin2 ?>" autocomplete="off"
-                                            readonly="on" />
+                                        <input type="text" class="form-control" name="pag_fecha_fin2" id="pag_fecha_fin2" value="<?= $pag_fecha_fin2 ?>" autocomplete="off" readonly="on" />
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
@@ -295,151 +246,7 @@ $archivo_img = nombre_archivo_imagen($id_socio);
                 </div>
             </div>
 
-            <script>
-                $(document).ready(function() {
-                    // Función para buscar integrantes y obtener sus datos
-                    function buscarIntegrantes(input, select) {
-                        var query = $(input).val();
-                        if (query.length > 2) {
-                            $.ajax({
-                                url: './funciones/buscar_clientes.php',
-                                method: 'GET',
-                                data: {
-                                    q: query
-                                },
-                                success: function(data) {
-                                    var socios = JSON.parse(data);
-                                    var options = '<option value="">Selecciona un socio</option>';
-                                    socios.forEach(function(socio) {
-                                        options +=
-                                            `<option value="${socio.soc_id_socio}" data-fecha-inicial="${socio.fecha_inicial}" data-fecha-fin="${socio.fecha_fin}">${socio.nombre}</option>`;
-                                    });
-                                    $(select).html(options);
-                                },
-                                error: function() {
-                                    alert('Error al buscar socios.');
-                                }
-                            });
-                        }
-                    }
-
-                    // Manejar la búsqueda de integrantes
-                    $('#buscarIntegrante1').on('input', function() {
-                        buscarIntegrantes(this, '#integrante1');
-                    });
-                    $('#buscarIntegrante2').on('input', function() {
-                        buscarIntegrantes(this, '#integrante2');
-                    });
-
-                    // Función para obtener el último pago de un socio
-                    function obtenerUltimoPago(id_socio, callback) {
-                        $.ajax({
-                            url: './funciones/obtener_ultimo_pago.php',
-                            type: 'GET',
-                            data: {
-                                id_socio: id_socio
-                            },
-                            dataType: 'json',
-                            success: function(response) {
-                                if (response.success) {
-                                    callback(response.fecha_pago);
-                                } else {
-                                    console.error('Error al obtener la fecha del último pago:', response
-                                        .error);
-                                    callback(null);
-                                }
-                            },
-                            error: function(xhr, status, error) {
-                                console.error('Error al obtener la fecha del último pago:', error);
-                                callback(null);
-                            }
-                        });
-                    }
-
-                    // Función para calcular el servicio
-                    function calcular_servicio(integranteSelect, fechaIniInput, fechaFinInput) {
-                        var id_socio = $(integranteSelect).val();
-                        var servicio = $('#servicio')
-                            .val(); // Suponiendo que el servicio está en un select con ID "servicio"
-
-                        if (!id_socio) return;
-
-                        // Obtener el último pago antes de calcular el servicio
-                        obtenerUltimoPago(id_socio, function(fecha_ini) {
-                            if (fecha_ini) {
-                                $(fechaIniInput).val(fecha_ini);
-                                $.post("peticiones/pet_socios_pagos.php", {
-                                    fecha: fecha_ini,
-                                    servicio: servicio,
-                                    envio: true
-                                }, function(datos) {
-                                    $(fechaFinInput).val(datos);
-                                });
-                            } else {
-                                console.error('No se pudo obtener la fecha del último pago.');
-                            }
-                        });
-                    }
-
-                    // Función para actualizar fechas de integrantes
-                    function actualizarFechas(integranteSelect, fechaIniInput, fechaFinInput, fechasContainer) {
-                        var selectedOption = $(integranteSelect).find(':selected');
-                        var fechaInicial = selectedOption.data('fecha-inicial') || '';
-                        var fechaFin = selectedOption.data('fecha-fin') || '';
-
-                        if (fechaInicial && fechaFin) {
-                            $(fechaIniInput).val(fechaInicial);
-                            $(fechaFinInput).val(fechaFin);
-                            $(fechasContainer).slideDown();
-                            calcular_servicio(integranteSelect, fechaIniInput, fechaFinInput);
-                        } else {
-                            $(fechaIniInput).val('');
-                            $(fechaFinInput).val('');
-                            $(fechasContainer).slideUp();
-                        }
-                    }
-
-                    // Detectar cambios en los selects para actualizar fechas y calcular el servicio
-                    $('#integrante1').change(function() {
-                        actualizarFechas('#integrante1', '#pag_fecha_ini1', '#pag_fecha_fin1',
-                            '#seleccionFechas1');
-                    });
-
-                    $('#integrante2').change(function() {
-                        actualizarFechas('#integrante2', '#pag_fecha_ini2', '#pag_fecha_fin2',
-                            '#seleccionFechas2');
-                    });
-
-                    // Validar antes de cerrar el modal
-                    $('#guardarIntegrantes').click(function() {
-                        var integrante1 = $('#integrante1').val();
-                        var integrante2 = $('#integrante2').val();
-                        var fechaIni1 = $('#pag_fecha_ini1').val();
-                        var fechaFin1 = $('#pag_fecha_fin1').val();
-                        var fechaIni2 = $('#pag_fecha_ini2').val();
-                        var fechaFin2 = $('#pag_fecha_fin2').val();
-
-                        if (!integrante1 || !integrante2) {
-                            alert('Por favor, selecciona los 2 integrantes restantes.');
-                            return;
-                        }
-
-                        if (!fechaIni1 || !fechaFin1 || !fechaIni2 || !fechaFin2) {
-                            alert('Por favor, selecciona las fechas para ambos integrantes.');
-                            return;
-                        }
-
-                        $('#modalSeleccionIntegrantes').modal('hide');
-                    });
-                });
-            </script>
-
-
-
-
-            <!-- Modal Selección de Pareja -->
-            <div class="modal fade" id="modalMensualidadPareja" tabindex="-1" role="dialog"
-                aria-labelledby="modalSeleccionParejaLabel" aria-hidden="true">
+            <div class="modal fade" id="modalMensualidadPareja" tabindex="-1" role="dialog" aria-labelledby="modalSeleccionParejaLabel" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -450,8 +257,6 @@ $archivo_img = nombre_archivo_imagen($id_socio);
                         </div>
                         <div class="modal-body">
                             <p>Por favor, selecciona el integrante para el plan de pareja:</p>
-
-                            <!-- Integrante -->
                             <div class="form-group">
                                 <label for="buscarPareja">Buscar Pareja:</label>
                                 <input type="text" class="form-control" id="buscarPareja" placeholder="Buscar socio...">
@@ -459,25 +264,18 @@ $archivo_img = nombre_archivo_imagen($id_socio);
                                     <option value="">Selecciona un socio</option>
                                 </select>
                             </div>
-
-                            <!-- Fechas para Integrante -->
                             <div id="seleccionFechas" style="display: none;">
                                 <hr>
                                 <div class="row">
                                     <label class="col-md-5">Fecha inicial</label>
                                     <div class="col-md-7">
-                                        <input type="text" class="form-control" name="pag_fecha_ini_pareja"
-                                            id="pag_fecha_ini_pareja" onchange="calcular_servicio()" required="required"
-                                            maxlength="10" value="<?= $pag_fecha_ini_pareja ?>" autocomplete="off"
-                                            readonly="on" />
+                                        <input type="text" class="form-control" name="pag_fecha_ini_pareja" id="pag_fecha_ini_pareja" maxlength="10" value="<?= $pag_fecha_ini_pareja ?>" autocomplete="off" readonly="on" />
                                     </div>
                                 </div>
                                 <div class="row mt-2">
                                     <label class="col-md-5">Fecha vencimiento</label>
                                     <div class="col-md-7">
-                                        <input type="text" class="form-control" name="pag_fecha_fin_pareja"
-                                            id="pag_fecha_fin_pareja" value="<?= $pag_fecha_fin_pareja ?>"
-                                            autocomplete="off" readonly="on" />
+                                        <input type="text" class="form-control" name="pag_fecha_fin_pareja" id="pag_fecha_fin_pareja" value="<?= $pag_fecha_fin_pareja ?>" autocomplete="off" readonly="on" />
                                     </div>
                                 </div>
                             </div>
@@ -490,157 +288,13 @@ $archivo_img = nombre_archivo_imagen($id_socio);
                 </div>
             </div>
 
-            <script>
-                $(document).ready(function() {
-                    function buscarPareja() {
-                        var query = $('#buscarPareja').val();
-                        if (query.length > 2) {
-                            $.ajax({
-                                url: './funciones/buscar_clientes.php',
-                                method: 'GET',
-                                data: {
-                                    q: query
-                                },
-                                success: function(data) {
-                                    var socios = JSON.parse(data);
-                                    var options = '<option value="">Selecciona un socio</option>';
-                                    socios.forEach(function(socio) {
-                                        options +=
-                                            `<option value="${socio.soc_id_socio}" data-fecha-inicial="${socio.fecha_inicial}" data-fecha-fin="${socio.fecha_fin}">${socio.nombre}</option>`;
-                                    });
-                                    $('#pareja').html(options);
-                                },
-                                error: function() {
-                                    alert('Error al buscar socios.');
-                                }
-                            });
-                        }
-                    }
-
-                    $('#buscarPareja').on('input', buscarPareja);
-
-                    function obtenerUltimoPago(id_socio, callback) {
-                        $.ajax({
-                            url: './funciones/obtener_ultimo_pago.php',
-                            type: 'GET',
-                            data: {
-                                id_socio: id_socio
-                            },
-                            dataType: 'json',
-                            success: function(response) {
-                                if (response.success) {
-                                    callback(response.fecha_pago);
-                                } else {
-                                    callback(null);
-                                }
-                            },
-                            error: function() {
-                                callback(null);
-                            }
-                        });
-                    }
-
-                    function calcular_servicio() {
-                        var id_socio = $('#pareja').val();
-                        var servicio = $('#servicio').val();
-                        if (!id_socio) return;
-
-                        obtenerUltimoPago(id_socio, function(fecha_ini) {
-                            if (fecha_ini) {
-                                $('#pag_fecha_ini_pareja').val(fecha_ini);
-                                $.post("peticiones/pet_socios_pagos.php", {
-                                    fecha: fecha_ini,
-                                    servicio: servicio,
-                                    envio: true
-                                }, function(datos) {
-                                    $('#pag_fecha_fin_pareja').val(datos);
-                                });
-                            }
-                        });
-                    }
-
-                    $('#pareja').change(function() {
-                        var selectedOption = $(this).find(':selected');
-                        var fechaInicial = selectedOption.data('fecha-inicial') || '';
-                        var fechaFin = selectedOption.data('fecha-fin') || '';
-                        if (fechaInicial && fechaFin) {
-                            $('#pag_fecha_ini_pareja').val(fechaInicial);
-                            $('#pag_fecha_fin_pareja').val(fechaFin);
-                            $('#seleccionFechas').slideDown();
-                            calcular_servicio();
-                        } else {
-                            $('#seleccionFechas').slideUp();
-                        }
-                    });
-
-                    $('#guardarPareja').click(function() {
-                        var pareja = $('#pareja').val();
-                        var fechaIni = $('#pag_fecha_ini_pareja').val();
-                        var fechaFin = $('#pag_fecha_fin_pareja').val();
-
-                        if (!pareja) {
-                            alert('Por favor, selecciona un integrante.');
-                            return;
-                        }
-                        if (!fechaIni || !fechaFin) {
-                            alert('Por favor, selecciona las fechas para el integrante.');
-                            return;
-                        }
-
-                        $('#modalMensualidadPareja').modal('hide');
-                    });
-                });
-            </script>
-
-
-
-
             <div class="row" id="selected-members" style="display: none;">
                 <label class="col-md-5">Integrantes seleccionados</label>
                 <div class="col-md-7">
                     <ul id="lista-integrantes" class="list-group">
-                        <!-- Aquí se mostrarán los integrantes seleccionados -->
-                    </ul>
+                        </ul>
                 </div>
             </div>
-
-            <script>
-                $(document).ready(function() {
-                    function mostrarIntegrantesSeleccionados() {
-                        var integrantes = [];
-                        var integrante1 = $('#integrante1 option:selected').text();
-                        var integrante2 = $('#integrante2 option:selected').text();
-                        var integrantePareja = $('#integrante option:selected').text();
-
-                        if (integrante1 && integrante1 !== 'Selecciona un socio') integrantes.push(integrante1);
-                        if (integrante2 && integrante2 !== 'Selecciona un socio') integrantes.push(integrante2);
-                        if (integrantePareja && integrantePareja !== 'Selecciona un socio') integrantes.push(
-                            integrantePareja);
-
-                        var listaIntegrantes = $('#lista-integrantes');
-                        listaIntegrantes.empty();
-
-                        if (integrantes.length > 0) {
-                            $('#selected-members').show();
-                            integrantes.forEach(function(integrante) {
-                                listaIntegrantes.append('<li class="list-group-item">' + integrante +
-                                    '</li>');
-                            });
-                        } else {
-                            $('#selected-members').hide();
-                        }
-                    }
-
-                    $('#guardarIntegrantes, #guardarIntegrante').click(function() {
-                        mostrarIntegrantesSeleccionados();
-                    });
-
-                    $('#modalSeleccionIntegrantes, #modalMensualidadPareja').on('hidden.bs.modal', function() {
-                        mostrarIntegrantesSeleccionados();
-                    });
-                });
-            </script>
-
 
             <div class="row">
                 <label class="col-md-5">Método de pago</label>
@@ -656,36 +310,30 @@ $archivo_img = nombre_archivo_imagen($id_socio);
             <div class="row <?= $class_oculto ?>" id="importe">
                 <label class="col-md-offset-5 col-md-4"><em>Importe a pagar</em></label>
                 <div class="col-md-3">
-                    <input type="text" class="form-control" name="pag_importe" maxlength="5"
-                        value="<?= $pag_importe ?>" />
+                    <input type="text" class="form-control" name="pag_importe" maxlength="5" value="<?= $pag_importe ?>" />
                 </div>
             </div>
 
             <div class="row">
                 <label class="col-md-5">Fecha inicial</label>
                 <div class="col-md-7">
-                    <input type="text" class="form-control" name="pag_fecha_ini" id="pag_fecha_ini"
-                        onchange="calcular_servicio()" required="required" maxlength="10" value="<?= $pag_fecha_ini ?>"
-                        autocomplete="off" readonly="on" />
+                    <input type="text" class="form-control" name="pag_fecha_ini" id="pag_fecha_ini" required="required" maxlength="10" value="<?= $pag_fecha_ini ?>" autocomplete="off" readonly="on" />
                 </div>
             </div>
 
             <div class="row">
                 <label class="col-md-5">Fecha vencimiento</label>
                 <div class="col-md-7">
-                    <input type="text" class="form-control" name="pag_fecha_fin" id="pag_fecha_fin"
-                        value="<?= $pag_fecha_fin ?>" autocomplete="off" readonly="on" />
+                    <input type="text" class="form-control" name="pag_fecha_fin" id="pag_fecha_fin" value="<?= $pag_fecha_fin ?>" autocomplete="off" readonly="on" />
                 </div>
             </div>
             <div class="row">
                 <label class="col-md-5">Código de Promoción</label>
                 <div class="col-md-7">
-                    <input type="text" class="form-control" name="codigo_promocion" id="codigo_promocion"
-                        value="<?= $codigo_promocion ?>" autocomplete="off" />
+                    <input type="text" class="form-control" name="codigo_promocion" id="codigo_promocion" value="<?= $codigo_promocion ?>" autocomplete="off" />
                 </div>
             </div>
 
-            <!-- Checkbox para activar la sección de referidos -->
             <div class="row">
                 <label class="col-md-5">¿Tiene referidos?</label>
                 <div class="col-md-7">
@@ -693,13 +341,11 @@ $archivo_img = nombre_archivo_imagen($id_socio);
                 </div>
             </div>
 
-            <!-- Campo de Referidos con Botón de Búsqueda -->
             <div class="row" id="referidos-section" style="display: none;">
                 <label class="col-md-5">Captura de Referidos</label>
                 <div class="col-md-5">
                     <div class="input-group">
-                        <input type="text" class="form-control" id="referidos" name="referidos"
-                            placeholder="Ingrese el teléfono" maxlength="10">
+                        <input type="text" class="form-control" id="referidos" name="referidos" placeholder="Ingrese el teléfono" maxlength="10">
                         <div class="input-group-append">
                             <span class="input-group-text">
                                 <i id="icono-validacion" class="fas fa-circle text-muted"></i>
@@ -714,9 +360,7 @@ $archivo_img = nombre_archivo_imagen($id_socio);
                 </div>
             </div>
 
-            <!-- Modal para Seleccionar Usuario -->
-            <div class="modal fade" id="modalReferidos" tabindex="-1" role="dialog"
-                aria-labelledby="modalReferidosLabel" aria-hidden="true">
+            <div class="modal fade" id="modalReferidos" tabindex="-1" role="dialog" aria-labelledby="modalReferidosLabel" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -726,15 +370,13 @@ $archivo_img = nombre_archivo_imagen($id_socio);
                             </button>
                         </div>
                         <div class="modal-body">
-                            <input type="text" id="search-input" class="form-control"
-                                placeholder="Ingrese número de teléfono">
+                            <input type="text" id="search-input" class="form-control" placeholder="Ingrese número de teléfono">
                             <br>
                             <ul id="lista-referidos" class="list-group"></ul>
                         </div>
                     </div>
                 </div>
             </div>
-
 
             <div class="row">
                 <div class="col-md-12">
@@ -790,10 +432,8 @@ $archivo_img = nombre_archivo_imagen($id_socio);
             <input type="hidden" name="blq" value="<?= $pag_blq ?>" />
             <input type="hidden" name="pag" value="<?= $pag_pag ?>" />
 
-            <input type="hidden" name="id_socio" value="<?= $id_socio ?>" />
             <input type="submit" name="enviar" value="Cobrar y guardar" class="btn btn-primary" />
-            <input type="button" name="Regresar" value="Regresar" class="btn btn-default"
-                onclick="location.href='<?= $volver ?>'" />
+            <input type="button" name="Regresar" value="Regresar" class="btn btn-default" onclick="location.href='<?= $volver ?>'" />
         </div>
     </div>
 </form>
@@ -815,7 +455,6 @@ $archivo_img = nombre_archivo_imagen($id_socio);
                 <th>Vencimiento</th>
                 <th class="text-right">Importe</th>
             </thead>
-
             <tbody>
                 <?= $tabla ?>
             </tbody>
@@ -826,6 +465,11 @@ $archivo_img = nombre_archivo_imagen($id_socio);
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         var descuentoCumpleanosAplicado = false;
+        var idSocioGlobal = $('#id_socio').val();
+
+        // --------------------------------------------------------
+        // FUNCIONES AUXILIARES
+        // --------------------------------------------------------
 
         function obtenerUltimoPago(id_socio, callback) {
             $.ajax({
@@ -837,22 +481,19 @@ $archivo_img = nombre_archivo_imagen($id_socio);
                 dataType: 'json',
                 success: function(response) {
                     if (response.success) {
-                        // Establecer el valor del campo de fecha inicial
-                        document.getElementById('pag_fecha_ini').value = response.fecha_pago;
+                        if (id_socio == idSocioGlobal) {
+                            // Si es el socio principal, llenamos el input principal
+                            var fechaInput = document.getElementById('pag_fecha_ini');
+                            fechaInput.value = response.fecha_pago;
 
-                        // Habilitar o deshabilitar el campo según la bandera habilitar_fecha
-                        if (response.habilitar_fecha) {
-                            // Habilitar el campo de fecha
-                            document.getElementById('pag_fecha_ini').removeAttribute('readonly');
-                            document.getElementById('pag_fecha_ini').setAttribute('autocomplete', 'on');
-                        } else {
-                            // Mantener el campo de fecha bloqueado
-                            document.getElementById('pag_fecha_ini').setAttribute('readonly', 'on');
-                            document.getElementById('pag_fecha_ini').setAttribute('autocomplete',
-                                'off');
+                            if (response.habilitar_fecha) {
+                                fechaInput.removeAttribute('readonly');
+                                fechaInput.setAttribute('autocomplete', 'on');
+                            } else {
+                                fechaInput.setAttribute('readonly', 'on');
+                                fechaInput.setAttribute('autocomplete', 'off');
+                            }
                         }
-
-                        // Ejecutar el callback con la fecha obtenida
                         callback(response.fecha_pago);
                     } else {
                         console.error('Error al obtener la fecha del último pago:', response.error);
@@ -866,424 +507,446 @@ $archivo_img = nombre_archivo_imagen($id_socio);
             });
         }
 
+        function calcular_servicio_principal() {
+            var servicio = $('#servicio').val();
+            var fecha_ini_input = $('#pag_fecha_ini');
 
-
-        function calcular_servicio() {
-            var servicio = document.getElementById('servicio').value;
-            var id_socio = document.getElementById('id_socio').value;
-            var fecha_ini_input = document.getElementById('pag_fecha_ini');
-
-            // Mostrar u ocultar el importe según el servicio seleccionado
+            // Mostrar u ocultar el importe manual
             if (servicio == '5-1') {
-                document.getElementById('importe').style.display = 'block';
+                $('#importe').show();
             } else {
-                document.getElementById('importe').style.display = 'none';
+                $('#importe').hide();
             }
 
-            // Función para calcular el servicio, ya sea con la fecha automática o manual
-            function calcularServicioConFecha(fecha_ini) {
+            // Validar modales especiales
+            if (servicio === '123-1') {
+                $('#modalSeleccionIntegrantes').modal('show');
+            } else if (servicio === '167-1') {
+                $('#modalMensualidadPareja').modal('show');
+            }
+
+            function peticionCalculo(fecha) {
                 $.post("peticiones/pet_socios_pagos.php", {
-                    fecha: fecha_ini,
+                    fecha: fecha,
                     servicio: servicio,
                     envio: true
                 }, function(datos) {
-                    document.getElementById('pag_fecha_fin').value = datos;
-                    obtenerCuotaServicio(); // Calcular los totales después de obtener la fecha de fin
+                    $('#pag_fecha_fin').val(datos);
+                    obtenerCuotaServicio(); // Calcular montos
                 });
             }
 
-            // Verificar si el campo de fecha está habilitado para selección manual
-            if (!fecha_ini_input.readOnly) {
-                // Si el campo no está en modo 'readonly', usa la fecha seleccionada manualmente
-                calcularServicioConFecha(fecha_ini_input.value);
+            if (!fecha_ini_input.prop('readonly')) {
+                peticionCalculo(fecha_ini_input.val());
             } else {
-                // Si el campo es 'readonly', obtener la fecha del último pago de la base de datos
-                obtenerUltimoPago(id_socio, function(fecha_ini) {
+                obtenerUltimoPago(idSocioGlobal, function(fecha_ini) {
                     if (fecha_ini) {
-                        fecha_ini_input.value = fecha_ini; // Establecer la fecha inicial obtenida
-                        calcularServicioConFecha(fecha_ini);
-                    } else {
-                        console.error('No se pudo obtener la fecha del último pago.');
+                        peticionCalculo(fecha_ini);
                     }
                 });
             }
         }
 
+        // Asignar evento al cambio de servicio principal
+        $('#servicio').change(calcular_servicio_principal);
+        // Asignar evento al cambio de fecha manual
+        $('#pag_fecha_ini').change(calcular_servicio_principal);
 
-        // Asignar la función calcular_servicio al evento onchange del select de servicio
-        document.getElementById('servicio').onchange = calcular_servicio;
+
+        // --------------------------------------------------------
+        // LÓGICA DE DESCUENTOS Y PAGOS
+        // --------------------------------------------------------
 
         function obtenerCuotaServicio() {
             var servicioSeleccionado = document.getElementById("servicio").value;
             var id_servicio = servicioSeleccionado.split('-')[0];
 
-            if (!id_servicio) {
-                console.error("Error: El id_servicio es inválido.");
-                return;
-            }
+            if (!id_servicio) return;
 
-            var xhr = new XMLHttpRequest();
+            $.ajax({
+                url: "./funciones/obtener_cuota_servicio.php",
+                type: "GET",
+                data: {
+                    id_servicio: id_servicio
+                },
+                dataType: 'json',
+                success: function(respuesta) {
+                    if (respuesta.success) {
+                        var cuota = parseFloat(respuesta.cuota);
+                        $("#subtotal").text(cuota.toFixed(2));
 
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    if (xhr.status === 200) {
-                        var respuesta = JSON.parse(xhr.responseText);
-
-                        if (respuesta.success) {
-                            var cuota = parseFloat(respuesta.cuota);
-
-                            // Mostrar la cuota sin aplicar ningún descuento
-                            document.getElementById("subtotal").textContent = cuota.toFixed(2);
-
-                            // Verificar si es el mes de cumpleaños del cliente
-                            verificarCumpleanos();
-
-                            // Si no es el mes de cumpleaños, verificar y aplicar otros descuentos
-                            if (!descuentoCumpleanosAplicado) {
-                                // Verificar si el cliente tiene un descuento almacenado
-                                var descuentoCliente = parseFloat(
-                                    <?= json_encode($nombre['soc_descuento']); ?>);
-                                if (!isNaN(descuentoCliente)) {
-                                    aplicarDescuentoCliente(descuentoCliente);
-                                } else {
-                                    document.getElementById("descuento").textContent = '0.00';
-                                    document.getElementById("total").textContent = cuota.toFixed(2);
+                        // 1. Intentamos verificar cumpleaños (que tiene prioridad)
+                        verificarCumpleanos(function(esCumple) {
+                            if (!esCumple) {
+                                // 2. Si no es cumple o ya se usó, ver descuento normal
+                                if (!descuentoCumpleanosAplicado) {
+                                    var descuentoCliente = parseFloat($('#descuento_cliente_hidden').val());
+                                    if (!isNaN(descuentoCliente) && descuentoCliente > 0) {
+                                        aplicarDescuentoCliente(descuentoCliente);
+                                    } else {
+                                        $("#descuento").text('0.00');
+                                        $("#total").text(cuota.toFixed(2));
+                                    }
                                 }
                             }
-                        } else {
-                            console.error("Error al obtener la cuota del servicio:", respuesta.error);
-                        }
+                        });
+
                     } else {
-                        console.error('Error al realizar la solicitud:', xhr.status);
+                        console.error("Error cuota:", respuesta.error);
                     }
                 }
-            };
-
-            xhr.open("GET", "./funciones/obtener_cuota_servicio.php?id_servicio=" + id_servicio, true);
-            xhr.send();
+            });
         }
 
         function aplicarDescuentoCliente(descuentoCliente) {
             if (descuentoCumpleanosAplicado) return;
-
-            var cuota = parseFloat(document.getElementById("subtotal").textContent);
+            var cuota = parseFloat($("#subtotal").text());
             var montoDescontadoCliente = cuota * (descuentoCliente / 100);
-            var totalConDescuentoCliente = cuota - montoDescontadoCliente;
-
-            document.getElementById("descuento").textContent = montoDescontadoCliente.toFixed(2);
-            document.getElementById("total").textContent = totalConDescuentoCliente.toFixed(2);
+            var totalConDescuento = cuota - montoDescontadoCliente;
+            $("#descuento").text(montoDescontadoCliente.toFixed(2));
+            $("#total").text(totalConDescuento.toFixed(2));
         }
 
-        function aplicarDescuentoPromocional(codigo_promocion) {
-            if (descuentoCumpleanosAplicado) return;
+        function aplicarDescuentoPromocional(codigo) {
+            // Permitimos aplicar si no hay descuento de cumple previo o si es EL descuento de cumple
+            if (descuentoCumpleanosAplicado && codigo !== '10W02Z95') return;
 
-            var servicioSeleccionado = document.getElementById("servicio").value;
+            var servicioSeleccionado = $("#servicio").val();
             var id_servicio = servicioSeleccionado.split('-')[0];
 
+            // Verificamos si el servicio permite promos
             verificarDescuentosPromocionales(id_servicio);
 
-            var xhrPromocion = new XMLHttpRequest();
-            xhrPromocion.onreadystatechange = function() {
-                if (xhrPromocion.readyState === XMLHttpRequest.DONE) {
-                    if (xhrPromocion.status === 200) {
-                        var respuestaPromocion = JSON.parse(xhrPromocion.responseText);
-                        if (respuestaPromocion.success) {
-                            var descuentoPromocion = parseFloat(respuestaPromocion.porcentaje_descuento);
-                            var cuota = parseFloat(document.getElementById("subtotal").textContent);
+            $.ajax({
+                url: "./funciones/verificar_codigo_promocional.php",
+                data: {
+                    codigo_promocion: codigo
+                },
+                dataType: 'json',
+                success: function(resp) {
+                    if (resp.success) {
+                        var descPorc = parseFloat(resp.porcentaje_descuento);
+                        var cuota = parseFloat($("#subtotal").text());
 
-                            var descuentoTotal = 0;
+                        // Sumar descuento cliente si existe
+                        var descCliente = parseFloat($('#descuento_cliente_hidden').val());
+                        var totalDescPorc = descPorc;
 
-                            var descuentoCliente = parseFloat(<?= json_encode($nombre['soc_descuento']); ?>);
-                            if (!isNaN(descuentoCliente)) {
-                                descuentoTotal += descuentoCliente;
-                            }
-
-                            descuentoTotal += descuentoPromocion;
-
-                            var montoDescontadoTotal = cuota * (descuentoTotal / 100);
-                            var totalConDescuentoTotal = cuota - montoDescontadoTotal;
-
-                            document.getElementById("descuento").textContent = montoDescontadoTotal.toFixed(2);
-                            document.getElementById("total").textContent = totalConDescuentoTotal.toFixed(2);
-                        } else {
-                            alert("Error: " + respuestaPromocion.error);
+                        if (!isNaN(descCliente)) {
+                            totalDescPorc += descCliente;
                         }
+
+                        var montoDesc = cuota * (totalDescPorc / 100);
+                        var totalFinal = cuota - montoDesc;
+
+                        $("#descuento").text(montoDesc.toFixed(2));
+                        $("#total").text(totalFinal.toFixed(2));
                     } else {
-                        console.error('Error al realizar la solicitud para verificar el código promocional:',
-                            xhrPromocion.status);
+                        alert("Error: " + resp.error);
                     }
                 }
-            };
-
-            xhrPromocion.open("GET", "./funciones/verificar_codigo_promocional.php?codigo_promocion=" +
-                codigo_promocion, true);
-            xhrPromocion.send();
+            });
         }
 
-        function verificarCumpleanos() {
+        // --- FUNCIÓN DE CUMPLEAÑOS CORREGIDA ---
+        function verificarCumpleanos(callback) {
+            var fechaNacString = $('#fecha_nacimiento_hidden').val(); // Formato esperado: 2000-05-01
+            if (!fechaNacString) {
+                if (callback) callback(false);
+                return;
+            }
 
-            var fechaNacimientoString = "<?= $nombre['soc_fecha_nacimiento']; ?>";
+            // Usar split para evitar problemas de zona horaria con new Date()
+            var partes = fechaNacString.split('-');
+            // partes[0] = Año, partes[1] = Mes, partes[2] = Día
+            if (partes.length < 2) {
+                if (callback) callback(false);
+                return;
+            }
 
-            var fechaNacimiento = new Date(fechaNacimientoString + "T00:00:00");
-
+            var mesNacimiento = parseInt(partes[1], 10); // Convertir a entero (1-12)
             var fechaActual = new Date();
+            var mesActual = fechaActual.getMonth() + 1; // getMonth es 0-11, sumamos 1
 
-            if (fechaNacimiento.getMonth() === fechaActual.getMonth()) {
-                alert("¡Feliz cumpleaños! Tienes un descuento especial.");
-                document.getElementById("codigo_promocion").value = "22M40G20";
-                aplicarDescuentoPromocional("22M40G20");
-                descuentoCumpleanosAplicado = true;
+            if (mesNacimiento === mesActual) {
+                // Es el mes de cumpleaños. Ahora verificamos en BD si ya lo usó este año.
+                $.ajax({
+                    url: './funciones/verificar_uso_cumpleanos.php', // ARCHIVO NUEVO
+                    type: 'GET',
+                    data: {
+                        id_socio: idSocioGlobal
+                    },
+                    dataType: 'json',
+                    success: function(resp) {
+                        if (!resp.usado) {
+                            alert("¡Feliz cumpleaños! Tienes un descuento especial por ser tu mes.");
+                            $("#codigo_promocion").val("10W02Z95");
+                            descuentoCumpleanosAplicado = true;
+                            aplicarDescuentoPromocional("10W02Z95");
+                            if (callback) callback(true);
+                        } else {
+                            // Ya usó el descuento este año
+                            if (callback) callback(false);
+                        }
+                    },
+                    error: function() {
+                        console.log("Error verificando uso de cumpleaños");
+                        if (callback) callback(false);
+                    }
+                });
             } else {
+                if (callback) callback(false);
             }
         }
 
         function verificarDescuentosPromocionales(id_servicio) {
-            if (descuentoCumpleanosAplicado) return;
-
-            var xhrDescuentos = new XMLHttpRequest();
-            xhrDescuentos.onreadystatechange = function() {
-                if (xhrDescuentos.readyState === XMLHttpRequest.DONE) {
-                    if (xhrDescuentos.status === 200) {
-                        var respuestaDescuentos = JSON.parse(xhrDescuentos.responseText);
-                        if (!respuestaDescuentos.success) {
-                            // Mostrar una alerta si el servicio no tiene descuentos promocionales permitidos
-                            alert("El servicio seleccionado no tiene descuentos promocionales permitidos.");
-
-                            // Recargar la página después de 2 segundos
-                            setTimeout(function() {
-                                location.reload();
-                            }, 1000);
-                        }
-                    } else {
-                        console.error(
-                            'Error al realizar la solicitud para verificar los descuentos promocionales:',
-                            xhrDescuentos.status);
+            $.ajax({
+                url: "./funciones/verificar_descuentos_promocionales.php",
+                data: {
+                    id_servicio: id_servicio
+                },
+                dataType: 'json',
+                success: function(resp) {
+                    if (!resp.success) {
+                        alert("El servicio seleccionado no permite descuentos promocionales.");
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1000);
                     }
                 }
-            };
-
-            xhrDescuentos.open("GET", "./funciones/verificar_descuentos_promocionales.php?id_servicio=" +
-                id_servicio, true);
-            xhrDescuentos.send();
+            });
         }
 
-        $(document).ready(function() {
-            // Mostrar u ocultar la sección de referidos
-            $('#tiene_referidos').change(function() {
-                $('#referidos-section').toggle(this.checked);
-            });
+        // Evento cambio manual de código promo
+        $("#codigo_promocion").change(function() {
+            if (this.value) aplicarDescuentoPromocional(this.value);
+        });
 
-            // Evento para abrir el modal de búsqueda
-            $('#buscar-referido').click(function() {
-                $('#modalReferidos').modal('show');
-            });
+        // --------------------------------------------------------
+        // LÓGICA DE MODALES (Integrantes / Pareja / Referidos)
+        // --------------------------------------------------------
 
-            let debounceTimer;
-
-            function verificarTelefono(input) {
-                let icono = $('#icono-validacion');
-                var idSocio = document.getElementById('id_socio').value;
-
-
-                if (input) {
-                    let esTelefono = /^\d{10}$/.test(input);
-                    let esID = /^\d+$/.test(input);
-
-                    if (esTelefono || esID) {
-                        $.ajax({
-                            url: './funciones/verificar_telefono.php',
-                            method: 'GET',
-                            data: {
-                                telefono: input,
-                                id_socio: idSocio // Enviar id_socio en la solicitud si está disponible
-                            },
-                            success: function(response) {
-                                try {
-                                    let data = JSON.parse(response);
-
-
-                                    if (data.existe) {
-                                        if (data.referido) {
-                                            // Si el usuario ya es un referido, marcar como error y deshabilitar input
-                                            icono.removeClass().addClass('fas fa-times-circle text-danger');
-                                            alert('El Socio ya ha sido registrado como referido.');
-
-                                            // Deshabilitar el campo de teléfono para evitar cambios
-                                            $('#referidos').prop('disabled', true);
-                                            $('#referidos').val('');
-                                            $('#codigo_promocion').val('');
-
-                                        } else {
-                                            // Si el usuario existe y NO es referido, aplicar descuento y mantener el input habilitado
-                                            icono.removeClass().addClass('fas fa-check-circle text-success');
-
-                                            let codigoPromocion = "11d11l12";
-                                            $('#codigo_promocion').val(codigoPromocion);
-                                            aplicarDescuentoPromocional(codigoPromocion);
-
-                                            // Mantener el campo habilitado
-                                            $('#referidos').prop('disabled', false);
-                                        }
-                                    } else {
-                                        // Si el usuario no existe, marcar error y dejar habilitado el input
-                                        icono.removeClass().addClass('fas fa-times-circle text-danger');
-                                        alert('El número o ID ingresado no está registrado. Use la búsqueda.');
-                                        $('#referidos').val('');
-                                        $('#codigo_promocion').val('');
-                                        $('#telefono').prop('disabled', false);
-                                    }
-                                } catch (error) {
-                                    console.error("Error al procesar la respuesta del servidor:", error, response);
-                                    alert('Error en la respuesta del servidor.');
-                                }
-                            },
-                            error: function() {
-                                alert('Error al verificar el número.');
-                            }
-                        });
-                    } else {
-                        icono.removeClass().addClass('fas fa-circle text-muted');
-                    }
-                } else {
-                    icono.removeClass().addClass('fas fa-circle text-muted');
-                }
-
-
-
-            }
-
-
-
-
-            // Evento de entrada en el campo de teléfono/ID
-            $('#referidos').on('input', function() {
-                let input = $(this).val().trim();
-
-                // Limpiar el temporizador anterior si existe
-                clearTimeout(debounceTimer);
-
-                // Solo realizar la validación si el campo tiene un valor de teléfono válido o ID
-                if (input) {
-                    // Si es un número de teléfono válido (10 dígitos) o un ID válido (solo números)
-                    let esTelefono = /^\d{10}$/.test(
-                        input); // Verifica si es un teléfono de 10 dígitos
-                    let esID = /^\d+$/.test(input); // Verifica si es un ID (solo números)
-
-                    // Solo realizar la consulta cuando el número esté completo
-                    if (esTelefono || esID) {
-                        // Agregar un retraso para evitar enviar la solicitud mientras el usuario escribe
-                        debounceTimer = setTimeout(function() {
-                            verificarTelefono(
-                                input); // Llamar a la función para verificar el teléfono o ID
-                        }, 500); // Espera 500 ms después de que el usuario deje de escribir
-                    } else {
-                        icono.removeClass().addClass('fas fa-circle text-muted'); // Icono neutral
-                    }
-                } else {
-                    icono.removeClass().addClass('fas fa-circle text-muted'); // Icono neutral
+        function buscarClientesAjax(query, selectElement) {
+            if (query.length <= 2) return;
+            $.ajax({
+                url: './funciones/buscar_clientes.php',
+                data: {
+                    q: query
+                },
+                success: function(data) {
+                    var socios = JSON.parse(data);
+                    var opts = '<option value="">Selecciona un socio</option>';
+                    socios.forEach(function(s) {
+                        opts += `<option value="${s.soc_id_socio}" data-fecha-inicial="${s.fecha_inicial}" data-fecha-fin="${s.fecha_fin}">${s.nombre}</option>`;
+                    });
+                    $(selectElement).html(opts);
                 }
             });
+        }
 
-            // Buscar usuarios en el modal
-            $('#search-input').on('keyup', function() {
-                let query = $(this).val().trim();
-                if (query.length < 3) return;
+        $('#buscarIntegrante1').on('input', function() {
+            buscarClientesAjax(this.value, '#integrante1');
+        });
+        $('#buscarIntegrante2').on('input', function() {
+            buscarClientesAjax(this.value, '#integrante2');
+        });
+        $('#buscarPareja').on('input', function() {
+            buscarClientesAjax(this.value, '#pareja');
+        });
 
-                $.ajax({
-                    url: './funciones/buscar_clientes.php',
-                    method: 'GET',
-                    data: {
-                        q: query
-                    },
-                    success: function(data) {
-                        let lista = $('#lista-referidos');
-                        lista.empty();
+        // Calculo de fechas internas en modales
+        function actualizarFechasModal(selectObj, inputIni, inputFin, divContainer) {
+            var opt = $(selectObj).find(':selected');
+            var fIni = opt.data('fecha-inicial');
+            var fFin = opt.data('fecha-fin');
+            var servicio = $('#servicio').val();
 
-                        let socios = JSON.parse(data);
-                        if (socios.length === 0) {
-                            lista.append(
-                                '<li class="list-group-item">No se encontraron resultados.</li>'
-                            );
-                            return;
-                        }
+            if (fIni && fFin) {
+                $(inputIni).val(fIni);
+                $(inputFin).val(fFin); // Valor temporal
+                $(divContainer).slideDown();
 
-                        socios.forEach(socio => {
-                            let li = $(
-                                `<li class="list-group-item list-group-item-action">${socio.nombre} - ${socio.soc_id_socio}</li>`
-                            );
-                            li.data('telefono', socio.soc_id_socio);
-                            li.click(function() {
-                                // Al seleccionar un referido, asignar su ID o teléfono al campo
-                                $('#referidos').val($(this).data(
-                                    'telefono'));
-
-                                // Verificar el número o ID al seleccionar el referido
-                                verificarTelefono($(this).data(
-                                    'telefono'));
-
-                                // Cerrar el modal
-                                $('#modalReferidos').modal('hide');
-                            });
-                            lista.append(li);
-                        });
-                    },
-                    error: function() {
-                        alert('Error al buscar referidos.');
-                    }
+                // Recalcular vencimiento real basado en servicio actual
+                // Usamos la logica de pet_socios_pagos pero para el integrante
+                $.post("peticiones/pet_socios_pagos.php", {
+                    fecha: fIni,
+                    servicio: servicio,
+                    envio: true
+                }, function(datos) {
+                    $(inputFin).val(datos);
                 });
+
+            } else {
+                $(divContainer).slideUp();
+            }
+        }
+
+        $('#integrante1').change(function() {
+            actualizarFechasModal(this, '#pag_fecha_ini1', '#pag_fecha_fin1', '#seleccionFechas1');
+        });
+        $('#integrante2').change(function() {
+            actualizarFechasModal(this, '#pag_fecha_ini2', '#pag_fecha_fin2', '#seleccionFechas2');
+        });
+        $('#pareja').change(function() {
+            actualizarFechasModal(this, '#pag_fecha_ini_pareja', '#pag_fecha_fin_pareja', '#seleccionFechas');
+        });
+
+        // Botones guardar modal
+        $('#guardarIntegrantes').click(function() {
+            if (!$('#integrante1').val() || !$('#integrante2').val()) {
+                alert("Selecciona ambos integrantes");
+                return;
+            }
+            $('#modalSeleccionIntegrantes').modal('hide');
+        });
+        $('#guardarPareja').click(function() {
+            if (!$('#pareja').val()) {
+                alert("Selecciona la pareja");
+                return;
+            }
+            $('#modalMensualidadPareja').modal('hide');
+        });
+
+        // Mostrar lista visual
+        function mostrarIntegrantesSeleccionados() {
+            var lista = $('#lista-integrantes');
+            lista.empty();
+            var textos = [];
+            
+            var i1 = $('#integrante1 option:selected').text();
+            if (i1 && i1 !== 'Selecciona un socio') textos.push(i1);
+            
+            var i2 = $('#integrante2 option:selected').text();
+            if (i2 && i2 !== 'Selecciona un socio') textos.push(i2);
+            
+            var ip = $('#pareja option:selected').text();
+            if (ip && ip !== 'Selecciona un socio') textos.push(ip);
+
+            if (textos.length > 0) {
+                $('#selected-members').show();
+                textos.forEach(t => lista.append('<li class="list-group-item">' + t + '</li>'));
+            } else {
+                $('#selected-members').hide();
+            }
+        }
+
+        $('#modalSeleccionIntegrantes, #modalMensualidadPareja').on('hidden.bs.modal', mostrarIntegrantesSeleccionados);
+
+        // --------------------------------------------------------
+        // REFERIDOS
+        // --------------------------------------------------------
+        $('#tiene_referidos').change(function() {
+            $('#referidos-section').toggle(this.checked);
+        });
+        $('#buscar-referido').click(function() {
+            $('#modalReferidos').modal('show');
+        });
+
+        $('#search-input').on('keyup', function() {
+            var q = $(this).val().trim();
+            if (q.length < 3) return;
+            $.ajax({
+                url: './funciones/buscar_clientes.php',
+                data: {
+                    q: q
+                },
+                success: function(data) {
+                    var socios = JSON.parse(data);
+                    var ul = $('#lista-referidos');
+                    ul.empty();
+                    if (!socios.length) {
+                        ul.append('<li class="list-group-item">Sin resultados</li>');
+                        return;
+                    }
+                    socios.forEach(s => {
+                        var li = $(`<li class="list-group-item list-group-item-action">${s.nombre}</li>`);
+                        li.click(function() {
+                            $('#referidos').val(s.soc_id_socio); // Asumimos ID como referencia
+                            verificarTelefono(s.soc_id_socio);
+                            $('#modalReferidos').modal('hide');
+                        });
+                        ul.append(li);
+                    });
+                }
             });
         });
 
-        document.getElementById("codigo_promocion").onchange = function() {
-            var codigo_promocion = this.value;
-            if (codigo_promocion) {
-                aplicarDescuentoPromocional(codigo_promocion);
+        var debounceTimer;
+        $('#referidos').on('input', function() {
+            var val = $(this).val().trim();
+            clearTimeout(debounceTimer);
+            if (val.length >= 10 || /^\d+$/.test(val)) {
+                debounceTimer = setTimeout(function() {
+                    verificarTelefono(val);
+                }, 500);
             }
-        };
+        });
 
-        // Función para manejar el cambio de método de pago
+        function verificarTelefono(input) {
+            var icono = $('#icono-validacion');
+            $.ajax({
+                url: './funciones/verificar_telefono.php',
+                data: {
+                    telefono: input,
+                    id_socio: idSocioGlobal
+                },
+                success: function(resp) {
+                    var data = JSON.parse(resp);
+                    if (data.existe) {
+                        if (data.referido) {
+                            icono.removeClass().addClass('fas fa-times-circle text-danger');
+                            alert('Este socio ya fue referido antes.');
+                            $('#referidos').val('');
+                            $('#codigo_promocion').val('');
+                        } else {
+                            icono.removeClass().addClass('fas fa-check-circle text-success');
+                            $('#codigo_promocion').val("11d11l12");
+                            aplicarDescuentoPromocional("11d11l12");
+                        }
+                    } else {
+                        icono.removeClass().addClass('fas fa-times-circle text-danger');
+                        alert('No encontrado.');
+                    }
+                }
+            });
+        }
+
+        // --------------------------------------------------------
+        // MONEDERO
+        // --------------------------------------------------------
         $('#m_pago').change(function() {
-            var metodoPago = $(this).val();
-            if (metodoPago === 'M') {
-                var idSocio = $('#id_socio').val();
+            var metodo = $(this).val();
+            if (metodo === 'M') {
                 $.ajax({
                     url: './funciones/saldo_monedero.php',
-                    type: 'GET',
                     data: {
-                        id_socio: idSocio
+                        id_socio: idSocioGlobal
                     },
                     dataType: 'json',
-                    success: function(response) {
-                        if (response.success) {
-                            var saldoMonedero = parseFloat(response.saldo_monedero);
-                            var importeServicio = parseFloat(document.getElementById("subtotal")
-                                .textContent);
+                    success: function(resp) {
+                        if (resp.success) {
+                            var saldo = parseFloat(resp.saldo_monedero);
+                            var total = parseFloat($("#subtotal").text()); // Usamos subtotal base o total con desc?
+                            // Lo lógico es pagar el total final
+                            var totalPagar = parseFloat($("#total").text());
+                            if (isNaN(totalPagar)) totalPagar = total;
 
-                            if (saldoMonedero < importeServicio) {
+                            $('#monedero-section').show();
+                            $('#saldo_monedero').val(saldo.toFixed(2));
+
+                            if (saldo < totalPagar) {
                                 $('#efectivo-section').show();
-                                $('#monedero-section').show();
-                                $('#saldo_monedero').val(saldoMonedero.toFixed(2));
-
-                                var cantidadFaltante = importeServicio - saldoMonedero;
-                                $('#cantidad_efectivo').val(cantidadFaltante.toFixed(2));
+                                $('#cantidad_efectivo').val((totalPagar - saldo).toFixed(2));
                             } else {
                                 $('#efectivo-section').hide();
-                                $('#monedero-section').show();
-                                $('#saldo_monedero').val(saldoMonedero.toFixed(2));
                             }
-                        } else {
-                            console.error('Error al obtener el saldo del monedero:', response
-                                .error);
                         }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error al obtener el saldo del monedero:', error);
                     }
                 });
             } else {
-                $('#efectivo-section').hide();
-                $('#monedero-section').hide();
+                $('#efectivo-section, #monedero-section').hide();
             }
         });
+
     });
 </script>

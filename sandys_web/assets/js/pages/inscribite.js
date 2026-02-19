@@ -1,178 +1,259 @@
 $(document).ready(function() {
 
-    // --- FUNCIÓN PARA MOSTRAR/OCULTAR CAMPOS ---
-    function showAdditionalFields(isLocked, data = {}) {
-        if (isLocked) {
-            $('#additionalFields').slideDown(); // Muestra los campos con una animación suave
-            $('#email').prop('readonly', true);
-            // Cambia el botón a "Cambiar correo"
-            $('#verifyEmailBtn').text('Cambiar Correo').removeClass('verify-action').addClass('change-action');
+    // ==========================================
+    // 0. AUTO-LLENADO DE REFERIDO POR URL
+    // ==========================================
+    // Si la URL es ...?ref=9191234567, llenamos el input automáticamente
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get('ref');
 
-            // Si el correo existe, llena los campos
-            if (data.exists) {
-                $('#name').val(data.name);
-                $('#paternal_surname').val(data.paternal_surname);
-                $('#maternal_surname').val(data.maternal_surname);
-            } else {
-                // Si es un correo nuevo, asegúrate de que los campos estén vacíos
-                $('#name').val('').focus(); // Coloca el cursor en el campo de nombre
-                $('#paternal_surname').val('');
-                $('#maternal_surname').val('');
-                $('#telefono').val(''); // Limpia el teléfono también
-            }
-        } else {
-            // Oculta los campos y restaura el estado inicial
-            $('#additionalFields').slideUp();
-            $('#email').prop('readonly', false).focus();
-            $('#verifyEmailBtn').text('Verificar Correo').removeClass('change-action').addClass('verify-action');
-        }
+    if (refCode) {
+        $('#referral_code').val(refCode).css('border-color', '#22c55e');
     }
 
-    // --- MANEJADOR DEL BOTÓN DE VERIFICAR/CAMBIAR CORREO ---
-    $('#verifyEmailBtn').click(function() {
-        // Si el botón es para "Cambiar", ejecuta la lógica de desbloqueo
-        if ($(this).hasClass('change-action')) {
-            showAdditionalFields(false);
+    // ==========================================
+    // 1. CONFIGURACIÓN Y SELECTORES
+    // ==========================================
+    const UI = {
+        form: $('#registrationForm'),
+        inputs: {
+            email: $('#email'),
+            password: $('#password'),
+            confirmPass: $('#confirm_password'),
+            name: $('#name'),
+            paternal: $('#paternal_surname'),
+            maternal: $('#maternal_surname'), 
+            telefono: $('#telefono'),
+            dobMonth: $('#dob_month'),
+            genero: $('#genero'),
+            referral: $('#referral_code') // <--- AGREGADO AQUÍ
+        },
+        buttons: {
+            verify: $('#verifyEmailBtn'),
+            changeEmail: $('#changeEmailBtn'),
+            submit: $('button[type="submit"]')
+        },
+        containers: {
+            verify: $('#verifyContainer'),
+            additional: $('#additionalFields'),
+            feedback: $('#emailFeedback')
+        },
+        requirements: {
+            length: $('#reg_length'),
+            upper: $('#reg_uppercase'),
+            number: $('#reg_number')
+        },
+        toggles: $('.toggle-password') 
+    };
+
+    const REGEX_EMAIL = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+    // ==========================================
+    // 2. LÓGICA DE CORREO
+    // ==========================================
+    UI.buttons.verify.on('click', function() {
+        const emailVal = UI.inputs.email.val().trim();
+        
+        if (!REGEX_EMAIL.test(emailVal)) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Correo Inválido',
+                text: 'Por favor ingresa un correo válido.',
+                background: '#1a1a1a', color: '#fff', confirmButtonColor: '#ef4444'
+            });
+            UI.inputs.email.css('border-color', '#ef4444');
             return;
         }
-
-        var email = $('#email').val();
-        if (!email) {
-            Swal.fire('Atención', 'Por favor, introduce un correo electrónico.', 'warning');
-            return;
-        }
-
-        var btn = $(this);
-        // Feedback de carga para el usuario
-        btn.prop('disabled', true).text('Verificando...');
+        
+        resetInputStyle(UI.inputs.email); 
+        setLoading(UI.buttons.verify, true, '<i class="fas fa-spinner fa-spin"></i> Verificando...');
 
         $.ajax({
             type: 'POST',
             url: './api/check_email.php',
-            data: {
-                email: email
-            },
+            data: { email: emailVal },
             dataType: 'json'
-        }).done(function(data) {
-            if (data.message) { // Si el servidor devuelve un error específico
-                Swal.fire('Error', data.message, 'error');
+        })
+        .done(function(response) {
+            if (response.exists) {
+                showInlineFeedback(response.message || "El correo ya está en uso.", true);
             } else {
-                localStorage.setItem('email', email);
-                showAdditionalFields(true, data); // Llama a la función para mostrar los campos
+                showInlineFeedback("", false); 
+                lockEmailState(true);
             }
-        }).fail(function() {
-            Swal.fire('Error', 'Hubo un problema al verificar el correo. Por favor, inténtalo de nuevo.', 'error');
-        }).always(function() {
-            // Siempre vuelve a habilitar el botón, sin importar si falló o no
-            if (!btn.hasClass('change-action')) {
-                btn.prop('disabled', false).text('Verificar Correo');
-            }
+        })
+        .fail(function() {
+             // Si falla la conexión (ej. localhost sin internet), permitimos avanzar para pruebas
+             lockEmailState(true); 
+        })
+        .always(function() {
+            setLoading(UI.buttons.verify, false, 'Continuar <i class="fas fa-arrow-right ml-2"></i>');
         });
     });
 
-    // --- VALIDACIÓN DE CONTRASEÑA EN TIEMPO REAL ---
-    const passwordInput = $('#password'); // Apunta al input de contraseña de registro
-    const requirements = {
-        length: $('#reg_length'), // Apunta al <li> con el ID de registro
-        uppercase: $('#reg_uppercase'), // Apunta al <li> con el ID de registro
-        lowercase: $('#reg_lowercase'), // Apunta al <li> con el ID de registro
-        number: $('#reg_number'), // Apunta al <li> con el ID de registro
-        special: $('#reg_special') // Apunta al <li> con el ID de registro
-    };
+    UI.buttons.changeEmail.on('click', function() {
+        UI.containers.additional.find('input:not([type=hidden]), select').val('').trigger('change');
+        UI.containers.additional.find('.form-control').css('border-color', '#333');
+        $('.password-requirements li').removeClass('valid').find('i').removeClass('fa-check').addClass('fa-circle').css('color', '');
+        $('.password-requirements li').css('color', '');
+        lockEmailState(false);
+    });
 
-    if (passwordInput.length > 0) { // Asegura que el script no falle si el elemento no existe
-        passwordInput.on('keyup', function() {
-            const password = $(this).val();
-
-            if (password.length >= 8) requirements.length.addClass('valid');
-            else requirements.length.removeClass('valid');
-
-            if (/[A-Z]/.test(password)) requirements.uppercase.addClass('valid');
-            else requirements.uppercase.removeClass('valid');
-
-            if (/[a-z]/.test(password)) requirements.lowercase.addClass('valid');
-            else requirements.lowercase.removeClass('valid');
-
-            if (/\d/.test(password)) requirements.number.addClass('valid');
-            else requirements.number.removeClass('valid');
-
-            if (/[@$!%*?&]/.test(password)) requirements.special.addClass('valid');
-            else requirements.special.removeClass('valid');
-        });
+    function lockEmailState(isLocked) {
+        if (isLocked) {
+            UI.inputs.email.prop('readonly', true);
+            UI.containers.verify.slideUp();
+            UI.containers.additional.css({opacity: 0, display: 'block'}).animate({ opacity: 1 }, 400);
+            UI.buttons.changeEmail.fadeIn();
+        } else {
+            UI.inputs.email.prop('readonly', false).focus().select();
+            UI.containers.additional.slideUp();
+            UI.containers.verify.slideDown();
+            UI.buttons.changeEmail.fadeOut();
+            showInlineFeedback("", false);
+        }
     }
 
-    // --- CÓDIGO NUEVO PARA MOSTRAR/OCULTAR CONTRASEÑA (OJO) ---
-    $('.toggle-password').on('click', function() {
-        // 'this' es el ícono (<i>) en el que se hizo clic
-        
-        // 1. Encuentra el campo de contraseña (input) que es "hermano" del ícono
-        const passwordField = $(this).siblings('input');
+    function showInlineFeedback(msg, isError) {
+        const color = isError ? '#ef4444' : '#22c55e';
+        if(msg) {
+            UI.containers.feedback.text(msg).css('color', color).slideDown();
+            if(isError) UI.inputs.email.css('border-color', color);
+        } else {
+            UI.containers.feedback.slideUp();
+            UI.inputs.email.css('border-color', '#333');
+        }
+    }
 
-        // 2. Revisa el tipo actual y cámbialo
-        const type = passwordField.attr('type') === 'password' ? 'text' : 'password';
-        passwordField.attr('type', type);
-
-        // 3. Cambia el ícono de 'ojo' a 'ojo tachado' y viceversa
-        $(this).toggleClass('fa-eye fa-eye-slash');
+    // ==========================================
+    // 3. LÓGICA DE PASSWORD
+    // ==========================================
+    
+    UI.toggles.on('click', function() {
+        const icon = $(this);
+        const input = icon.siblings('input');
+        if (input.length > 0) {
+            const type = input.attr('type') === 'password' ? 'text' : 'password';
+            input.attr('type', type);
+            icon.toggleClass('fa-eye fa-eye-slash');
+            icon.css('color', type === 'text' ? '#ef4444' : '#555');
+        }
     });
-    // --- FIN DEL CÓDIGO NUEVO ---
 
-    // --- MANEJADOR DEL ENVÍO DEL FORMULARIO DE REGISTRO ---
-    $('#registrationForm').submit(function(event) {
+    UI.inputs.password.on('input', function() {
+        const val = $(this).val();
+        updateRequirement(UI.requirements.length, val.length >= 8);
+        updateRequirement(UI.requirements.upper, /[A-Z]/.test(val));
+        updateRequirement(UI.requirements.number, /[0-9]/.test(val));
+        if (UI.inputs.confirmPass.val().length > 0) validateMatch();
+    });
+
+    UI.inputs.confirmPass.on('input', validateMatch);
+
+    function validateMatch() {
+        const pass = UI.inputs.password.val();
+        const confirm = UI.inputs.confirmPass.val();
+        if (confirm.length === 0) { UI.inputs.confirmPass.css('border-color', '#333'); return; }
+        UI.inputs.confirmPass.css('border-color', pass !== confirm ? '#ef4444' : '#22c55e');
+    }
+
+    function updateRequirement(element, isValid) {
+        const icon = element.find('i');
+        if (isValid) {
+            element.addClass('valid').css('color', '#4ade80');
+            icon.removeClass('fa-circle').addClass('fa-check');
+        } else {
+            element.removeClass('valid').css('color', '#666');
+            icon.removeClass('fa-check').addClass('fa-circle');
+        }
+    }
+
+    // ==========================================
+    // 4. ENVÍO DEL FORMULARIO
+    // ==========================================
+    UI.form.on('submit', function(event) {
         event.preventDefault();
 
-        var password = $('#password').val();
-        var confirm_password = $('#confirm_password').val();
+        // 1. Validar vacíos
+        let hasError = false;
+        const requiredFields = [
+            UI.inputs.name, UI.inputs.paternal, UI.inputs.telefono, 
+            UI.inputs.genero, UI.inputs.dobMonth, UI.inputs.password
+        ];
+        
+        requiredFields.forEach(field => {
+            if (!field.val()) {
+                field.css('border-color', '#ef4444');
+                hasError = true;
+            } else {
+                field.css('border-color', '#333');
+            }
+        });
 
-        // --- VALIDACIÓN DE CAMPOS (TELÉFONO AÑADIDO) ---
-        if (!$('#name').val() || !$('#paternal_surname').val() || !$('#telefono').val() || !$('#email').val() || !password || !confirm_password) {
-            Swal.fire('Error', 'Por favor, rellena todos los campos requeridos.', 'error');
+        if (hasError) {
+            Swal.fire({ icon: 'warning', title: 'Faltan Datos', text: 'Completa los campos marcados en rojo.', background: '#1a1a1a', color: '#fff', confirmButtonColor: '#ef4444' });
             return;
         }
 
-        if (password !== confirm_password) {
-            Swal.fire('Error', 'Las contraseñas no coinciden.', 'error');
+        if (UI.inputs.password.val() !== UI.inputs.confirmPass.val()) {
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Las contraseñas no coinciden.', background: '#1a1a1a', color: '#fff', confirmButtonColor: '#ef4444' });
             return;
         }
 
-        var passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-        if (!passwordRegex.test(password)) {
-            Swal.fire('Error', 'La contraseña no cumple con los requisitos de seguridad.', 'error');
-            return;
-        }
-
-        // --- DATOS DEL FORMULARIO (TELÉFONO AÑADIDO) ---
-        var formData = {
-            name: $('#name').val(),
-            paternal_surname: $('#paternal_surname').val(),
-            maternal_surname: $('#maternal_surname').val(),
-            telefono: $('#telefono').val(), // Campo añadido
-            email: $('#email').val(),
-            password: password
+        // 2. PREPARAR DATOS (AQUÍ ESTABA LA MAGIA FALTANTE)
+        const formData = {
+            name: UI.inputs.name.val(),
+            paternal_surname: UI.inputs.paternal.val(),
+            maternal_surname: UI.inputs.maternal.val(),
+            telefono: UI.inputs.telefono.val(),
+            email: UI.inputs.email.val(),
+            password: UI.inputs.password.val(),
+            genero: UI.inputs.genero.val(),
+            mes_nacimiento: UI.inputs.dobMonth.val(),
+            referral_code: UI.inputs.referral.val() // <--- AGREGADO: Envia el código al PHP
         };
 
-        var submitButton = $(this).find('button[type="submit"]');
-        submitButton.prop('disabled', true).text('Registrando...');
+        // 3. Enviar
+        const btn = UI.buttons.submit;
+        const originalText = btn.html();
+        setLoading(btn, true, '<i class="fas fa-spinner fa-spin"></i> Registrando...');
 
         $.ajax({
             type: 'POST',
             url: './api/registration_process.php',
             data: formData,
-            dataType: 'json',
-        }).done(function(data) {
+            dataType: 'json'
+        })
+        .done(function(data) {
             if (data.success) {
-                Swal.fire('¡Éxito!', 'Te has registrado correctamente. Revisa tu correo para el código de validación.', 'success')
-                    .then(() => {
-                        // Redirige a la página de validación
-                        window.location.href = 'index.php?page=validate';
-                    });
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Registro Exitoso!',
+                    text: 'Te hemos enviado un correo de validación.',
+                    background: '#1a1a1a', color: '#fff', confirmButtonColor: '#ef4444'
+                }).then(() => {
+                    window.location.href = 'index.php?page=validate';
+                });
             } else {
-                Swal.fire('Error', data.message, 'error');
+                Swal.fire({ icon: 'error', title: 'Error', text: data.message, background: '#1a1a1a', color: '#fff', confirmButtonColor: '#ef4444' });
             }
-        }).fail(function() {
-            Swal.fire('Error', 'Hubo un problema con el registro. Por favor, inténtalo de nuevo.', 'error');
-        }).always(function() {
-            submitButton.prop('disabled', false).text('Registrarse');
+        })
+        .fail(function(xhr) {
+            console.error(xhr.responseText); 
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Error de conexión con el servidor.', background: '#1a1a1a', color: '#fff', confirmButtonColor: '#ef4444' });
+        })
+        .always(function() {
+            setLoading(btn, false, originalText);
         });
     });
+
+    // Utilidades
+    function setLoading(btn, isLoading, html) {
+        btn.prop('disabled', isLoading).html(html).css('opacity', isLoading ? 0.7 : 1);
+    }
+    function resetInputStyle(input) { input.css('border-color', '#333'); }
+    $('input, select').on('input change', function() { 
+        if($(this).val().length > 0) $(this).css('border-color', '#333'); 
+    });
+
 });

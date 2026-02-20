@@ -3,12 +3,28 @@
 include_once('conn.php');
 include_once('./query/select_data.php');
 
-// Asegurarnos que existen datos para evitar errores
 if (!$selSocioData) {
     echo "<div style='color:white; text-align:center; padding:50px;'>Error al cargar datos del socio.</div>";
     exit;
 }
+
+// LÓGICA PARA EL MES DE NACIMIENTO
+$fecha_bd = $selSocioData['soc_fecha_nacimiento'];
+$mes_guardado = '';
+
+// Si hay una fecha válida en la BD, extraemos solo el mes (MM)
+if (!empty($fecha_bd) && $fecha_bd != '0000-00-00') {
+    $porciones = explode('-', $fecha_bd);
+    if (count($porciones) == 3) {
+        $mes_guardado = $porciones[1]; 
+    }
+}
 ?>
+
+<link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;700&family=Oswald:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <style>
     /* --- Base --- */
@@ -18,36 +34,37 @@ if (!$selSocioData) {
         font-family: 'Muli', sans-serif;
     }
 
-    /* --- Hero Section --- */
-    .profile-hero {
-        position: relative;
-        padding: 60px 0 40px;
-        background: linear-gradient(180deg, rgba(17,17,17,0.8), #0f0f0f), url('./assets/img/hero/hero-user.jpg');
-        background-size: cover;
-        background-position: center;
-        text-align: center;
-        border-bottom: 1px solid #222;
+    /* --- Layout ajustado para respetar el Navbar fijo --- */
+    .profile-section {
+        padding: 120px 0 80px; /* 120px empuja el contenido hacia abajo */
     }
-    .profile-title {
+
+    /* --- Encabezado Limpio --- */
+    .page-header-custom {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        border-bottom: 1px solid #333;
+        padding-bottom: 15px;
+    }
+    .page-title {
         font-family: 'Oswald', sans-serif;
-        font-size: 38px;
+        font-size: 28px;
         color: #fff;
         text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-bottom: 5px;
+        margin: 0;
     }
-    .profile-subtitle {
-        color: #9ca3af;
+    .btn-back {
+        color: #ef4444;
+        text-decoration: none;
+        font-weight: 600;
         font-size: 15px;
+        transition: 0.3s;
     }
-    .profile-subtitle a { color: #ef4444; text-decoration: none; transition: 0.3s; }
-    .profile-subtitle a:hover { color: #ff6b6b; }
+    .btn-back:hover { color: #ff6b6b; text-decoration: none; }
 
     /* --- Tarjetas de Perfil --- */
-    .profile-section {
-        padding: 40px 0 80px;
-    }
-
     .profile-card {
         background-color: #1a1a1a;
         border: 1px solid #333;
@@ -66,23 +83,16 @@ if (!$selSocioData) {
         gap: 12px;
     }
     
-    .header-icon {
-        color: #ef4444;
-        font-size: 20px;
-    }
-    
+    .header-icon { color: #ef4444; font-size: 20px; }
     .header-title {
         font-family: 'Oswald', sans-serif;
         font-size: 18px;
         color: #fff;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
         margin: 0;
     }
 
-    .card-body-custom {
-        padding: 30px 25px;
-    }
+    .card-body-custom { padding: 30px 25px; }
 
     /* --- Inputs y Labels --- */
     .form-group label {
@@ -91,7 +101,6 @@ if (!$selSocioData) {
         font-weight: 600;
         margin-bottom: 8px;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
     }
 
     .form-control {
@@ -109,20 +118,16 @@ if (!$selSocioData) {
         box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
     }
 
-    /* Inputs Readonly / Disabled */
-    .form-control[readonly], .form-control.disabled {
+    /* Inputs Bloqueados */
+    .form-control[readonly], select.form-control:disabled {
         background-color: #252525 !important;
         color: #888 !important;
         border-color: #333 !important;
         cursor: not-allowed;
+        opacity: 1;
     }
 
-    /* Small text helper */
-    .form-text {
-        color: #666;
-        font-size: 12px;
-        margin-top: 6px;
-    }
+    .form-text { color: #666; font-size: 12px; margin-top: 6px; display: block; }
 
     /* Botón Guardar */
     .save-btn {
@@ -134,7 +139,6 @@ if (!$selSocioData) {
         font-family: 'Oswald', sans-serif;
         font-size: 16px;
         text-transform: uppercase;
-        letter-spacing: 1px;
         font-weight: 700;
         cursor: pointer;
         transition: all 0.3s;
@@ -143,33 +147,22 @@ if (!$selSocioData) {
     .save-btn:hover {
         background-color: #dc2626;
         transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.5);
-        color: #fff;
-    }
-
-    /* Select Options (Fix para navegadores) */
-    select.form-control option {
-        background-color: #1a1a1a;
-        color: #fff;
-        padding: 10px;
     }
 </style>
-
-<section class="profile-hero">
-    <div class="container">
-        <h2 class="profile-title">Mi Perfil</h2>
-        <p class="profile-subtitle">
-            <a href="index.php?page=user_home"><i class="fas fa-arrow-left mr-1"></i> Volver al Panel</a>
-            <span class="mx-2">|</span>
-            <span>Actualiza tu información personal</span>
-        </p>
-    </div>
-</section>
 
 <section class="profile-section">
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-lg-9"> <form id="editarPerfilForm" method="POST">
+            <div class="col-lg-9"> 
+                
+                <div class="page-header-custom">
+                    <h2 class="page-title"><i class="fas fa-user-edit mr-2"></i> Mi Perfil</h2>
+                    <a href="index.php?page=user_home" class="btn-back">
+                        <i class="fas fa-arrow-left mr-1"></i> Volver al Panel
+                    </a>
+                </div>
+
+                <form id="editarPerfilForm" method="POST">
                     <input type="hidden" name="id_socio" value="<?= htmlspecialchars($selSocioData['soc_id_socio']) ?>">
 
                     <div class="profile-card">
@@ -180,28 +173,46 @@ if (!$selSocioData) {
                         <div class="card-body-custom">
                             <div class="row">
                                 <div class="col-md-6 form-group mb-4">
-                                    <label for="nombres">Nombres *</label>
+                                    <label>Nombres *</label>
                                     <input type="text" name="nombres" class="form-control" value="<?= htmlspecialchars($selSocioData['soc_nombres']) ?>" required>
                                 </div>
                                 <div class="col-md-6 form-group mb-4">
-                                    <label for="ap_paterno">Apellido Paterno *</label>
+                                    <label>Apellido Paterno *</label>
                                     <input type="text" name="ap_paterno" class="form-control" value="<?= htmlspecialchars($selSocioData['soc_apepat']) ?>" required>
                                 </div>
                                 <div class="col-md-6 form-group mb-4">
-                                    <label for="ap_materno">Apellido Materno</label>
+                                    <label>Apellido Materno</label>
                                     <input type="text" name="ap_materno" class="form-control" value="<?= htmlspecialchars($selSocioData['soc_apemat']) ?>">
                                 </div>
                                 <div class="col-md-6 form-group mb-4">
-                                    <label for="genero">Género</label>
-                                    <select name="genero" class="form-control custom-select">
+                                    <label>Género</label>
+                                    <select name="genero" class="form-control">
                                         <option value="Masculino" <?= ($selSocioData['soc_genero'] == 'Masculino') ? 'selected' : '' ?>>Masculino</option>
                                         <option value="Femenino" <?= ($selSocioData['soc_genero'] == 'Femenino') ? 'selected' : '' ?>>Femenino</option>
                                     </select>
                                 </div>
                                 <div class="col-md-12 form-group mb-0">
-                                    <label for="fecha_nacimiento">Fecha de Nacimiento</label>
-                                    <input type="date" name="fecha_nacimiento" class="form-control" value="<?= htmlspecialchars($selSocioData['soc_fecha_nacimiento']) ?>" 
-                                        <?= ($selSocioData['soc_fecha_nacimiento'] != '0000-00-00') ? 'readonly' : '' ?>>
+                                    <label>Mes de Nacimiento *</label>
+                                    <select name="mes_nacimiento" class="form-control" <?= ($mes_guardado != '') ? 'disabled' : 'required' ?>>
+                                        <option value="" <?= ($mes_guardado == '') ? 'selected' : '' ?> disabled>Selecciona tu Mes</option>
+                                        <option value="01" <?= ($mes_guardado == '01') ? 'selected' : '' ?>>Enero</option>
+                                        <option value="02" <?= ($mes_guardado == '02') ? 'selected' : '' ?>>Febrero</option>
+                                        <option value="03" <?= ($mes_guardado == '03') ? 'selected' : '' ?>>Marzo</option>
+                                        <option value="04" <?= ($mes_guardado == '04') ? 'selected' : '' ?>>Abril</option>
+                                        <option value="05" <?= ($mes_guardado == '05') ? 'selected' : '' ?>>Mayo</option>
+                                        <option value="06" <?= ($mes_guardado == '06') ? 'selected' : '' ?>>Junio</option>
+                                        <option value="07" <?= ($mes_guardado == '07') ? 'selected' : '' ?>>Julio</option>
+                                        <option value="08" <?= ($mes_guardado == '08') ? 'selected' : '' ?>>Agosto</option>
+                                        <option value="09" <?= ($mes_guardado == '09') ? 'selected' : '' ?>>Septiembre</option>
+                                        <option value="10" <?= ($mes_guardado == '10') ? 'selected' : '' ?>>Octubre</option>
+                                        <option value="11" <?= ($mes_guardado == '11') ? 'selected' : '' ?>>Noviembre</option>
+                                        <option value="12" <?= ($mes_guardado == '12') ? 'selected' : '' ?>>Diciembre</option>
+                                    </select>
+                                    
+                                    <?php if($mes_guardado != ''): ?>
+                                        <input type="hidden" name="mes_nacimiento" value="<?= htmlspecialchars($mes_guardado) ?>">
+                                    <?php endif; ?>
+                                    
                                     <small class="form-text"><i class="fas fa-info-circle"></i> Por seguridad, este campo no se puede modificar una vez establecido.</small>
                                 </div>
                             </div>
@@ -216,17 +227,16 @@ if (!$selSocioData) {
                         <div class="card-body-custom">
                             <div class="row">
                                 <div class="col-md-12 form-group mb-4">
-                                    <label for="direccion">Dirección Completa</label>
-                                    <input type="text" name="direccion" class="form-control" value="<?= htmlspecialchars($selSocioData['soc_direccion']) ?>">
+                                    <label>Dirección Completa</label>
+                                    <input type="text" name="direccion" class="form-control" value="<?= htmlspecialchars($selSocioData['soc_direccion']) ?>" required>
                                 </div>
                                 <div class="col-md-6 form-group mb-4">
-                                    <label for="tel_cel">Teléfono Celular</label>
-                                    <input type="text" name="tel_cel" class="form-control" value="<?= htmlspecialchars($selSocioData['soc_tel_cel']) ?>">
+                                    <label>Teléfono Celular</label>
+                                    <input type="text" name="tel_cel" class="form-control" value="<?= htmlspecialchars($selSocioData['soc_tel_cel']) ?>" required>
                                 </div>
                                 <div class="col-md-6 form-group mb-4">
-                                    <label for="correo">Correo Electrónico</label>
+                                    <label>Correo Electrónico</label>
                                     <input type="email" name="correo" class="form-control" value="<?= htmlspecialchars($selSocioData['soc_correo']) ?>" readonly>
-                                    <small class="form-text">El correo electrónico es tu identificador único.</small>
                                 </div>
                             </div>
                         </div>
@@ -240,23 +250,23 @@ if (!$selSocioData) {
                          <div class="card-body-custom">
                             <div class="row">
                                 <div class="col-md-12 form-group mb-4">
-                                    <label for="emer_nombres">Nombre del Contacto</label>
-                                    <input type="text" name="emer_nombres" class="form-control" value="<?= htmlspecialchars($selSocioData['soc_emer_nombres']) ?>">
+                                    <label>Nombre del Contacto</label>
+                                    <input type="text" name="emer_nombres" class="form-control" value="<?= htmlspecialchars($selSocioData['soc_emer_nombres']) ?>" required>
                                 </div>
                                 <div class="col-md-6 form-group mb-4">
-                                    <label for="emer_tel">Teléfono</label>
-                                    <input type="text" name="emer_tel" class="form-control" value="<?= htmlspecialchars($selSocioData['soc_emer_tel']) ?>">
+                                    <label>Teléfono</label>
+                                    <input type="text" name="emer_tel" class="form-control" value="<?= htmlspecialchars($selSocioData['soc_emer_tel']) ?>" required>
                                 </div>
                                 <div class="col-md-6 form-group mb-4">
-                                    <label for="emer_parentesco">Parentesco (Ej. Madre, Hermano)</label>
-                                    <input type="text" name="emer_parentesco" class="form-control" value="<?= htmlspecialchars($selSocioData['soc_emer_parentesco']) ?>">
+                                    <label>Parentesco</label>
+                                    <input type="text" name="emer_parentesco" class="form-control" value="<?= htmlspecialchars($selSocioData['soc_emer_parentesco']) ?>" required>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <div class="text-center mt-5">
-                        <button id="guardarCambiosBtn" type="button" class="save-btn">
+                        <button id="guardarCambiosBtn" type="submit" class="save-btn">
                             <i class="fas fa-save mr-2"></i> Guardar Cambios
                         </button>
                     </div>
@@ -268,23 +278,51 @@ if (!$selSocioData) {
 </section>
 
 <script>
-    document.getElementById('guardarCambiosBtn').addEventListener('click', function() {
-        // Aquí iría tu lógica de AJAX (similar a lo que hemos hecho en otros formularios)
-        // Por ahora, solo un efecto visual de "Cargando"
-        let btn = this;
-        let originalText = btn.innerHTML;
-        
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Guardando...';
-        btn.disabled = true;
-        btn.style.opacity = '0.7';
+    $(document).ready(function() {
+        $('#editarPerfilForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            let btn = $('#guardarCambiosBtn');
+            let originalHTML = btn.html();
+            let form = $(this);
 
-        // Simular envío (Remplazar con submit real)
-        setTimeout(function(){
-            // document.getElementById('editarPerfilForm').submit(); // Descomentar para enviar
-            alert("Funcionalidad de guardado lista para conectar con backend.");
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-            btn.style.opacity = '1';
-        }, 1500);
+            btn.html('<i class="fas fa-spinner fa-spin mr-2"></i> Guardando...');
+            btn.prop('disabled', true).css('opacity', '0.7');
+
+            $.ajax({
+                url: 'api/update_profile_reward.php', 
+                type: 'POST',
+                data: form.serialize(),
+                dataType: 'json',
+                success: function(response) {
+                    btn.html(originalHTML).prop('disabled', false).css('opacity', '1');
+
+                    if (response.success) {
+                        if (response.rewardGiven) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Misión Cumplida!',
+                                text: 'Has completado tu perfil al 100%. ¡Te hemos abonado $35 MXN a tu monedero!',
+                                confirmButtonColor: '#ef4444'
+                            }).then(() => location.reload());
+                        } else {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Actualizado!',
+                                text: 'Tu información se guardó correctamente.',
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => location.reload());
+                        }
+                    } else {
+                        Swal.fire('Error', response.message, 'error');
+                    }
+                },
+                error: function() {
+                    btn.html(originalHTML).prop('disabled', false).css('opacity', '1');
+                    Swal.fire('Error', 'Hubo un problema al conectar con el servidor.', 'error');
+                }
+            });
+        });
     });
 </script>

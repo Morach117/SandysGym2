@@ -10,7 +10,7 @@ $publicPages = [
 $privatePages = [
     'user_home', 'user_information', 'user_rutina',
     'user_calculator', 'user_pago_membresia', 'routine',
-    'gracias', 'pago_fallido','recibo', 'mis_pagos'// <-- AÑADIDAS AQUÍ
+    'gracias', 'pago_fallido','recibo', 'mis_pagos','user_admin_plan','user_referidos'// <-- AÑADIDAS AQUÍ
 ];
 $page = isset($_GET['page']) ? htmlspecialchars($_GET['page']) : 'home';
 $loggedIn = isset($_SESSION['admin']); // O la variable de sesión que uses para socios

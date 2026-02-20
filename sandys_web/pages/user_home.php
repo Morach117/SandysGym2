@@ -239,3 +239,82 @@ if ($miembroActivo && in_array($idServicioActivo, $serviciosPlanFamiliar)) {
     </div>
 
 </div>
+
+<?php 
+// =========================================================================
+// --- DETECTOR DE INVITACIONES MÁGICAS ---
+// =========================================================================
+$pendingInviteId = $_COOKIE['gym_pending_invite'] ?? $_SESSION['gym_pending_invite'] ?? null;
+
+// Solo mostramos la alerta si hay invitación y el invitado NO es el mismo anfitrión
+if ($pendingInviteId && $pendingInviteId != $socioId): 
+?>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    $(document).ready(function() {
+        const hostId = "<?php echo htmlspecialchars($pendingInviteId); ?>";
+        
+        // 1. Consultamos quién lo invitó
+        $.ajax({
+            url: 'api/join_plan_session.php',
+            type: 'POST',
+            data: { host_id: hostId, action: 'check' },
+            dataType: 'json',
+            success: function(res) {
+                if (res.success) {
+                    // 2. Disparamos el Modal de Aceptación
+                    Swal.fire({
+                        title: '¡Invitación Especial!',
+                        html: `<strong>${res.host_name}</strong> te ha invitado a unirte a su Plan Grupal en Sandy's Gym.<br><br>¿Aceptas la invitación?`,
+                        icon: 'info',
+                        showCancelButton: true,
+                        confirmButtonColor: '#10b981', // Verde confirmación
+                        cancelButtonColor: '#333',
+                        confirmButtonText: 'Sí, unirme al plan',
+                        cancelButtonText: 'Más tarde',
+                        background: '#1a1a1a',
+                        color: '#fff'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            unirAlPlan(hostId);
+                        }
+                    });
+                }
+            }
+        });
+    });
+
+    function unirAlPlan(hostId) {
+        Swal.fire({
+            title: 'Vinculando cuenta...',
+            background: '#1a1a1a', color: '#fff',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        // 3. Confirmamos la vinculación en la BD
+        $.post('api/join_plan_session.php', { host_id: hostId, action: 'confirm' }, function(res) {
+            if (res.success) {
+                // Limpiamos el LocalStorage por precaución
+                localStorage.removeItem('gym_pending_invite');
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Bienvenido al grupo!',
+                    text: 'Ya eres parte del plan familiar.',
+                    background: '#1a1a1a', color: '#fff',
+                    confirmButtonColor: '#ef4444'
+                }).then(() => location.reload());
+            } else {
+                Swal.fire({
+                    icon: 'error', 
+                    title: 'Ups...', 
+                    text: res.message, 
+                    background: '#1a1a1a', color: '#fff'
+                });
+            }
+        }, 'json');
+    }
+</script>
+<?php endif; ?>

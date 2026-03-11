@@ -1,9 +1,9 @@
-name: Deploy to IONOS via FTPS
+name: Deploy to IONOS via SFTP
 
 on:
   push:
     branches:
-      - main # Si tu rama principal se llama 'master', cámbialo aquí.
+      - main 
 
 jobs:
   web-deploy:
@@ -12,16 +12,14 @@ jobs:
     steps:
     - name: 1. Obtener el código más reciente
       uses: actions/checkout@v4
-      with:
-        fetch-depth: 2
 
-    - name: 2. Sincronizar archivos con IONOS
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+    - name: 2. Sincronizar archivos con IONOS por SFTP
+      uses: wlixcc/SFTP-Deploy-Action@v1.2.4
       with:
         server: ${{ secrets.FTP_SERVER }}
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
-        protocol: ftps
-        # IMPORTANTE: Si los archivos en Ionos van dentro de una carpeta específica, 
-        # colócala aquí (ej. /htdocs o /nombredeldominio.com). Si van en la raíz, déjalo en /
-        server-dir: /
+        port: 22
+        # Si va en la raíz déjalo así, si va en otra carpeta cámbialo a '/tu_carpeta'
+        remote_path: '/' 
+        sftp_only: true

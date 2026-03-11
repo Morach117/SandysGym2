@@ -13,6 +13,19 @@ jobs:
     - name: 1. Obtener el código más reciente
       uses: actions/checkout@v4
 
+    - name: 1.5. Limpiar carpetas pesadas y archivos basura
+      run: |
+        # Borramos las librerías pesadas y carpetas específicas de tu proyecto
+        rm -rf funciones_globales
+        rm -rf Sandys
+        rm -rf sandys_web/phpmailer
+        rm -rf sandys_web/vendor
+        
+        # Borramos archivos de control de versiones y bases de datos
+        rm -rf .git
+        rm -rf .github
+        rm -f *.sql
+
     - name: 2. Sincronizar archivos con IONOS por SFTP
       uses: wlixcc/SFTP-Deploy-Action@v1.2.4
       with:
@@ -20,6 +33,16 @@ jobs:
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         port: 22
-        # Si va en la raíz déjalo así, si va en otra carpeta cámbialo a '/tu_carpeta'
         remote_path: '/' 
         sftp_only: true
+
+    # ---------------------------------------------------------
+    # Si quieres activar la alerta de Discord que vimos antes, 
+    # solo quita el símbolo '#' de las siguientes líneas:
+    # ---------------------------------------------------------
+    # - name: 3. Alerta de Discord
+    #   uses: Ilshidur/action-discord@master
+    #   env:
+    #     DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+    #   with:
+    #     args: '✅ ¡Éxito! La página se ha actualizado y reparado en IONOS.'

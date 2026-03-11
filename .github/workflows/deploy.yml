@@ -23,6 +23,9 @@ jobs:
         rm -rf imagenes
         rm -rf sandys_web/assets/videos
         
+        # Evitamos el error de "Permission denied" con la carpeta del sistema de IONOS
+        rm -rf logs
+        
         # Borramos archivos de control de versiones y bases de datos
         rm -rf .git
         rm -rf .github

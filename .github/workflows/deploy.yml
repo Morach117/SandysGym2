@@ -20,6 +20,8 @@ jobs:
         rm -rf Sandys
         rm -rf sandys_web/phpmailer
         rm -rf sandys_web/vendor
+        rm -rf imagenes
+        rm -rf sandys_web/assets/videos
         
         # Borramos archivos de control de versiones y bases de datos
         rm -rf .git

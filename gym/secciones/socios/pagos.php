@@ -609,7 +609,7 @@ $archivo_img = nombre_archivo_imagen($id_socio);
 
         function aplicarDescuentoPromocional(codigo) {
             // Permitimos aplicar si no hay descuento de cumple previo o si es EL descuento de cumple
-            if (descuentoCumpleanosAplicado && codigo !== '10W02Z95') return;
+            if (descuentoCumpleanosAplicado && codigo !== '22M40G20') return;
 
             var servicioSeleccionado = $("#servicio").val();
             var id_servicio = servicioSeleccionado.split('-')[0];
@@ -680,9 +680,9 @@ $archivo_img = nombre_archivo_imagen($id_socio);
                     success: function(resp) {
                         if (!resp.usado) {
                             alert("¡Feliz cumpleaños! Tienes un descuento especial por ser tu mes.");
-                            $("#codigo_promocion").val("10W02Z95");
+                            $("#codigo_promocion").val("22M40G20");
                             descuentoCumpleanosAplicado = true;
-                            aplicarDescuentoPromocional("10W02Z95");
+                            aplicarDescuentoPromocional("22M40G20");
                             if (callback) callback(true);
                         } else {
                             // Ya usó el descuento este año

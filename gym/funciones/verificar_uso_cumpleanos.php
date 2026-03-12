@@ -22,7 +22,7 @@ $conexion = obtener_conexion();
 $id_socio = isset($_GET['id_socio']) ? intval($_GET['id_socio']) : 0;
 $anio_actual = date('Y');
 $mes_actual = date('m');
-$codigo_cumple = '10W02Z95'; 
+$codigo_cumple = '22M40G20'; 
 
 $response = array(
     'success' => false,

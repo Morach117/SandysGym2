@@ -173,10 +173,8 @@ if (!empty($fecha_bd) && $fecha_bd != '0000-00-00') {
                         </div>
                         <div class="card-body-custom">
                             <div class="row">
-                                <div class="col-md-12 form-group mb-4">
-                                    <label>Dirección Completa *</label>
-                                    <input type="text" name="direccion" class="form-control" value="<?= htmlspecialchars($selSocioData['soc_direccion']) ?>" required>
-                                </div>
+                                <input type="hidden" name="direccion" value="<?= htmlspecialchars($selSocioData['soc_direccion']) ?>">
+
                                 <div class="col-md-6 form-group mb-4">
                                     <label>WhatsApp / Celular *</label>
                                     <input type="text" name="tel_cel" class="form-control" value="<?= htmlspecialchars($selSocioData['soc_tel_cel']) ?>" required>

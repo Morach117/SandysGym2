@@ -70,7 +70,7 @@
                 <option value="">Todos</option>
                 <?= $opciones_mes ?>
             </select>
-        </div>			
+        </div>
 
         <div class="col-md-6">Si se selecciona <b>Todos los meses</b>, tardará el cargar la lista</div>
     </div>
@@ -108,8 +108,13 @@
     <div class="row">
         <div class="col-md-12">
             <input type="submit" class="btn btn-primary" value="Buscar" name="enviar" />
-            <a class="btn btn-success" target="_blank" href=".?s=reportes&i=tickets&d=pdf<?= $link ?>">
-                <span class="glyphicon glyphicon-print"></span> Descargar PDF de Inventario
+
+            <a class="btn btn-success" target="_blank" href=".?s=reportes&i=tickets&d=pdf_basico<?= $link ?>">
+                <span class="glyphicon glyphicon-print"></span> PDF Simple (Solo Folios)
+            </a>
+
+            <a class="btn btn-info" target="_blank" href=".?s=reportes&i=tickets&d=pdf_completo<?= $link ?>">
+                <span class="glyphicon glyphicon-list-alt"></span> PDF Completo (Tabla Detallada)
             </a>
         </div>
     </div>

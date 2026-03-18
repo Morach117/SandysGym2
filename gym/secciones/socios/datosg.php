@@ -1,7 +1,26 @@
 <?php
+    // Array auxiliar para los meses
+    $meses = [
+        1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril', 
+        5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto', 
+        9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'
+    ];
+
     $mensaje = array();
     
     if($enviar) {
+        
+        // --- CONVERSIÓN DE MES A FECHA SQL PARA EDICIÓN ---
+        $soc_mes_nacimiento = isset($_POST['soc_mes_nacimiento']) ? $_POST['soc_mes_nacimiento'] : '';
+        if(!empty($soc_mes_nacimiento)){
+            // Construimos la fecha ficticia: Año 2000, Día 01, y el Mes seleccionado.
+            $fecha_sql = "2000-" . str_pad($soc_mes_nacimiento, 2, "0", STR_PAD_LEFT) . "-01";
+            $_POST['soc_fecha_nacimiento'] = $fecha_sql;
+        } else {
+            $_POST['soc_fecha_nacimiento'] = NULL;
+        }
+        // --------------------------------------------------
+
         $mensaje = validar_registro_socios();
         
         if($mensaje['num'] == 1) {
@@ -23,6 +42,13 @@
     if(!$datos) {
         header("Location: .?s=socios");
         exit;
+    }
+
+    // --- EXTRAER EL MES ACTUAL DE LA BD PARA EL SELECT ---
+    $mes_actual = '';
+    if(!empty($datos['soc_fecha_nacimiento']) && $datos['soc_fecha_nacimiento'] != '0000-00-00') {
+        // Convertimos la fecha (ej. 2000-05-01) a timestamp y sacamos el mes como número entero
+        $mes_actual = (int) date('m', strtotime($datos['soc_fecha_nacimiento']));
     }
 ?>
 
@@ -102,20 +128,25 @@
     </div>
     
     <div class="row">
-    <label class="col-md-2" <?php if ($_SESSION['sans_rol'] != 'S') echo 'style="display: none;"'; ?>>Descuento (%)</label>
-    <div class="col-md-4">
-        <input type="number" class="form-control" name="soc_descuento" min="0" max="100" value="<?= $soc_descuento ?>" <?php if ($_SESSION['sans_rol'] != 'S') echo 'style="display: none;"'; ?> />
+        <label class="col-md-2" <?php if ($_SESSION['sans_rol'] != 'S') echo 'style="display: none;"'; ?>>Descuento (%)</label>
+        <div class="col-md-4">
+            <input type="number" class="form-control" name="soc_descuento" min="0" max="100" value="<?= isset($datos['soc_descuento']) ? $datos['soc_descuento'] : '' ?>" <?php if ($_SESSION['sans_rol'] != 'S') echo 'style="display: none;"'; ?> />
+        </div>
     </div>
-</div>
 
-<div class="row">
-    <label class="col-md-2">Fecha de Nacimiento <span class="text-danger"></span></label>
-    <div class="col-md-4">
-        <input type="date" class="form-control" name="soc_fecha_nacimiento"  value="<?= $datos['soc_fecha_nacimiento'] ?>" />
+    <div class="row">
+        <label class="col-md-2">Mes de Nacimiento</label>
+        <div class="col-md-4">
+            <select class="form-control" name="soc_mes_nacimiento">
+                <option value="">-- Seleccionar Mes --</option>
+                <?php foreach($meses as $num => $nombre): ?>
+                    <option value="<?= $num ?>" <?= ($mes_actual === $num) ? 'selected' : '' ?>>
+                        <?= $nombre ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
     </div>
-</div>
-
-    
     <div class="row">
         <div class="col-md-12">
             <h5 class="text-info"><strong>Persona a quién llamar en casos de emergencia.</strong></h5>

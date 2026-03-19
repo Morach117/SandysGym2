@@ -83,7 +83,10 @@ if ($id_socio > 0 && $conexion) {
 }
 
 // Limpiamos cualquier salida de texto anterior (errores warnings) para que sea JSON puro
-ob_clean(); 
+// Verificamos si hay un buffer activo antes de intentar limpiarlo
+if (ob_get_level() > 0) {
+    ob_clean(); 
+}
 header('Content-Type: application/json');
 echo json_encode($response);
 ?>

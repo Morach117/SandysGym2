@@ -114,6 +114,20 @@ if ($enviar) {
 $nombre = obtener_datos_socio();
 $tabla = lista_pagos_socio();
 $archivo_img = nombre_archivo_imagen($id_socio);
+
+// --- NUEVO: Extraer solo el mes de nacimiento para validación visual ---
+$mes_texto = "No registrado";
+if (!empty($nombre['soc_fecha_nacimiento']) && $nombre['soc_fecha_nacimiento'] != '0000-00-00') {
+    $meses_nombres = [
+        1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril', 
+        5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto', 
+        9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'
+    ];
+    $num_mes = (int) date('m', strtotime($nombre['soc_fecha_nacimiento']));
+    if (isset($meses_nombres[$num_mes])) {
+        $mes_texto = $meses_nombres[$num_mes];
+    }
+}
 ?>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
@@ -145,6 +159,13 @@ $archivo_img = nombre_archivo_imagen($id_socio);
         <label class="col-md-3">Descuento del Cliente (%)</label>
         <label class="col-md-9">
             <?= $nombre['soc_descuento'] ?>%
+        </label>
+    </div>
+
+    <div class="row">
+        <label class="col-md-3">Mes de Cumpleaños</label>
+        <label class="col-md-9 text-primary" style="font-weight: bold;">
+            <i class="fas fa-birthday-cake"></i> <?= $mes_texto ?>
         </label>
     </div>
 
@@ -347,6 +368,7 @@ $archivo_img = nombre_archivo_imagen($id_socio);
                         value="<?= $pag_fecha_fin ?>" autocomplete="off" readonly="on" />
                 </div>
             </div>
+
             <div class="row">
                 <label class="col-md-5">Código de Promoción</label>
                 <div class="col-md-7">
@@ -490,6 +512,7 @@ $archivo_img = nombre_archivo_imagen($id_socio);
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var descuentoCumpleanosAplicado = false;
+    var yaUsoDescuentoCumple = false; // VARIABLE GLOBAL PARA BLOQUEAR EL CÓDIGO
     var idSocioGlobal = $('#id_socio').val();
 
     // --------------------------------------------------------
@@ -507,7 +530,6 @@ document.addEventListener('DOMContentLoaded', function() {
             success: function(response) {
                 if (response.success) {
                     if (id_socio == idSocioGlobal) {
-                        // Si es el socio principal, llenamos el input principal
                         var fechaInput = document.getElementById('pag_fecha_ini');
                         fechaInput.value = response.fecha_pago;
 
@@ -536,14 +558,12 @@ document.addEventListener('DOMContentLoaded', function() {
         var servicio = $('#servicio').val();
         var fecha_ini_input = $('#pag_fecha_ini');
 
-        // Mostrar u ocultar el importe manual
         if (servicio == '5-1') {
             $('#importe').show();
         } else {
             $('#importe').hide();
         }
 
-        // Validar modales especiales
         if (servicio === '123-1') {
             $('#modalSeleccionIntegrantes').modal('show');
         } else if (servicio === '167-1') {
@@ -557,7 +577,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 envio: true
             }, function(datos) {
                 $('#pag_fecha_fin').val(datos);
-                obtenerCuotaServicio(); // Calcular montos
+                obtenerCuotaServicio();
             });
         }
 
@@ -572,9 +592,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Asignar evento al cambio de servicio principal
     $('#servicio').change(calcular_servicio_principal);
-    // Asignar evento al cambio de fecha manual
     $('#pag_fecha_ini').change(calcular_servicio_principal);
 
 
@@ -600,10 +618,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     var cuota = parseFloat(respuesta.cuota);
                     $("#subtotal").text(cuota.toFixed(2));
 
-                    // 1. Intentamos verificar cumpleaños (que tiene prioridad)
                     verificarCumpleanos(function(esCumple) {
                         if (!esCumple) {
-                            // 2. Si no es cumple o ya se usó, ver descuento normal
                             if (!descuentoCumpleanosAplicado) {
                                 var descuentoCliente = parseFloat($(
                                     '#descuento_cliente_hidden').val());
@@ -616,7 +632,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             }
                         }
                     });
-
                 } else {
                     console.error("Error cuota:", respuesta.error);
                 }
@@ -634,13 +649,29 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function aplicarDescuentoPromocional(codigo) {
-        // Permitimos aplicar si no hay descuento de cumple previo o si es EL descuento de cumple
+        // BLOQUEO DE SEGURIDAD PARA INGRESO MANUAL
+        if (codigo === '22M40G20' && yaUsoDescuentoCumple) {
+            alert("El socio ya utilizó su promoción de cumpleaños este año.");
+            $("#codigo_promocion").val("");
+
+            // Restaurar precios
+            var cuotaOriginal = parseFloat($("#subtotal").text());
+            var descCliente = parseFloat($('#descuento_cliente_hidden').val());
+
+            if (!isNaN(descCliente) && descCliente > 0) {
+                aplicarDescuentoCliente(descCliente);
+            } else {
+                $("#descuento").text('0.00');
+                $("#total").text(cuotaOriginal.toFixed(2));
+            }
+            return;
+        }
+
         if (descuentoCumpleanosAplicado && codigo !== '22M40G20') return;
 
         var servicioSeleccionado = $("#servicio").val();
         var id_servicio = servicioSeleccionado.split('-')[0];
 
-        // Verificamos si el servicio permite promos
         verificarDescuentosPromocionales(id_servicio);
 
         $.ajax({
@@ -654,7 +685,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     var descPorc = parseFloat(resp.porcentaje_descuento);
                     var cuota = parseFloat($("#subtotal").text());
 
-                    // Sumar descuento cliente si existe
                     var descCliente = parseFloat($('#descuento_cliente_hidden').val());
                     var totalDescPorc = descPorc;
 
@@ -674,44 +704,46 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- FUNCIÓN DE CUMPLEAÑOS CORREGIDA ---
     function verificarCumpleanos(callback) {
-        var fechaNacString = $('#fecha_nacimiento_hidden').val(); // Formato esperado: 2000-05-01
+        var fechaNacString = $('#fecha_nacimiento_hidden').val();
         if (!fechaNacString) {
             if (callback) callback(false);
             return;
         }
 
-        // Usar split para evitar problemas de zona horaria con new Date()
         var partes = fechaNacString.split('-');
-        // partes[0] = Año, partes[1] = Mes, partes[2] = Día
         if (partes.length < 2) {
             if (callback) callback(false);
             return;
         }
 
-        var mesNacimiento = parseInt(partes[1], 10); // Convertir a entero (1-12)
+        var mesNacimiento = parseInt(partes[1], 10);
         var fechaActual = new Date();
-        var mesActual = fechaActual.getMonth() + 1; // getMonth es 0-11, sumamos 1
+        var mesActual = fechaActual.getMonth() + 1;
 
         if (mesNacimiento === mesActual) {
-            // Es el mes de cumpleaños. Ahora verificamos en BD si ya lo usó este año.
             $.ajax({
-                url: './funciones/verificar_uso_cumpleanos.php', // ARCHIVO NUEVO
+                url: './funciones/verificar_uso_cumpleanos.php',
                 type: 'GET',
                 data: {
                     id_socio: idSocioGlobal
                 },
                 dataType: 'json',
                 success: function(resp) {
-                    if (!resp.usado) {
+
+                    // Activamos la bandera global si ya lo usó
+                    if (resp.ya_uso_descuento) {
+                        yaUsoDescuentoCumple = true;
+                    }
+
+                    // Validamos con el nombre correcto de variable JSON
+                    if (!resp.ya_uso_descuento) {
                         alert("¡Feliz cumpleaños! Tienes un descuento especial por ser tu mes.");
                         $("#codigo_promocion").val("22M40G20");
                         descuentoCumpleanosAplicado = true;
                         aplicarDescuentoPromocional("22M40G20");
                         if (callback) callback(true);
                     } else {
-                        // Ya usó el descuento este año
                         if (callback) callback(false);
                     }
                 },
@@ -743,7 +775,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Evento cambio manual de código promo
     $("#codigo_promocion").change(function() {
         if (this.value) aplicarDescuentoPromocional(this.value);
     });
@@ -762,12 +793,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 var socios = JSON.parse(data);
                 var opts = '<option value="">Selecciona un socio</option>';
                 socios.forEach(function(s) {
-                    // Validación para evitar imprimir "undefined" como texto
                     var fIni = (s.fecha_inicial && s.fecha_inicial !== 'undefined') ? s
                         .fecha_inicial : '';
                     var fFin = (s.fecha_fin && s.fecha_fin !== 'undefined') ? s.fecha_fin :
                         '';
-
                     opts +=
                         `<option value="${s.soc_id_socio}" data-fecha-inicial="${fIni}" data-fecha-fin="${fFin}">${s.nombre}</option>`;
                 });
@@ -786,13 +815,11 @@ document.addEventListener('DOMContentLoaded', function() {
         buscarClientesAjax(this.value, '#pareja');
     });
 
-    // Calculo de fechas internas en modales
     function actualizarFechasModal(selectObj, inputIni, inputFin, divContainer) {
         var opt = $(selectObj).find(':selected');
         var fIni = opt.data('fecha-inicial');
         var servicio = $('#servicio').val();
 
-        // Si el usuario vuelve a elegir "Selecciona un socio" (valor vacío), ocultamos los campos
         if (!opt.val()) {
             $(divContainer).slideUp();
             $(inputIni).val('');
@@ -800,21 +827,17 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Si el socio no tiene fecha previa o es "undefined", usamos la fecha de hoy
         if (!fIni || fIni === 'undefined' || fIni === 'null' || fIni === '') {
             var hoy = new Date();
             var dd = String(hoy.getDate()).padStart(2, '0');
-            var mm = String(hoy.getMonth() + 1).padStart(2, '0'); // Enero es 0
+            var mm = String(hoy.getMonth() + 1).padStart(2, '0');
             var yyyy = hoy.getFullYear();
-
             fIni = dd + '-' + mm + '-' + yyyy;
         }
 
-        // Mostramos el contenedor y ponemos la fecha inicial (la guardada o la de hoy)
         $(inputIni).val(fIni);
         $(divContainer).slideDown();
 
-        // Enviamos la fecha inicial a PHP para calcular automáticamente el vencimiento
         $.post("peticiones/pet_socios_pagos.php", {
             fecha: fIni,
             servicio: servicio,
@@ -835,7 +858,6 @@ document.addEventListener('DOMContentLoaded', function() {
             '#seleccionFechas');
     });
 
-    // Botones guardar modal
     $('#guardarIntegrantes').click(function() {
         if (!$('#integrante1').val() || !$('#integrante2').val()) {
             alert("Selecciona ambos integrantes");
@@ -843,6 +865,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         $('#modalSeleccionIntegrantes').modal('hide');
     });
+
     $('#guardarPareja').click(function() {
         if (!$('#pareja').val()) {
             alert("Selecciona la pareja");
@@ -851,7 +874,6 @@ document.addEventListener('DOMContentLoaded', function() {
         $('#modalMensualidadPareja').modal('hide');
     });
 
-    // Mostrar lista visual
     function mostrarIntegrantesSeleccionados() {
         var lista = $('#lista-integrantes');
         lista.empty();
@@ -883,6 +905,7 @@ document.addEventListener('DOMContentLoaded', function() {
     $('#tiene_referidos').change(function() {
         $('#referidos-section').toggle(this.checked);
     });
+
     $('#buscar-referido').click(function() {
         $('#modalReferidos').modal('show');
     });
@@ -906,10 +929,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 socios.forEach(s => {
                     var li = $(
                         `<li class="list-group-item list-group-item-action">${s.nombre}</li>`
-                    );
+                        );
                     li.click(function() {
-                        $('#referidos').val(s
-                            .soc_id_socio); // Asumimos ID como referencia
+                        $('#referidos').val(s.soc_id_socio);
                         verificarTelefono(s.soc_id_socio);
                         $('#modalReferidos').modal('hide');
                     });
@@ -974,10 +996,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 success: function(resp) {
                     if (resp.success) {
                         var saldo = parseFloat(resp.saldo_monedero);
-                        var total = parseFloat($("#subtotal")
-                            .text()); // Usamos subtotal base o total con desc?
-                        // Lo lógico es pagar el total final
+                        var total = parseFloat($("#subtotal").text());
                         var totalPagar = parseFloat($("#total").text());
+
                         if (isNaN(totalPagar)) totalPagar = total;
 
                         $('#monedero-section').show();

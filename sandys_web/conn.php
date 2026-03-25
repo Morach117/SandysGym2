@@ -19,7 +19,8 @@ if (session_status() === PHP_SESSION_NONE) {
 // Lista de hosts que consideramos "locales"
 $local_hosts = [
     'localhost',
-    '127.0.0.1'
+    '127.0.0.1',
+    'gym.test'
 ];
 
 // Revisa en qué host (dominio) se está ejecutando el script

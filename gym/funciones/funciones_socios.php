@@ -86,7 +86,7 @@
         return $opc_busqueda;
     }
     
-    function lista_socios()
+function lista_socios()
     {
         global $conexion, $id_empresa, $gbl_paginado;
         
@@ -97,31 +97,21 @@
         $pagina     = (request_var('pag', 1) - 1) * $gbl_paginado;
         $fecha_mov  = date('Y-m-d');
         
-        // --- CAMBIO 1: Ajustado el colspan de 8 a 7 ---
         $colspan    = 7; 
         
         $var_total  = 0;
         $var_exito  = array();
         
-        // Parameters for pagination
         $pag_bloque = request_var('blq', 0);
         $pag_pag    = request_var('pag', 0);
         
         $parametros = "";
         
-        if ($pag_opciones)
-            $parametros .= "&pag_opciones=$pag_opciones";
+        if ($pag_opciones) $parametros .= "&pag_opciones=$pag_opciones";
+        if ($pag_busqueda) $parametros .= "&pag_busqueda=$pag_busqueda";
+        if ($pag_bloque) $parametros .= "&blq=$pag_bloque";
+        if ($pag_pag) $parametros .= "&pag=$pag_pag";
         
-        if ($pag_busqueda)
-            $parametros .= "&pag_busqueda=$pag_busqueda";
-        
-        if ($pag_bloque)
-            $parametros .= "&blq=$pag_bloque";
-        
-        if ($pag_pag)
-            $parametros .= "&pag=$pag_pag";
-        
-        // Queries
         if ($pag_busqueda) {
             $limite     = 'LIMIT 0, 50';
             $condicion  = "AND (LOWER(CONCAT(soc_apepat, ' ', soc_apemat, ' ', soc_nombres)) LIKE LOWER('%$pag_busqueda%'))";
@@ -130,20 +120,11 @@
             $condicion  = "";
         }
         
-        if ($pag_opciones == 1)
-            $condicion .= " AND DATE_FORMAT(soc_fecha_captura, '%Y-%m-%d') = '$fecha_mov' ";
+        if ($pag_opciones == 1) $condicion .= " AND DATE_FORMAT(soc_fecha_captura, '%Y-%m-%d') = '$fecha_mov' ";
+        if ($pag_opciones == 2) $condicion .= " AND DATE_FORMAT(pag_fecha_pago, '%Y-%m-%d') = '$fecha_mov' ";
+        if ($pag_opciones == 3) $condicion .= " AND DATE_FORMAT(pag_fecha_fin, '%Y-%m-%d') = '$fecha_mov' ";
+        if ($pag_opciones == 4) $condicion .= " AND pag_id_pago IS NULL ";
         
-        if ($pag_opciones == 2)
-            $condicion .= " AND DATE_FORMAT(pag_fecha_pago, '%Y-%m-%d') = '$fecha_mov' ";
-        
-        if ($pag_opciones == 3)
-            $condicion .= " AND DATE_FORMAT(pag_fecha_fin, '%Y-%m-%d') = '$fecha_mov' ";
-
-        // --- CAMBIO 2: Lógica para Opción 4 (Vencidos) ---
-        if ($pag_opciones == 4)
-            $condicion .= " AND pag_id_pago IS NULL ";
-        
-        // Query for pagination count
         $query      = "SELECT COUNT(*) AS total
                        FROM san_socios
                        LEFT JOIN san_pagos ON pag_id_socio = soc_id_socio
@@ -160,17 +141,14 @@
                        GROUP BY soc_id_socio";
         
         $resultado = mysqli_query($conexion, $query);
-        
-        if ($resultado)
-            $var_total = mysqli_num_rows($resultado);
-        
+        if ($resultado) $var_total = mysqli_num_rows($resultado);
         mysqli_free_result($resultado);
         
-        // Query for data retrieval
         $query      = "SELECT soc_id_socio AS id_socio,
                               pag_id_pago AS id_pago,
                               CONCAT(soc_apepat, ' ', soc_apemat, ' ', soc_nombres) AS nombres,
                               soc_correo,
+                              soc_correo_status,
                               DATE_FORMAT(soc_fecha_nacimiento, '%d-%m-%Y') AS fecha_nacimiento,
                               soc_tel_cel,
                               IF(pag_id_pago > 0, CONCAT(DATE_FORMAT(pag_fecha_ini, '%d-%m-%Y'), ' al ', DATE_FORMAT(pag_fecha_fin, '%d-%m-%Y')), 'Pago Vencido') AS status_pago
@@ -195,70 +173,64 @@
         if ($resultado) {
             $i = 1;
             while ($fila = mysqli_fetch_assoc($resultado)) {
-                if (file_exists("../imagenes/avatar/$fila[id_socio].jpg"))
-                    $fotografia = "<img src='../imagenes/avatar/$fila[id_socio].jpg' class='img-responsive' width='40px' />";
-                else
-                    $fotografia = "<img src='../imagenes/avatar/noavatar.jpg' class='img-responsive' width='40px' />";
                 
-                // --- CAMBIO 3: Lógica para sombreado rojo ---
+                // --- LÓGICA DE FOTOS OPTIMIZADA ---
+                if (file_exists("../imagenes/avatar/$fila[id_socio].jpg")) {
+                    $fotografia = "<a href='../imagenes/avatar/$fila[id_socio].jpg' target='_blank' class='btn btn-xs btn-info' style='color:#fff; font-weight:bold; text-decoration:none;'>Ver Foto</a>";
+                } else {
+                    $fotografia = "<span class='label label-danger' style='font-size: 11px; font-weight: bold;'>SIN FOTO</span>";
+                }
+                
+                // --- LÓGICA DE FONDOS CON !important ---
                 $estilo_fila = "";
+                
+                // Prioridad 1: Sombreado rojo si faltan datos de contacto
                 if (empty($fila['soc_correo']) || empty($fila['soc_tel_cel'])) {
-                    $estilo_fila = "style='background-color: #ffe6e6;'";
+                    // El !important obliga a la tabla a pintar la celda
+                    $estilo_fila = "style='background-color: #ffe6e6 !important;'"; 
+                } 
+                // Prioridad 2: Distintivo VERDE si la cuenta web está activada
+                else if ($fila['soc_correo_status'] == 1) {
+                    // Un verde claro que no lastima la vista
+                    $estilo_fila = "style='background-color: #e6ffe6 !important;'"; 
                 }
 
                 $datos .= "<tr $estilo_fila>
-                               <td>" . ($pagina + $i) . "</td>
-                               <td>
+                               <td $estilo_fila>" . ($pagina + $i) . "</td>
+                               <td $estilo_fila>
                                    <div class='btn-group'>
                                        <a class='pointer' dropdown-toggle' data-toggle='dropdown'>
                                            <span class='glyphicon glyphicon-chevron-down'></span>
                                        </a>
                                        <ul class='dropdown-menu'>
-                                           <li>
-                                               <a href='.?s=socios&i=datosg&id_socio=$fila[id_socio]'><span class='glyphicon glyphicon-edit'></span> Actualizar información</a>
-                                           </li>
-                                           
-                                           <li>
-                                               <a href='.?s=socios&i=pagos&id_socio=$fila[id_socio]$parametros'><span class='glyphicon glyphicon-usd'></span> Pago de Cuotas</a>
-                                           </li>
-                                            <li>
-                                                <a href='?s=prepagos&i=editar&id_socio=$fila[id_socio]&$parametros'><span class='glyphicon glyphicon-usd'></span> Monedero</a>
-                                            </li>
-                                           
-                                           <li>
-                                               <a href='.?s=socios&i=fotografia&id_socio=$fila[id_socio]'><span class='glyphicon glyphicon-picture'></span> Fotografía</a>
-                                           </li>
-                                           
-                                           <li>
-                                               <a href='.?s=socios&i=fechas&id_socio=$fila[id_socio]&id_pago=$fila[id_pago]'><span class='glyphicon glyphicon-calendar'></span> Cambio de Fechas</a>
-                                           </li>
-    
-                                           <li>
-                                               <a href='.?s=socios&i=eliminar&id_socio=$fila[id_socio]'><span class='glyphicon glyphicon-remove'></span> Eliminar</a>
-                                           </li>
+                                           <li><a href='.?s=socios&i=datosg&id_socio=$fila[id_socio]'><span class='glyphicon glyphicon-edit'></span> Actualizar información</a></li>
+                                           <li><a href='.?s=socios&i=pagos&id_socio=$fila[id_socio]$parametros'><span class='glyphicon glyphicon-usd'></span> Pago de Cuotas</a></li>
+                                           <li><a href='?s=prepagos&i=editar&id_socio=$fila[id_socio]&$parametros'><span class='glyphicon glyphicon-usd'></span> Monedero</a></li>
+                                           <li><a href='.?s=socios&i=fotografia&id_socio=$fila[id_socio]'><span class='glyphicon glyphicon-picture'></span> Fotografía</a></li>
+                                           <li><a href='.?s=socios&i=fechas&id_socio=$fila[id_socio]&id_pago=$fila[id_pago]'><span class='glyphicon glyphicon-calendar'></span> Cambio de Fechas</a></li>
+                                           <li><a href='.?s=socios&i=eliminar&id_socio=$fila[id_socio]'><span class='glyphicon glyphicon-remove'></span> Eliminar</a></li>
                                        </ul>
                                    </div>
                                </td>
-                               <td>$fila[nombres]</td>
-                               <td>$fila[soc_correo]</td>
-                               <td>$fila[soc_tel_cel]</td>
-                               <td>$fila[status_pago]</td>
-                               <td><a href='.?s=socios&i=fotografia&id_socio=$fila[id_socio]'>$fotografia</span></a></td>
+                               <td $estilo_fila>$fila[nombres]</td>
+                               <td $estilo_fila>$fila[soc_correo]</td>
+                               <td $estilo_fila>$fila[soc_tel_cel]</td>
+                               <td $estilo_fila>$fila[status_pago]</td>
+                               <td $estilo_fila style='text-align: center; vertical-align: middle;'>$fotografia</td>
                            </tr>";
                 $i++;
             }
-        } else
+        } else {
             $datos = "<tr><td colspan='$colspan'>Ocurrió un problema al obtener los datos. " . mysqli_error($conexion) . "</td></tr>";
+        }
         
-        if (!$datos)
-            $datos = "<tr><td colspan='$colspan'>No hay datos.</td></tr>";
+        if (!$datos) $datos = "<tr><td colspan='$colspan'>No hay datos.</td></tr>";
         
         $var_exito['num'] = $var_total;
         $var_exito['msj'] = $datos;
         
         return $var_exito;
     }
-
     
     function obtener_socios_vigencia_rango( $rango_ini, $rango_fin, $pag_busqueda )
     {

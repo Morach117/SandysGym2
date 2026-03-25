@@ -1,4 +1,6 @@
 <?php
+// pages/referidos.php
+
 // --- INCLUDES OBLIGATORIOS ---
 require_once 'conn.php';
 include('./api/select_data.php'); // Datos del usuario logueado ($selSocioData)
@@ -12,10 +14,9 @@ if (!$selSocioData) {
 // 2. VARIABLES DEL USUARIO ACTUAL
 $miId = $selSocioData['soc_id_socio'];
 $miNombre = htmlspecialchars($selSocioData['soc_nombres']);
-$miTelefono = $selSocioData['soc_tel_cel']; // Usaremos el teléfono como "Código"
+$miTelefono = $selSocioData['soc_tel_cel']; // Lo usamos como código visible y parámetro ref
 
 // 3. CONSULTA DE REFERIDOS
-// Buscamos socios que tengan en 'soc_id_referido_por' MI ID
 $queryRef = "SELECT soc_nombres, soc_apepat, soc_fecha_captura, soc_imagen 
              FROM san_socios 
              WHERE soc_id_referido_por = :miId 
@@ -35,13 +36,18 @@ $totalReferidos = count($listaReferidos);
 $gananciaPorReferido = 35; 
 $gananciaTotal = $totalReferidos * $gananciaPorReferido;
 
-// Construcción del Link (Ajusta 'index.php?page=registro' a tu URL real de registro)
-// Detectamos el protocolo (http o https) y el host automáticamente
+// Construcción del Link
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
 $host = $_SERVER['HTTP_HOST'];
-// Ajusta la ruta "/index.php?page=registro" según cómo se llame tu página de registro
-$baseUrl = "$protocol://$host/index.php?page=registro"; 
+
+// Liga directa a la creación de cuenta
+$baseUrl = "$protocol://$host/index.php?page=registro_nuevo"; 
+
+// CORRECCIÓN: Ahora el parámetro ref lleva el número de teléfono en lugar del ID
 $linkCompleto = $baseUrl . "&ref=" . $miTelefono;
+
+// Mensaje base para WhatsApp (Cambiado de Vente a Ven)
+$textoInvitacion = "¡Hola! Ven a entrenar conmigo a Sandys Gym. 🏋️‍♂️ Regístrate aquí para una promo especial: " . $linkCompleto;
 
 ?>
 
@@ -50,7 +56,7 @@ $linkCompleto = $baseUrl . "&ref=" . $miTelefono;
 
     /* Hero Header */
     .referral-hero {
-        padding: 140px 0 60px; /* Espacio para navbar */
+        padding: 140px 0 60px;
         background: linear-gradient(180deg, rgba(15,15,15,0.9), #0f0f0f), url('./assets/img/hero/hero-referrals.jpg');
         background-size: cover;
         background-position: center;
@@ -65,7 +71,7 @@ $linkCompleto = $baseUrl . "&ref=" . $miTelefono;
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         gap: 20px;
-        margin-top: -40px; /* Efecto flotante sobre el hero */
+        margin-top: -40px;
         position: relative;
         z-index: 2;
     }
@@ -101,13 +107,30 @@ $linkCompleto = $baseUrl . "&ref=" . $miTelefono;
     .share-code-box:hover { background: #ef4444; color: #fff; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
     .share-code-box:active { transform: scale(0.98); }
     
+    /* Contenedor de Botones Compartir */
+    .share-buttons-container {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 10px;
+        flex-wrap: wrap;
+    }
+
     .btn-whatsapp {
         background: #25D366; color: #fff; border: none; padding: 12px 30px;
         border-radius: 50px; font-weight: bold; text-decoration: none;
         display: inline-flex; align-items: center; gap: 10px; transition: 0.3s;
-        font-size: 16px; margin-top: 10px;
+        font-size: 16px; cursor: pointer;
     }
     .btn-whatsapp:hover { background: #20bd5a; color: #fff; box-shadow: 0 0 15px rgba(37, 211, 102, 0.4); text-decoration: none; }
+
+    .btn-email {
+        background: #ef4444; color: #fff; border: none; padding: 12px 30px;
+        border-radius: 50px; font-weight: bold; text-decoration: none;
+        display: inline-flex; align-items: center; gap: 10px; transition: 0.3s;
+        font-size: 16px; cursor: pointer;
+    }
+    .btn-email:hover { background: #dc2626; color: #fff; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); text-decoration: none; }
 
     /* Input de Copiar Link */
     .copy-link-container {
@@ -207,14 +230,16 @@ $linkCompleto = $baseUrl . "&ref=" . $miTelefono;
         </div>
         
         <br>
+        
+        <div class="share-buttons-container">
+            <a href="https://api.whatsapp.com/send?text=<?= urlencode($textoInvitacion) ?>" target="_blank" class="btn-whatsapp">
+                <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
+            </a>
 
-        <?php 
-            $mensajeWA = "¡Hola! Vente a entrenar conmigo a Sandys Gym. 🏋️‍♂️ Regístrate aquí para una promo especial: " . $linkCompleto;
-            $linkWA = "https://api.whatsapp.com/send?text=" . urlencode($mensajeWA);
-        ?>
-        <a href="<?= $linkWA ?>" target="_blank" class="btn-whatsapp">
-            <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
-        </a>
+            <button onclick="enviarInvitacionCorreo()" class="btn-email">
+                <i class="fas fa-envelope"></i> Enviar por Correo
+            </button>
+        </div>
 
         <div class="copy-link-container">
             <p style="color:#666; font-size:12px; margin-bottom: 5px; text-align: left;">Enlace directo de registro:</p>
@@ -264,7 +289,7 @@ $linkCompleto = $baseUrl . "&ref=" . $miTelefono;
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    // Función para copiar texto arbitrario (el código corto)
+    // Función para copiar el código corto
     function copiarTexto(texto) {
         navigator.clipboard.writeText(texto).then(function() {
             mostrarToast('Código copiado al portapapeles');
@@ -273,36 +298,73 @@ $linkCompleto = $baseUrl . "&ref=" . $miTelefono;
         });
     }
 
-    // Función para copiar lo que hay en el input del link
+    // Función para copiar la liga
     function copiarLinkInput() {
         var copyText = document.getElementById("linkReferido");
         copyText.select();
-        copyText.setSelectionRange(0, 99999); // Para móviles
+        copyText.setSelectionRange(0, 99999); 
         
         navigator.clipboard.writeText(copyText.value).then(function() {
             mostrarToast('Enlace copiado correctamente');
         });
     }
 
-    // Helper para mostrar la alerta bonita
+    // Helper para las alertas de éxito pequeñas
     function mostrarToast(mensaje) {
         const Toast = Swal.mixin({
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 3000,
-            background: '#1a1a1a',
-            color: '#fff',
-            timerProgressBar: true,
+            toast: true, position: 'top-end', showConfirmButton: false, timer: 3000,
+            background: '#1a1a1a', color: '#fff', timerProgressBar: true,
             didOpen: (toast) => {
                 toast.addEventListener('mouseenter', Swal.stopTimer)
                 toast.addEventListener('mouseleave', Swal.resumeTimer)
             }
         });
+        Toast.fire({ icon: 'success', title: mensaje });
+    }
 
-        Toast.fire({
-            icon: 'success',
-            title: mensaje
+    // Lógica para pedir el correo y enviar AJAX
+    function enviarInvitacionCorreo() {
+        Swal.fire({
+            title: 'Enviar invitación por correo',
+            input: 'email',
+            inputLabel: 'Ingresa el correo electrónico de tu amigo',
+            inputPlaceholder: 'correo@ejemplo.com',
+            showCancelButton: true,
+            confirmButtonText: 'Enviar Invitación',
+            cancelButtonText: 'Cancelar',
+            background: '#1a1a1a',
+            color: '#fff',
+            confirmButtonColor: '#ef4444',
+            showLoaderOnConfirm: true,
+            preConfirm: (emailDestino) => {
+                return $.ajax({
+                    url: 'api/send_invitation_email.php',
+                    type: 'POST',
+                    data: {
+                        email: emailDestino,
+                        link: '<?= $linkCompleto ?>',
+                        nombre: '<?= $miNombre ?>'
+                    },
+                    dataType: 'json'
+                }).then(response => {
+                    if(response.status !== 'success') {
+                        throw new Error(response.message);
+                    }
+                    return response;
+                }).catch(error => {
+                    Swal.showValidationMessage(`Error: ${error.message}`);
+                });
+            },
+            allowOutsideClick: () => !Swal.isLoading()
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Enviado!',
+                    text: 'La invitación fue enviada a tu amigo correctamente.',
+                    background: '#1a1a1a', color: '#fff', confirmButtonColor: '#ef4444'
+                });
+            }
         });
     }
 </script>

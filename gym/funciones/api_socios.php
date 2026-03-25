@@ -5,7 +5,6 @@ require_once '../../funciones_globales/funciones_conexion.php';
 require_once '../../funciones_globales/funciones_comunes.php';
 
 // --- <<< CAMBIO #1: ESTABLECER ZONA HORARIA DE PHP >>> ---
-// Se usa la función nativa de PHP, NO una consulta de base de datos.
 date_default_timezone_set('America/Mexico_City');
 
 // Establecer conexión a la BD
@@ -17,7 +16,6 @@ if (!$conexion) {
     exit;
 }
 // --- <<< CAMBIO #2: ESTABLECER ZONA HORARIA DE LA CONEXIÓN MYSQL >>> ---
-// Sincroniza la sesión de la base de datos con la zona horaria de PHP.
 mysqli_query($conexion, "SET time_zone = '-06:00'");
 
 session_start();
@@ -42,7 +40,6 @@ $searchValue = isset($_POST['search']['value']) ? mysqli_real_escape_string($con
 $pag_opciones = isset($_POST['pag_opciones']) ? intval($_POST['pag_opciones']) : 0;
 
 // --- <<< CAMBIO #3: SIMPLIFICACIÓN DE LA FECHA >>> ---
-// Ahora que PHP está sincronizado, podemos usar date() de forma segura y eficiente.
 $fecha_mov = date('Y-m-d');
 
 $condicion = "";
@@ -111,6 +108,7 @@ $orderByClause = "ORDER BY
 
 
 // CONSULTA DE DATOS PARA LA PÁGINA ACTUAL
+// ¡IMPORTANTE!: Agregamos soc_correo_status para el color verde
 $queryData = "
     SELECT
         s.soc_id_socio AS id_socio,
@@ -122,6 +120,7 @@ $queryData = "
         CONCAT(s.soc_apepat, ' ', s.soc_apemat, ' ', s.soc_nombres) AS nombres,
         s.soc_correo,
         s.soc_tel_cel,
+        s.soc_correo_status,
         CASE 
             WHEN p.pag_id_pago IS NULL THEN 'Sin Pago'
             WHEN $active_condition THEN CONCAT(DATE_FORMAT(p.pag_fecha_ini, '%d-%m-%Y'), ' al ', DATE_FORMAT(p.pag_fecha_fin, '%d-%m-%Y'))
@@ -139,10 +138,18 @@ $data = [];
 $contador = $start + 1;
 if ($resultado) {
     while ($fila = mysqli_fetch_assoc($resultado)) {
+        
+        // ---------------------------------------------------------------------
+        // GENERACIÓN PROFESIONAL DE FOTOS (PETICIÓN DEL CLIENTE)
+        // Eliminamos las etiquetas <img> pesadas. 
+        // Usamos botones con atributos data-src para el modal.
+        // ---------------------------------------------------------------------
         if (file_exists("../../imagenes/avatar/$fila[id_socio].jpg")) {
-            $fotografia = "<img src='../imagenes/avatar/$fila[id_socio].jpg' class='img-responsive' width='40px' />";
+            // Ponemos un botón con clase 'btn-ver-foto' y guardamos la ruta en data-src
+            $fotografia = "<button type='button' class='btn btn-xs btn-info btn-ver-foto' data-src='../imagenes/avatar/$fila[id_socio].jpg' style='color:#fff; font-weight:bold;'>Ver Foto</button>";
         } else {
-            $fotografia = "<img src='../imagenes/avatar/noavatar.jpg' class='img-responsive' width='40px' />";
+            // Esto corrige el muñequito gris. Muestra la etiqueta roja "SIN FOTO"
+            $fotografia = "<span class='label label-danger' style='font-size: 11px; font-weight: bold;'>SIN FOTO</span>";
         }
 
         $acciones = "<div class='btn-group'>
@@ -158,14 +165,15 @@ if ($resultado) {
                     </div>";
         
         $data[] = [
-            "contador"    => $contador, 
-            "acciones"    => $acciones, 
-            "id_socio"    => $fila['id_socio'],
-            "nombres"     => $fila['nombres'], 
-            "soc_correo"  => $fila['soc_correo'], 
-            "soc_tel_cel" => $fila['soc_tel_cel'],
-            "status_pago" => $fila['status_pago'], 
-            "foto"        => "<a href='.?s=socios&i=fotografia&id_socio=$fila[id_socio]'>$fotografia</a>"
+            "contador"          => $contador, 
+            "acciones"          => $acciones, 
+            "id_socio"          => $fila['id_socio'],
+            "nombres"           => $fila['nombres'], 
+            "soc_correo"        => $fila['soc_correo'], 
+            "soc_correo_status" => $fila['soc_correo_status'], // Necesario para el color verde en JS
+            "soc_tel_cel"       => $fila['soc_tel_cel'],
+            "status_pago"       => $fila['status_pago'], 
+            "foto"              => $fotografia // Enviamos el HTML del botón o etiqueta
         ];
         $contador++;
     }

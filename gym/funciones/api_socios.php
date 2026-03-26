@@ -108,7 +108,7 @@ $orderByClause = "ORDER BY
 
 
 // CONSULTA DE DATOS PARA LA PÁGINA ACTUAL
-// ¡IMPORTANTE!: Agregamos soc_correo_status para el color verde
+// ¡IMPORTANTE!: Agregamos soc_correo_status para el color verde y corregimos "Vigencia Futura"
 $queryData = "
     SELECT
         s.soc_id_socio AS id_socio,
@@ -123,8 +123,8 @@ $queryData = "
         s.soc_correo_status,
         CASE 
             WHEN p.pag_id_pago IS NULL THEN 'Sin Pago'
-            WHEN $active_condition THEN CONCAT(DATE_FORMAT(p.pag_fecha_ini, '%d-%m-%Y'), ' al ', DATE_FORMAT(p.pag_fecha_fin, '%d-%m-%Y'))
-            WHEN p.pag_fecha_ini > '$fecha_mov' THEN 'Vigencia Futura'
+            /* Si la fecha de fin es mayor o igual a hoy, mostramos el rango de fechas */
+            WHEN p.pag_fecha_fin >= '$fecha_mov' THEN CONCAT(DATE_FORMAT(p.pag_fecha_ini, '%d-%m-%Y'), ' al ', DATE_FORMAT(p.pag_fecha_fin, '%d-%m-%Y'))
             ELSE 'Pago Vencido'
         END AS status_pago
     " . $from_clause . $condicion . "

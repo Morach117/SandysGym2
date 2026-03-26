@@ -8,14 +8,19 @@ if (!$selSocioData) {
     exit;
 }
 
-// LÓGICA PARA EL MES DE NACIMIENTO
-$fecha_bd = $selSocioData['soc_fecha_nacimiento'] ?? '';
+// LÓGICA INFALIBLE PARA EL MES DE NACIMIENTO
+$fecha_bd = trim($selSocioData['soc_fecha_nacimiento'] ?? '');
 $mes_guardado = '';
 
-if (!empty($fecha_bd) && $fecha_bd != '0000-00-00') {
+if (!empty($fecha_bd) && $fecha_bd != '0000-00-00' && $fecha_bd != '0000-00-00 00:00:00') {
+    // Usamos explode para evitar errores de strtotime con años "0000"
     $porciones = explode('-', $fecha_bd);
-    if (count($porciones) == 3) {
-        $mes_guardado = $porciones[1]; 
+    if (count($porciones) >= 3) {
+        $mes_int = intval($porciones[1]); // Extraemos la posición del mes
+        // Validamos que sea un mes real (1 al 12)
+        if ($mes_int >= 1 && $mes_int <= 12) {
+            $mes_guardado = str_pad($mes_int, 2, "0", STR_PAD_LEFT);
+        }
     }
 }
 
@@ -71,7 +76,7 @@ body { background-color: #050505; color: #e0e0e0; font-family: 'Muli', sans-seri
 .form-group label { color: #aaa; font-size: 12px; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; display: block; }
 .form-control, .custom-select { background-color: #080808 !important; border: 1px solid #444 !important; color: #ffffff !important; border-radius: 8px !important; height: 50px !important; padding: 10px 15px !important; font-size: 15px !important; transition: all 0.3s ease; }
 .form-control:focus { border-color: #ef4444 !important; background-color: #0f0f0f !important; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important; }
-.form-control[readonly], select.form-control:disabled { background-color: #222 !important; color: #666 !important; border-color: #333 !important; cursor: not-allowed; opacity: 0.7; }
+.form-control[readonly] { background-color: #222 !important; color: #888 !important; border-color: #333 !important; cursor: not-allowed; }
 .form-text { color: #777; font-size: 11px; margin-top: 8px; line-height: 1.4; }
 
 /* Botón Guardar */
@@ -109,8 +114,7 @@ body { background-color: #050505; color: #e0e0e0; font-family: 'Muli', sans-seri
                             <label for="fotoInput" class="btn-camara">
                                 <i class="fas fa-camera"></i>
                             </label>
-                            <input type="file" id="fotoInput" name="foto_perfil" accept="image/*" capture="user"
-                                class="d-none" onchange="previewImage(event)">
+                            <input type="file" id="fotoInput" name="foto_perfil" accept="image/*" class="d-none" onchange="previewImage(event)">
                         </div>
                         <p class="text-muted mt-2 small" style="color: #aaa;">Toca la cámara para subir una foto o tomar una selfie</p>
                     </div>
@@ -146,20 +150,26 @@ body { background-color: #050505; color: #e0e0e0; font-family: 'Muli', sans-seri
                                 </div>
                                 <div class="col-md-12 form-group mb-0">
                                     <label>Mes de Nacimiento *</label>
-                                    <select name="mes_nacimiento" class="form-control"
-                                        <?= ($mes_guardado != '') ? 'disabled' : 'required' ?>>
-                                        <option value="" disabled>-- Seleccionar --</option>
-                                        <?php 
-                                        $meses = ["01"=>"Enero","02"=>"Febrero","03"=>"Marzo","04"=>"Abril","05"=>"Mayo","06"=>"Junio","07"=>"Julio","08"=>"Agosto","09"=>"Septiembre","10"=>"Octubre","11"=>"Noviembre","12"=>"Diciembre"];
-                                        foreach($meses as $val => $nom):
-                                            $selected = ($mes_guardado == $val) ? 'selected' : '';
-                                            echo "<option value='$val' $selected>$nom</option>";
-                                        endforeach;
-                                        ?>
-                                    </select>
-                                    <?php if($mes_guardado != ''): ?>
+                                    
+                                    <?php 
+                                    $meses = ["01"=>"Enero","02"=>"Febrero","03"=>"Marzo","04"=>"Abril","05"=>"Mayo","06"=>"Junio","07"=>"Julio","08"=>"Agosto","09"=>"Septiembre","10"=>"Octubre","11"=>"Noviembre","12"=>"Diciembre"];
+                                    
+                                    if ($mes_guardado !== ''): 
+                                        // SI YA TIENE MES: Mostramos un input bloqueado
+                                        $nombre_mes = $meses[$mes_guardado] ?? '';
+                                    ?>
+                                        <input type="text" class="form-control" value="<?= $nombre_mes ?>" readonly>
                                         <input type="hidden" name="mes_nacimiento" value="<?= $mes_guardado ?>">
+                                    <?php else: ?>
+                                        // SI NO TIENE MES: Mostramos el select normal
+                                        <select name="mes_nacimiento" class="form-control" required>
+                                            <option value="" disabled selected>-- Seleccionar --</option>
+                                            <?php foreach($meses as $val => $nom): ?>
+                                                <option value="<?= $val ?>"><?= $nom ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
                                     <?php endif; ?>
+                                    
                                     <small class="form-text"><i class="fas fa-info-circle mr-1"></i> Este dato es permanente por seguridad de promociones.</small>
                                 </div>
                             </div>
@@ -231,7 +241,7 @@ body { background-color: #050505; color: #e0e0e0; font-family: 'Muli', sans-seri
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    // Mostrar vista previa de la imagen seleccionada
+// Mostrar vista previa de la imagen seleccionada
 function previewImage(event) {
     const reader = new FileReader();
     reader.onload = function() {
@@ -313,5 +323,4 @@ $(document).ready(function() {
         });
     });
 });
-
 </script>

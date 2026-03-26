@@ -17,11 +17,6 @@ table.dataTable tbody tr.fila-validada td {
     /* VERDE: Ya registrado */
 }
 
-table.dataTable tbody tr.fila-pendiente td {
-    background-color: #fff3cd !important;
-    /* AMARILLO: Tienen datos pero NO están registrados */
-}
-
 /* 2. Centramos verticalmente todo el contenido de la tabla */
 #tabla-socios tbody td {
     vertical-align: middle;
@@ -178,10 +173,7 @@ $(document).ready(function() {
             else if (data.soc_correo_status == 1 || data.soc_correo_status === "1") {
                 $(row).addClass('fila-validada');
             }
-            // Prioridad 3: Amarillo para los que tienen datos pero NO han validado su cuenta
-            else {
-                $(row).addClass('fila-pendiente');
-            }
+            // Para todos los demás, no agregamos clase y Bootstrap los pinta de blanco/gris.
         },
 
         "language": {
@@ -199,7 +191,6 @@ $(document).ready(function() {
 
     // -----------------------------------------------------------
     // LÓGICA JAVASCRIPT PARA EL MODAL DE FOTOS
-    // Usamos delegación de eventos (.on) porque DataTables crea filas dinámicamente
     // -----------------------------------------------------------
     $('#tabla-socios tbody').on('click', '.btn-ver-foto', function(e) {
         e.preventDefault();

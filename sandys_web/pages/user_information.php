@@ -1,4 +1,9 @@
 <?php
+// --- EVITAR CACHÉ DESDE PHP (DEBE IR AL INICIO) ---
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+header("Expires: 0");
 // --- INCLUDES Y LÓGICA DE LA VISTA (HTML) ---
 include_once('conn.php');
 include_once('./api/select_data.php');
@@ -44,50 +49,230 @@ if ($foto_bd !== '') {
 }
 ?>
 
-<link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;700&family=Oswald:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;700&family=Oswald:wght@400;700&display=swap"
+    rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
 /* --- Base --- */
-body { background-color: #050505; color: #e0e0e0; font-family: 'Muli', sans-serif; }
-.profile-section { padding: 130px 0 80px; min-height: 100vh; }
+body {
+    background-color: #050505;
+    color: #e0e0e0;
+    font-family: 'Muli', sans-serif;
+}
+
+.profile-section {
+    padding: 130px 0 80px;
+    min-height: 100vh;
+}
 
 /* --- Encabezado --- */
-.page-header-custom { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #222; padding-bottom: 15px; gap: 10px; }
-.page-title { font-family: 'Oswald', sans-serif; font-size: 26px; color: #fff; text-transform: uppercase; margin: 0; flex-grow: 1; }
-.btn-back { background-color: #1a1a1a; border: 1px solid #ef4444; color: #ef4444; width: 42px; height: 42px; border-radius: 10px; font-size: 16px; display: inline-flex; align-items: center; justify-content: center; transition: 0.3s; text-decoration: none; }
-.btn-back span { display: none; }
-.btn-back:hover { background-color: #ef4444; color: #fff; }
+.page-header-custom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    border-bottom: 1px solid #222;
+    padding-bottom: 15px;
+    gap: 10px;
+}
+
+.page-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 26px;
+    color: #fff;
+    text-transform: uppercase;
+    margin: 0;
+    flex-grow: 1;
+}
+
+.btn-back {
+    background-color: #1a1a1a;
+    border: 1px solid #ef4444;
+    color: #ef4444;
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.3s;
+    text-decoration: none;
+}
+
+.btn-back span {
+    display: none;
+}
+
+.btn-back:hover {
+    background-color: #ef4444;
+    color: #fff;
+}
 
 /* --- Foto de Perfil --- */
-.foto-container { position: relative; width: 120px; height: 120px; margin: 0 auto; }
-.foto-perfil-img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; border: 3px solid #ef4444; box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3); }
-.btn-camara { position: absolute; bottom: 0; right: 0; background: #ef4444; color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid #121212; transition: 0.3s; }
-.btn-camara:hover { background: #dc2626; transform: scale(1.1); }
+.foto-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto;
+}
+
+.foto-perfil-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid #ef4444;
+    box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+}
+
+.btn-camara {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: #ef4444;
+    color: white;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 2px solid #121212;
+    transition: 0.3s;
+}
+
+.btn-camara:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
 
 /* --- Tarjetas --- */
-.profile-card { background-color: #121212; border: 1px solid #2a2a2a; border-radius: 16px; margin-bottom: 25px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6); overflow: hidden; }
-.card-header-custom { background-color: #0a0a0a; padding: 15px 25px; border-bottom: 2px solid #ef4444; display: flex; align-items: center; gap: 12px; }
-.header-icon { color: #ef4444; font-size: 18px; }
-.header-title { font-family: 'Oswald', sans-serif; font-size: 18px; color: #fff; text-transform: uppercase; margin: 0; }
-.card-body-custom { padding: 25px; }
+.profile-card {
+    background-color: #121212;
+    border: 1px solid #2a2a2a;
+    border-radius: 16px;
+    margin-bottom: 25px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+}
+
+.card-header-custom {
+    background-color: #0a0a0a;
+    padding: 15px 25px;
+    border-bottom: 2px solid #ef4444;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-icon {
+    color: #ef4444;
+    font-size: 18px;
+}
+
+.header-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 18px;
+    color: #fff;
+    text-transform: uppercase;
+    margin: 0;
+}
+
+.card-body-custom {
+    padding: 25px;
+}
 
 /* --- Inputs --- */
-.form-group label { color: #aaa; font-size: 12px; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; display: block; }
-.form-control, .custom-select { background-color: #080808 !important; border: 1px solid #444 !important; color: #ffffff !important; border-radius: 8px !important; height: 50px !important; padding: 10px 15px !important; font-size: 15px !important; transition: all 0.3s ease; }
-.form-control:focus { border-color: #ef4444 !important; background-color: #0f0f0f !important; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important; }
-.form-control[readonly] { background-color: #222 !important; color: #888 !important; border-color: #333 !important; cursor: not-allowed; }
-.form-text { color: #777; font-size: 11px; margin-top: 8px; line-height: 1.4; }
+.form-group label {
+    color: #aaa;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+}
+
+.form-control,
+.custom-select {
+    background-color: #080808 !important;
+    border: 1px solid #444 !important;
+    color: #ffffff !important;
+    border-radius: 8px !important;
+    height: 50px !important;
+    padding: 10px 15px !important;
+    font-size: 15px !important;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #ef4444 !important;
+    background-color: #0f0f0f !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+}
+
+.form-control[readonly] {
+    background-color: #222 !important;
+    color: #888 !important;
+    border-color: #333 !important;
+    cursor: not-allowed;
+}
+
+.form-text {
+    color: #777;
+    font-size: 11px;
+    margin-top: 8px;
+    line-height: 1.4;
+}
 
 /* Botón Guardar */
-.save-btn { background-color: #ef4444; color: #fff; border: none; padding: 16px; border-radius: 12px; font-family: 'Oswald', sans-serif; font-size: 18px; text-transform: uppercase; font-weight: 700; cursor: pointer; transition: 0.3s; box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4); width: 100%; }
-.save-btn:hover { background-color: #dc2626; transform: translateY(-2px); }
+.save-btn {
+    background-color: #ef4444;
+    color: #fff;
+    border: none;
+    padding: 16px;
+    border-radius: 12px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 18px;
+    text-transform: uppercase;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+    width: 100%;
+}
+
+.save-btn:hover {
+    background-color: #dc2626;
+    transform: translateY(-2px);
+}
 
 @media (min-width: 992px) {
-    .page-title { font-size: 32px; }
-    .btn-back { width: auto; height: auto; padding: 10px 25px; border-radius: 50px; }
-    .btn-back span { display: inline; margin-left: 8px; }
-    .save-btn { max-width: 350px; margin: 0 auto; display: block; border-radius: 50px; }
+    .page-title {
+        font-size: 32px;
+    }
+
+    .btn-back {
+        width: auto;
+        height: auto;
+        padding: 10px 25px;
+        border-radius: 50px;
+    }
+
+    .btn-back span {
+        display: inline;
+        margin-left: 8px;
+    }
+
+    .save-btn {
+        max-width: 350px;
+        margin: 0 auto;
+        display: block;
+        border-radius: 50px;
+    }
 }
 </style>
 
@@ -105,18 +290,21 @@ body { background-color: #050505; color: #e0e0e0; font-family: 'Muli', sans-seri
                 </div>
 
                 <form id="editarPerfilForm" method="POST" enctype="multipart/form-data">
-                    <input type="hidden" name="id_socio" value="<?= htmlspecialchars($selSocioData['soc_id_socio'] ?? '') ?>">
+                    <input type="hidden" name="id_socio"
+                        value="<?= htmlspecialchars($selSocioData['soc_id_socio'] ?? '') ?>">
 
                     <div class="text-center mb-4">
                         <div class="foto-container">
                             <img id="previewFoto" src="<?= $foto_perfil ?>" class="foto-perfil-img" alt="Foto de perfil"
-                                onerror="this.src='<?= $avatar_default ?>'"> 
+                                onerror="this.src='<?= $avatar_default ?>'">
                             <label for="fotoInput" class="btn-camara">
                                 <i class="fas fa-camera"></i>
                             </label>
-                            <input type="file" id="fotoInput" name="foto_perfil" accept="image/*" class="d-none" onchange="previewImage(event)">
+                            <input type="file" id="fotoInput" name="foto_perfil" accept="image/*" capture="environment"
+                                class="d-none" onchange="previewImage(event)">
                         </div>
-                        <p class="text-muted mt-2 small" style="color: #aaa;">Toca la cámara para subir una foto o tomar una selfie</p>
+                        <p class="text-muted mt-2 small" style="color: #aaa;">Toca la cámara para subir una foto o tomar
+                            una selfie</p>
                     </div>
 
                     <div class="profile-card">
@@ -139,18 +327,23 @@ body { background-color: #050505; color: #e0e0e0; font-family: 'Muli', sans-seri
                                 <div class="col-md-6 form-group mb-4">
                                     <label>Apellido Materno</label>
                                     <input type="text" name="ap_materno" class="form-control"
-                                        value="<?= htmlspecialchars($selSocioData['soc_apemat'] ?? '') ?>" placeholder="Opcional">
+                                        value="<?= htmlspecialchars($selSocioData['soc_apemat'] ?? '') ?>"
+                                        placeholder="Opcional">
                                 </div>
                                 <div class="col-md-6 form-group mb-4">
                                     <label>Género *</label>
                                     <select name="genero" class="form-control" required>
-                                        <option value="Masculino" <?= (($selSocioData['soc_genero'] ?? '') == 'Masculino') ? 'selected' : '' ?>>Masculino</option>
-                                        <option value="Femenino" <?= (($selSocioData['soc_genero'] ?? '') == 'Femenino') ? 'selected' : '' ?>>Femenino</option>
+                                        <option value="Masculino"
+                                            <?= (($selSocioData['soc_genero'] ?? '') == 'Masculino') ? 'selected' : '' ?>>
+                                            Masculino</option>
+                                        <option value="Femenino"
+                                            <?= (($selSocioData['soc_genero'] ?? '') == 'Femenino') ? 'selected' : '' ?>>
+                                            Femenino</option>
                                     </select>
                                 </div>
                                 <div class="col-md-12 form-group mb-0">
                                     <label>Mes de Nacimiento *</label>
-                                    
+
                                     <?php 
                                     $meses = ["01"=>"Enero","02"=>"Febrero","03"=>"Marzo","04"=>"Abril","05"=>"Mayo","06"=>"Junio","07"=>"Julio","08"=>"Agosto","09"=>"Septiembre","10"=>"Octubre","11"=>"Noviembre","12"=>"Diciembre"];
                                     
@@ -158,19 +351,20 @@ body { background-color: #050505; color: #e0e0e0; font-family: 'Muli', sans-seri
                                         // SI YA TIENE MES: Mostramos un input bloqueado
                                         $nombre_mes = $meses[$mes_guardado] ?? '';
                                     ?>
-                                        <input type="text" class="form-control" value="<?= $nombre_mes ?>" readonly>
-                                        <input type="hidden" name="mes_nacimiento" value="<?= $mes_guardado ?>">
+                                    <input type="text" class="form-control" value="<?= $nombre_mes ?>" readonly>
+                                    <input type="hidden" name="mes_nacimiento" value="<?= $mes_guardado ?>">
                                     <?php else: ?>
-                                        // SI NO TIENE MES: Mostramos el select normal
-                                        <select name="mes_nacimiento" class="form-control" required>
-                                            <option value="" disabled selected>-- Seleccionar --</option>
-                                            <?php foreach($meses as $val => $nom): ?>
-                                                <option value="<?= $val ?>"><?= $nom ?></option>
-                                            <?php endforeach; ?>
-                                        </select>
+                                    // SI NO TIENE MES: Mostramos el select normal
+                                    <select name="mes_nacimiento" class="form-control" required>
+                                        <option value="" disabled selected>-- Seleccionar --</option>
+                                        <?php foreach($meses as $val => $nom): ?>
+                                        <option value="<?= $val ?>"><?= $nom ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
                                     <?php endif; ?>
-                                    
-                                    <small class="form-text"><i class="fas fa-info-circle mr-1"></i> Este dato es permanente por seguridad de promociones.</small>
+
+                                    <small class="form-text"><i class="fas fa-info-circle mr-1"></i> Este dato es
+                                        permanente por seguridad de promociones.</small>
                                 </div>
                             </div>
                         </div>
@@ -183,7 +377,8 @@ body { background-color: #050505; color: #e0e0e0; font-family: 'Muli', sans-seri
                         </div>
                         <div class="card-body-custom">
                             <div class="row">
-                                <input type="hidden" name="direccion" value="<?= htmlspecialchars($selSocioData['soc_direccion'] ?? '') ?>">
+                                <input type="hidden" name="direccion"
+                                    value="<?= htmlspecialchars($selSocioData['soc_direccion'] ?? '') ?>">
 
                                 <div class="col-md-6 form-group mb-4">
                                     <label>WhatsApp / Celular *</label>
@@ -209,7 +404,8 @@ body { background-color: #050505; color: #e0e0e0; font-family: 'Muli', sans-seri
                                 <div class="col-md-12 form-group mb-4">
                                     <label>A quién llamar *</label>
                                     <input type="text" name="emer_nombres" class="form-control"
-                                        value="<?= htmlspecialchars($selSocioData['soc_emer_nombres'] ?? '') ?>" required>
+                                        value="<?= htmlspecialchars($selSocioData['soc_emer_nombres'] ?? '') ?>"
+                                        required>
                                 </div>
                                 <div class="col-md-6 form-group mb-4">
                                     <label>Teléfono emergencia *</label>
@@ -219,7 +415,8 @@ body { background-color: #050505; color: #e0e0e0; font-family: 'Muli', sans-seri
                                 <div class="col-md-6 form-group mb-0">
                                     <label>Parentesco *</label>
                                     <input type="text" name="emer_parentesco" class="form-control"
-                                        value="<?= htmlspecialchars($selSocioData['soc_emer_parentesco'] ?? '') ?>" required>
+                                        value="<?= htmlspecialchars($selSocioData['soc_emer_parentesco'] ?? '') ?>"
+                                        required>
                                 </div>
                             </div>
                         </div>
@@ -256,7 +453,7 @@ function previewImage(event) {
 $(document).ready(function() {
     // Escuchamos el evento 'submit' y bloqueamos otros repetidos
     $('#editarPerfilForm').off('submit').on('submit', function(e) {
-        e.preventDefault(); 
+        e.preventDefault();
         e.stopImmediatePropagation();
 
         let btn = $('#guardarCambiosBtn');
@@ -265,7 +462,7 @@ $(document).ready(function() {
 
         // --- MAGIA ANTI-BASE64 ---
         let formData = new FormData();
-        
+
         // 1. Añadimos solo los datos de texto
         let formArray = $(this).serializeArray();
         $.each(formArray, function(i, field) {
@@ -280,15 +477,15 @@ $(document).ready(function() {
 
         // Realizamos la solicitud AJAX al PHP de recompensa
         $.ajax({
-            url: 'api/update_profile_reward.php', 
+            url: 'api/update_profile_reward.php',
             type: 'POST',
-            data: formData,      
+            data: formData,
             dataType: 'json',
-            processData: false,  
-            contentType: false,  
+            processData: false,
+            contentType: false,
             success: function(res) {
                 btn.text(originalText).prop('disabled', false);
-                
+
                 if (res.status === 'success') {
                     Swal.fire({
                         icon: 'success',
@@ -298,27 +495,34 @@ $(document).ready(function() {
                         color: '#fff',
                         confirmButtonColor: '#ef4444'
                     }).then(() => {
-                        location.reload(); 
+                        location.reload();
                     });
                 } else {
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
                         text: res.message || 'Error desconocido al guardar.',
-                        background: '#1a1a1a', color: '#fff'
+                        background: '#1a1a1a',
+                        color: '#fff'
                     });
                 }
             },
             error: function(xhr, status, error) {
                 btn.text(originalText).prop('disabled', false);
-                
+
                 let errorMsg = 'Error de red o de servidor.';
                 try {
                     let response = JSON.parse(xhr.responseText);
                     if (response.message) errorMsg = response.message;
-                } catch(e) {}
+                } catch (e) {}
 
-                Swal.fire({ icon: 'error', title: 'Error', text: errorMsg, background: '#1a1a1a', color: '#fff' });
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: errorMsg,
+                    background: '#1a1a1a',
+                    color: '#fff'
+                });
             }
         });
     });

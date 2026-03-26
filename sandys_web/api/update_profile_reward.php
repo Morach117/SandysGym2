@@ -1,9 +1,12 @@
 <?php
 // api/update_profile_reward.php
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+// Evitamos que los errores nativos rompan la respuesta JSON
+ini_set('display_errors', 0); 
 error_reporting(E_ALL);
+
+// Aumentamos la memoria para que soporte procesar fotos de celulares modernos (12MP - 48MP)
+ini_set('memory_limit', '256M'); 
 
 header('Content-Type: application/json');
 
@@ -36,8 +39,24 @@ try {
     // ---------------------------------------------------------
     $nombreArchivoFinal = null;
 
-    if (isset($_FILES['foto_perfil']) && $_FILES['foto_perfil']['error'] === UPLOAD_ERR_OK) {
+    // Verificamos si se envió un archivo de foto
+    if (isset($_FILES['foto_perfil']) && $_FILES['foto_perfil']['name'] !== '') {
         
+        $uploadError = $_FILES['foto_perfil']['error'];
+        
+        // Si hay error al subir, lanzamos la excepción en lugar de ignorarlo
+        if ($uploadError !== UPLOAD_ERR_OK) {
+            $erroresUpload = [
+                UPLOAD_ERR_INI_SIZE   => 'La foto es demasiado pesada y supera el límite del servidor.',
+                UPLOAD_ERR_FORM_SIZE  => 'La foto es demasiado pesada.',
+                UPLOAD_ERR_PARTIAL    => 'El archivo se subió a medias. Intenta de nuevo.',
+                UPLOAD_ERR_NO_TMP_DIR => 'Falta la carpeta temporal en el servidor.',
+                UPLOAD_ERR_CANT_WRITE => 'Error de permisos al escribir la foto en el disco.'
+            ];
+            $mensajeError = $erroresUpload[$uploadError] ?? 'Error desconocido al subir la foto.';
+            throw new Exception($mensajeError);
+        }
+
         $directorioDestino = __DIR__ . '/../../imagenes/avatar/';
         if (!is_dir($directorioDestino)) mkdir($directorioDestino, 0777, true);
 
@@ -45,7 +64,7 @@ try {
         $imageInfo = getimagesize($fileTmpPath);
         
         if ($imageInfo === false) {
-            throw new Exception("El archivo no es una imagen válida.");
+            throw new Exception("El archivo seleccionado no es una imagen válida.");
         }
 
         $mimeType = $imageInfo['mime'];
@@ -56,7 +75,7 @@ try {
             case 'image/png':  $imgRes = imagecreatefrompng($fileTmpPath);  break;
             case 'image/webp': $imgRes = imagecreatefromwebp($fileTmpPath); break;
             default:
-                throw new Exception("Formato no soportado (Solo JPG, PNG o WEBP).");
+                throw new Exception("Formato no soportado. Por favor, sube una imagen en formato JPG o PNG.");
         }
 
         if ($imgRes) {
@@ -64,12 +83,11 @@ try {
             $nombreArchivoFinal = $idSocio . ".jpg";
             $rutaCompleta = $directorioDestino . $nombreArchivoFinal;
 
-            // CONVERSIÓN: Guardar como JPG con calidad del 80%
-            // Esto también elimina transparencias de PNGs y las pone en fondo blanco/negro
+            // CONVERSIÓN: Guardar como JPG con calidad del 80% (Comprime el tamaño físico)
             imagejpeg($imgRes, $rutaCompleta, 80);
             imagedestroy($imgRes); // Liberar memoria
         } else {
-            throw new Exception("Error al procesar la imagen.");
+            throw new Exception("Error al intentar procesar los colores de la imagen.");
         }
     }
 

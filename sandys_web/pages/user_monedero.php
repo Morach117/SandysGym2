@@ -237,7 +237,7 @@ if (!$prepago) {
 
 <script>
 (function() {
-    // --- Lógica del Resumen y MercadoPago ---
+    // --- Lógica del Resumen visual ---
     window.actualizarResumen = function() {
         const importeInput = document.getElementById('prep_importe').value;
         const totalElement = document.getElementById('previewTotal');
@@ -249,50 +249,55 @@ if (!$prepago) {
         totalElement.textContent = formatoMoneda;
     };
 
+    // --- Lógica del Botón (AHORA CON JQUERY Y PREVENT DEFAULT) ---
     function inicializarEventos() {
-// Reemplaza el evento 'click' de btn-generar-pago con este:
-document.getElementById('btn-generar-pago').addEventListener('click', function() {
-    const importe = document.getElementById('prep_importe').value;
-    const idSocio = document.getElementById('id_socio').value;
+        console.log("Activando botón de Mercado Pago..."); // Esto debe salir en tu consola (F12)
 
-    if (!importe || parseFloat(importe) <= 0) {
-        const errorDiv = document.getElementById('mensajeError');
-        errorDiv.textContent = "Ingresa un monto válido a recargar.";
-        errorDiv.style.display = 'block';
-        return;
-    }
-    document.getElementById('mensajeError').style.display = 'none';
-    
-    // Cambiar estado del botón a cargando
-    const btn = this;
-    const originalText = btn.innerHTML;
-    btn.innerHTML = 'Generando... <i class="fas fa-spinner fa-spin ml-2"></i>';
-    btn.disabled = true;
+        $('#btn-generar-pago').on('click', function(e) {
+            e.preventDefault(); // Evita cualquier comportamiento nativo del formulario
+            
+            console.log("¡Botón clickeado!"); // Confirma que el evento funciona
 
-    // Llamada AJAX para crear la preferencia de Mercado Pago
-    $.ajax({
-        type: "POST",
-        url: "api/procesar_recarga_monedero.php",
-        data: { importe: importe, id_socio: idSocio },
-        dataType: "json",
-        success: function(response) {
-            if (response.status === 'success' && response.url) {
-                // Redirigir a la URL de pago de Mercado Pago
-                window.location.href = response.url;
-            } else {
-                $('#mensajeError').text(response.message || 'Error al generar el pago.').show();
-                btn.innerHTML = originalText;
-                btn.disabled = false;
+            const importe = $('#prep_importe').val();
+            const idSocio = $('#id_socio').val();
+
+            if (!importe || parseFloat(importe) <= 0) {
+                $('#mensajeError').text("Ingresa un monto válido a recargar.").show();
+                return;
             }
-        },
-        error: function(xhr) {
-            console.error("Error: ", xhr.responseText);
-            $('#mensajeError').text('Error de conexión con el servidor.').show();
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        }
-    });
-});
+            $('#mensajeError').hide();
+            
+            // Cambiar estado del botón a cargando
+            const $btn = $(this);
+            const originalText = $btn.html();
+            $btn.html('Generando... <i class="fas fa-spinner fa-spin ml-2"></i>');
+            $btn.prop('disabled', true);
+
+            // Llamada AJAX para crear la preferencia de Mercado Pago
+            $.ajax({
+                type: "POST",
+                url: "api/procesar_recarga_monedero.php",
+                data: { importe: importe, id_socio: idSocio },
+                dataType: "json",
+                success: function(response) {
+                    console.log("Respuesta del servidor:", response);
+                    
+                    if (response.status === 'success' && response.url) {
+                        window.location.href = response.url;
+                    } else {
+                        $('#mensajeError').text(response.message || 'Error al generar el pago.').show();
+                        $btn.html(originalText);
+                        $btn.prop('disabled', false);
+                    }
+                },
+                error: function(xhr) {
+                    console.error("Error del servidor: ", xhr.responseText);
+                    $('#mensajeError').text('Error de conexión con el servidor.').show();
+                    $btn.html(originalText);
+                    $btn.prop('disabled', false);
+                }
+            });
+        });
     }
 
     // --- Lógica de DataTables ---
@@ -308,7 +313,7 @@ document.getElementById('btn-generar-pago').addEventListener('click', function()
                 "url": "api/api_prepago_detalle.php", 
                 "type": "POST",
                 "data": function(d) {
-                    d.id_socio = document.getElementById('id_socio').value;
+                    d.id_socio = $('#id_socio').val();
                 }
             },
             "columns": [
@@ -343,13 +348,12 @@ document.getElementById('btn-generar-pago').addEventListener('click', function()
             return; 
         }
         
-        // 🔥 MAGIA AQUÍ: 1 SOLA DESCARGA en lugar de 4. ¡Adiós cuello de botella! 🔥
         $.getScript("https://cdn.datatables.net/v/bs4/dt-1.13.6/r-2.5.0/datatables.min.js", function() {
             iniciarTabla();
         });
     }
 
-    // Vigilamos hasta que jQuery de tu plantilla principal despierte
+    // Vigilamos hasta que jQuery despierte
     var intentos = 0;
     var checkJquery = setInterval(function() {
         if (window.jQuery) {
@@ -358,7 +362,7 @@ document.getElementById('btn-generar-pago').addEventListener('click', function()
             cargarDataTables();
         }
         intentos++;
-        if(intentos > 150) clearInterval(checkJquery); // Detener a los 15 segundos
+        if(intentos > 150) clearInterval(checkJquery);
     }, 100);
 })();
 </script>

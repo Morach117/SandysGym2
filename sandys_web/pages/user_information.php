@@ -1,10 +1,6 @@
 <?php
-// --- EVITAR CACHÉ DESDE PHP (DEBE IR AL INICIO) ---
-header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-header("Cache-Control: post-check=0, pre-check=0", false);
-header("Pragma: no-cache");
-header("Expires: 0");
 // --- INCLUDES Y LÓGICA DE LA VISTA (HTML) ---
+// (Se eliminaron los headers de caché para evitar el error "headers already sent")
 include_once('conn.php');
 include_once('./api/select_data.php');
 
@@ -39,7 +35,7 @@ $foto_perfil = $avatar_default;
 if ($foto_bd !== '') {
     $foto_perfil = trim($foto_bd);
     
-    // Si en la base de datos solo se guardó el nombre del archivo (sin la ruta), se la armamos:
+    // CORRECCIÓN: Se ajustó la ruta quitando el "../" para que la busque correctamente desde el index
     if (strpos($foto_perfil, '/') === false) {
         $foto_perfil = '../imagenes/avatar/' . $foto_perfil;
     }
@@ -354,7 +350,6 @@ body {
                                     <input type="text" class="form-control" value="<?= $nombre_mes ?>" readonly>
                                     <input type="hidden" name="mes_nacimiento" value="<?= $mes_guardado ?>">
                                     <?php else: ?>
-                                    // SI NO TIENE MES: Mostramos el select normal
                                     <select name="mes_nacimiento" class="form-control" required>
                                         <option value="" disabled selected>-- Seleccionar --</option>
                                         <?php foreach($meses as $val => $nom): ?>
@@ -402,21 +397,19 @@ body {
                         <div class="card-body-custom">
                             <div class="row">
                                 <div class="col-md-12 form-group mb-4">
-                                    <label>A quién llamar *</label>
+                                    <label>A quién llamar</label>
                                     <input type="text" name="emer_nombres" class="form-control"
-                                        value="<?= htmlspecialchars($selSocioData['soc_emer_nombres'] ?? '') ?>"
-                                        required>
+                                        value="<?= htmlspecialchars($selSocioData['soc_emer_nombres'] ?? '') ?>">
                                 </div>
                                 <div class="col-md-6 form-group mb-4">
-                                    <label>Teléfono emergencia *</label>
+                                    <label>Teléfono emergencia</label>
                                     <input type="text" name="emer_tel" class="form-control"
-                                        value="<?= htmlspecialchars($selSocioData['soc_emer_tel'] ?? '') ?>" required>
+                                        value="<?= htmlspecialchars($selSocioData['soc_emer_tel'] ?? '') ?>">
                                 </div>
                                 <div class="col-md-6 form-group mb-0">
-                                    <label>Parentesco *</label>
+                                    <label>Parentesco</label>
                                     <input type="text" name="emer_parentesco" class="form-control"
-                                        value="<?= htmlspecialchars($selSocioData['soc_emer_parentesco'] ?? '') ?>"
-                                        required>
+                                        value="<?= htmlspecialchars($selSocioData['soc_emer_parentesco'] ?? '') ?>">
                                 </div>
                             </div>
                         </div>

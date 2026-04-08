@@ -69,16 +69,42 @@ try {
 
         $mimeType = $imageInfo['mime'];
         
+        // --- NUEVO: Extraemos la orientación EXIF de la foto original ---
+        $orientation = 1;
+        if (function_exists('exif_read_data')) {
+            $exif = @exif_read_data($fileTmpPath);
+            if ($exif && isset($exif['Orientation'])) {
+                $orientation = $exif['Orientation'];
+            }
+        }
+        
         // Crear el recurso de imagen según el tipo original
         switch ($mimeType) {
             case 'image/jpeg': $imgRes = imagecreatefromjpeg($fileTmpPath); break;
             case 'image/png':  $imgRes = imagecreatefrompng($fileTmpPath);  break;
             case 'image/webp': $imgRes = imagecreatefromwebp($fileTmpPath); break;
             default:
-                throw new Exception("Formato no soportado. Por favor, sube una imagen en formato JPG o PNG.");
+                throw new Exception("Formato no soportado. Por favor, sube una imagen en formato JPG, PNG o WEBP.");
         }
 
         if ($imgRes) {
+            // --- NUEVO: Corregir rotación basada en EXIF ---
+            if ($orientation != 1) {
+                $deg = 0;
+                switch ($orientation) {
+                    case 3: $deg = 180; break;
+                    case 6: $deg = 270; break; // El celular la giró 90 grados a la derecha
+                    case 8: $deg = 90; break;  // El celular la giró 90 grados a la izquierda
+                }
+                if ($deg) {
+                    $rotatedImg = imagerotate($imgRes, $deg, 0);
+                    if ($rotatedImg !== false) {
+                        imagedestroy($imgRes); // Destruir la original acostada
+                        $imgRes = $rotatedImg; // Quedarnos con la rotada
+                    }
+                }
+            }
+
             // Nombre final siempre con extensión .jpg
             $nombreArchivoFinal = $idSocio . ".jpg";
             $rutaCompleta = $directorioDestino . $nombreArchivoFinal;

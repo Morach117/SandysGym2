@@ -127,6 +127,22 @@ if (!$selSocioData) {
         box-shadow: none !important;
     }
 
+    /* Color del placeholder para que se vea bien en fondo oscuro */
+    .form-control::placeholder {
+        color: #888888 !important;
+        opacity: 1;
+    }
+
+    /* Fix para autocompletado de Chrome (Evita que se ponga amarillo/blanco) */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover, 
+    input:-webkit-autofill:focus, 
+    input:-webkit-autofill:active{
+        -webkit-box-shadow: 0 0 0 30px #1a1a1a inset !important;
+        -webkit-text-fill-color: white !important;
+        transition: background-color 5000s ease-in-out 0s;
+    }
+
     .form-control:focus, .custom-select:focus {
         border-color: #ef4444 !important; /* Rojo al enfocar */
         background-color: #121212 !important;
@@ -151,33 +167,53 @@ if (!$selSocioData) {
         background-position: right 15px center !important;
         padding-right: 40px !important;
     }
-    /* Estilizar las opciones de la lista desplegable del select */
     .custom-select option {
         background-color: #1a1a1a;
         color: #fff;
     }
 
-    /* Botón Aplicar Cupón */
+    /* ========================================================
+       CORRECCIÓN DEFINITIVA: Input del Cupón
+       (Usando su ID exacto para aplastar las reglas de Bootstrap)
+       ======================================================== */
     .input-group {
         display: flex;
     }
-    .input-group .form-control {
+    
+    input#codigo_promocion,
+    .input-group > .form-control {
+        background-color: #1a1a1a !important;
+        color: #ffffff !important;
+        border: 1px solid #444 !important;
         border-top-right-radius: 0 !important;
         border-bottom-right-radius: 0 !important;
+        box-shadow: none !important;
     }
+
+    input#codigo_promocion:focus,
+    .input-group > .form-control:focus {
+        background-color: #121212 !important;
+        border-color: #ef4444 !important;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+        outline: none !important;
+    }
+
     .input-group-append .btn-outline-secondary {
         border-top-left-radius: 0 !important;
         border-bottom-left-radius: 0 !important;
-        background-color: #333 !important; /* 🔥 Fondo gris para que parezca botón real 🔥 */
+        background-color: #333 !important; 
         color: #fff !important;
         border: 1px solid #444 !important;
         border-left: none !important;
         font-weight: bold;
         padding: 0 20px;
         transition: 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     .input-group-append .btn-outline-secondary:hover {
-        background-color: #ef4444 !important; /* Se pinta de rojo al pasar el mouse */
+        background-color: #ef4444 !important;
         border-color: #ef4444 !important;
     }
 
@@ -212,7 +248,7 @@ if (!$selSocioData) {
     @media (min-width: 992px) {
         .summary-sticky {
             position: sticky;
-            top: 120px; /* Separado del header */
+            top: 120px;
         }
     }
 
@@ -226,7 +262,7 @@ if (!$selSocioData) {
     
     .summary-total {
         font-size: 26px;
-        color: #ef4444; /* Rojo precio */
+        color: #ef4444; 
         font-weight: bold;
     }
 
@@ -247,12 +283,9 @@ if (!$selSocioData) {
 
     /* --- RESPONSIVE MÓVIL --- */
     @media (max-width: 768px) {
-        .membership-payment { padding: 120px 0 40px; } /* Más espacio arriba para el header */
-        
-        /* 🔥 Corrección del tamaño del título para que no ocupe tantas líneas 🔥 */
+        .membership-payment { padding: 120px 0 40px; } 
         .page-title { font-size: 28px; line-height: 1.2; }
         .page-subtitle { font-size: 14px; margin-bottom: 30px; }
-        
         .payment-card, .summary-card { padding: 25px 20px; }
         .summary-total { font-size: 22px; }
     }

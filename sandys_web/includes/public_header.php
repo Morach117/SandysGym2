@@ -205,8 +205,7 @@ if (isset($_SESSION['admin'])) {
                 <div class="col-lg-2">
                     <div class="logo">
                         <a href="index.php?page=home">
-                            <img src="./assets/img/logo.png" alt="Sandys Gym Logo">
-                        </a>
+<img src="./assets/img/logo.png" alt="Logo Sandys Gym" style="width: 200px !important; height: auto !important; max-height: none !important;">                        </a>
                     </div>
                 </div>
                 

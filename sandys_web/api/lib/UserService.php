@@ -50,10 +50,9 @@ class UserService {
         $val_code = substr(str_shuffle("0123456789"), 0, 4);
         $fecha = date("Y-m-d H:i:s");
         
-        // 1. LÓGICA REFERIDO
+        // 1. LÓGICA REFERIDO (SOLO VINCULACIÓN, SIN DINERO INICIAL)
         $idPadrino = 0;
-        $saldoInicial = 0.00; 
-        $datosPadrino = null;
+        $saldoInicial = 0.00; // El nuevo usuario siempre entra con $0 en el monedero
 
         if (!empty($referral_code)) {
             $ref_clean = preg_replace('/[^0-9]/', '', $referral_code);
@@ -62,8 +61,9 @@ class UserService {
             if ($ref_clean !== $tel_clean) {
                 $datosPadrino = $this->findPadrino($ref_clean);
                 if ($datosPadrino) {
+                    // Guardamos el ID del padrino para saber quién lo invitó.
+                    // Nadie recibe dinero en este punto.
                     $idPadrino = $datosPadrino['soc_id_socio'];
-                    $saldoInicial = 35.00; 
                 }
             }
         }
@@ -101,17 +101,8 @@ class UserService {
                     $idPadrino, $saldoInicial 
                 ]);
                 
-                $idNuevoSocio = $this->conn->lastInsertId();
-
-                // HISTORIAL NUEVO USUARIO
-                if ($saldoInicial > 0 && $idNuevoSocio) {
-                    $this->registrarHistorial($idNuevoSocio, $saldoInicial, "Bono de Bienvenida (Referido)", 1);
-                }
-
-                // RECOMPENSA PADRINO
-                if ($idPadrino > 0) {
-                    $this->darRecompensaPadrino($idPadrino, $datosPadrino, "$name $paternal");
-                }
+                // Ya NO llamamos a darRecompensaPadrino() aquí.
+                // Queda pendiente para cuando pague en caja.
             }
             return $val_code;
 
@@ -121,7 +112,7 @@ class UserService {
         }
     }
 
-    // --- FUNCIONES PRIVADAS ---
+    // --- FUNCIONES PRIVADAS (Y PUBLICAS PARA LA CAJA) ---
 
     private function registrarHistorial($idSocio, $monto, $concepto, $idSistema) {
         $fecha = date('Y-m-d H:i:s');
@@ -133,9 +124,17 @@ class UserService {
         $this->conn->prepare($sql)->execute([$idSocio, $fecha, $monto, $saldo, $concepto, $idSistema]);
     }
 
-    private function darRecompensaPadrino($idPadrino, $padrinoData, $nombreNuevoSocio) {
-        $monto = 35.00;
+    /**
+     * Esta función debe ser llamada desde tu script de VENTAS/CAJA
+     * cuando el nuevo socio pague su primera mensualidad.
+     */
+    public function darRecompensaPadrino($idPadrino, $padrinoData, $nombreNuevoSocio) {
         $idSistema = 1; 
+        
+        // Obtenemos el monto dinámico desde la configuración de la base de datos
+        $monto = $this->getMontoReferido();
+
+        if ($monto <= 0) return; // Si la configuración está en 0, no damos bono
 
         try {
             // 1. Update Saldo
@@ -144,7 +143,7 @@ class UserService {
             // 2. Historial
             $this->registrarHistorial($idPadrino, $monto, "Referido: $nombreNuevoSocio", $idSistema);
 
-            // 3. Email (Lógica Mejorada con Plantilla)
+            // 3. Email (Lógica con Plantilla)
             if (!empty($padrinoData['soc_correo'])) {
                 
                 // Obtenemos el nuevo saldo REAL de la base de datos para mostrarlo en el correo
@@ -156,24 +155,38 @@ class UserService {
                 $nombrePadrino = $padrinoData['soc_nombres'];
                 $asunto = "¡Ganaste $" . number_format($monto, 0) . " MXN! 💰";
 
-                // --- AQUÍ ESTÁ LA MAGIA DEL TEMPLATE ---
                 ob_start();
                 $rutaPlantilla = __DIR__ . '/../templates/referral_notification.php';
                 
                 if (file_exists($rutaPlantilla)) {
                     include $rutaPlantilla;
                 } else {
-                    // Fallback simple por si borran el archivo
-                    echo "<h1>¡Felicidades $nombrePadrino!</h1><p>Tu referido $nombreNuevoSocio se registró. Ganaste $$monto.</p>";
+                    echo "<h1>¡Felicidades $nombrePadrino!</h1><p>Tu referido $nombreNuevoSocio pagó su inscripción. Ganaste $$monto.</p>";
                 }
                 
                 $mensajeHTML = ob_get_clean();
-                // ---------------------------------------
 
                 @EmailService::send($padrinoData['soc_correo'], $nombrePadrino, $asunto, $mensajeHTML);
             }
         } catch (Exception $e) {
             error_log("Error bono padrino: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Obtiene dinámicamente el monto para referidos de la base de datos
+     */
+    private function getMontoReferido() {
+        try {
+            // Consultamos la tabla consorcios asumiendo el ID 1 
+            $stmt = $this->conn->prepare("SELECT con_referidos FROM san_consorcios WHERE con_id_consorcio = 1 LIMIT 1");
+            $stmt->execute();
+            $monto = $stmt->fetchColumn();
+            
+            return $monto !== false ? (float)$monto : 0.00;
+        } catch (PDOException $e) {
+            error_log("Error obteniendo bono de referido: " . $e->getMessage());
+            return 0.00;
         }
     }
 }

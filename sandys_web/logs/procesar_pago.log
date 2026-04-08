@@ -1960,3 +1960,207 @@
 [2025-11-25 18:27:22] BaseURL calculada: https://sandysgym.com
 [2025-11-25 18:27:22] Acción 'preview' detectada. Devolviendo cálculo.
 [2026-04-01 17:59:26] [MONEDERO] Preferencia Monedero Creada: ID 2958194482-3cca0fc1-1102-4791-a103-41ca776e0f9a
+[2026-04-07 22:43:30] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:43:30] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:43:30] Datos POST: servicio=129-1, socio_benef=5857, accion=preview, codigo=N/A
+[2026-04-07 22:43:30] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:43:30] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:43:30] Acción 'preview' detectada. Devolviendo cálculo.
+[2026-04-07 22:43:32] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:43:32] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:43:32] Datos POST: servicio=1-1, socio_benef=5857, accion=preview, codigo=N/A
+[2026-04-07 22:43:32] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:43:32] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:43:32] Acción 'preview' detectada. Devolviendo cálculo.
+[2026-04-07 22:43:34] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:43:34] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:43:34] Datos POST: servicio=1-1, socio_benef=5857, accion=preview, codigo=35n59w61
+[2026-04-07 22:43:34] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:43:34] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:43:34] Exception General: El código de promoción no es válido o ha expirado.
+[2026-04-07 22:43:34] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:43:34] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:43:34] Datos POST: servicio=1-1, socio_benef=5857, accion=preview, codigo=35n59w61
+[2026-04-07 22:43:34] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:43:34] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:43:34] Exception General: El código de promoción no es válido o ha expirado.
+[2026-04-07 22:43:47] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:43:47] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:43:47] Datos POST: servicio=1-1, socio_benef=5857, accion=preview, codigo=35n59w61
+[2026-04-07 22:43:47] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:43:47] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:43:47] Exception General: El código de promoción no es válido o ha expirado.
+[2026-04-07 22:45:07] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:45:07] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:45:07] Datos POST: servicio=1-1, socio_benef=5857, accion=preview, codigo=35n59w61
+[2026-04-07 22:45:07] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:45:07] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:45:07] Exception General: El código de promoción no es válido o ha expirado.
+[2026-04-07 22:46:21] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:46:21] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:46:21] Datos POST: servicio=129-1, socio_benef=5857, accion=preview, codigo=35n59w61
+[2026-04-07 22:46:21] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:46:21] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:46:21] Exception General: El código de promoción no es válido o ha expirado.
+[2026-04-07 22:46:23] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:46:23] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:46:23] Datos POST: servicio=129-1, socio_benef=5857, accion=preview, codigo=35n59w61
+[2026-04-07 22:46:23] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:46:23] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:46:23] Exception General: El código de promoción no es válido o ha expirado.
+[2026-04-07 22:48:18] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:48:18] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:48:18] Datos POST: servicio=1-1, socio_benef=5857, accion=preview, codigo=35n59w61
+[2026-04-07 22:48:18] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:48:18] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:48:18] Exception General: El código de promoción no es válido o ha expirado.
+[2026-04-07 22:48:19] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:48:19] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:48:19] Datos POST: servicio=1-1, socio_benef=5857, accion=preview, codigo=35n59w61
+[2026-04-07 22:48:19] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:48:19] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:48:19] Exception General: El código de promoción no es válido o ha expirado.
+[2026-04-07 22:48:19] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:48:19] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:48:19] Datos POST: servicio=1-1, socio_benef=5857, accion=preview, codigo=35n59w61
+[2026-04-07 22:48:19] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:48:19] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:48:19] Exception General: El código de promoción no es válido o ha expirado.
+[2026-04-07 22:48:20] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:48:20] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:48:20] Datos POST: servicio=1-1, socio_benef=5857, accion=preview, codigo=35n59w61
+[2026-04-07 22:48:20] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:48:20] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:48:20] Exception General: El código de promoción no es válido o ha expirado.
+[2026-04-07 22:48:20] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:48:20] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:48:20] Datos POST: servicio=1-1, socio_benef=5857, accion=preview, codigo=35n59w61
+[2026-04-07 22:48:20] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:48:20] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:48:20] Exception General: El código de promoción no es válido o ha expirado.
+[2026-04-07 22:48:20] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:48:20] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:48:20] Datos POST: servicio=1-1, socio_benef=5857, accion=preview, codigo=35n59w61
+[2026-04-07 22:48:20] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:48:20] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:48:20] Exception General: El código de promoción no es válido o ha expirado.
+[2026-04-07 22:48:20] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:48:20] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:48:20] Datos POST: servicio=1-1, socio_benef=5857, accion=preview, codigo=35n59w61
+[2026-04-07 22:48:20] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:48:20] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:48:20] Exception General: El código de promoción no es válido o ha expirado.
+[2026-04-07 22:48:20] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:48:20] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:48:20] Datos POST: servicio=1-1, socio_benef=5857, accion=preview, codigo=35n59w61
+[2026-04-07 22:48:20] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:48:20] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:48:20] Exception General: El código de promoción no es válido o ha expirado.
+[2026-04-07 22:48:23] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:48:23] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:48:23] Datos POST: servicio=129-1, socio_benef=5857, accion=preview, codigo=N/A
+[2026-04-07 22:48:23] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:48:23] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:48:23] Acción 'preview' detectada. Devolviendo cálculo.
+[2026-04-07 22:48:29] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:48:29] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:48:29] Datos POST: servicio=1-1, socio_benef=5857, accion=preview, codigo=N/A
+[2026-04-07 22:48:29] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:48:29] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:48:29] Acción 'preview' detectada. Devolviendo cálculo.
+[2026-04-07 22:48:31] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:48:31] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:48:31] Datos POST: servicio=1-1, socio_benef=5857, accion=preview, codigo=35n59w61
+[2026-04-07 22:48:31] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:48:31] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:48:31] Exception General: El código de promoción no es válido o ha expirado.
+[2026-04-07 22:48:31] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:48:31] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:48:31] Datos POST: servicio=1-1, socio_benef=5857, accion=preview, codigo=35n59w61
+[2026-04-07 22:48:31] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:48:31] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:48:31] Exception General: El código de promoción no es válido o ha expirado.
+[2026-04-07 22:48:32] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:48:32] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:48:32] Datos POST: servicio=1-1, socio_benef=5857, accion=preview, codigo=35n59w61
+[2026-04-07 22:48:32] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:48:32] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:48:32] Exception General: El código de promoción no es válido o ha expirado.
+[2026-04-07 22:48:32] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:48:32] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:48:32] Datos POST: servicio=1-1, socio_benef=5857, accion=preview, codigo=35n59w61
+[2026-04-07 22:48:32] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:48:32] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:48:32] Exception General: El código de promoción no es válido o ha expirado.
+[2026-04-07 22:48:33] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:48:33] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:48:33] Datos POST: servicio=1-1, socio_benef=5857, accion=preview, codigo=35n59w61
+[2026-04-07 22:48:33] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:48:33] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:48:33] Exception General: El código de promoción no es válido o ha expirado.
+[2026-04-07 22:48:33] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:48:33] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:48:33] Datos POST: servicio=1-1, socio_benef=5857, accion=preview, codigo=35n59w61
+[2026-04-07 22:48:33] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:48:33] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:48:33] Exception General: El código de promoción no es válido o ha expirado.
+[2026-04-07 22:48:34] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:48:34] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:48:34] Datos POST: servicio=1-1, socio_benef=5857, accion=preview, codigo=35n59w61
+[2026-04-07 22:48:34] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:48:34] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:48:34] Exception General: El código de promoción no es válido o ha expirado.
+[2026-04-07 22:48:34] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:48:34] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:48:34] Datos POST: servicio=1-1, socio_benef=5857, accion=preview, codigo=35n59w61
+[2026-04-07 22:48:34] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:48:34] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:48:34] Exception General: El código de promoción no es válido o ha expirado.
+[2026-04-07 22:48:34] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:48:34] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:48:34] Datos POST: servicio=1-1, socio_benef=5857, accion=preview, codigo=35n59w61
+[2026-04-07 22:48:34] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:48:34] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:48:34] Exception General: El código de promoción no es válido o ha expirado.
+[2026-04-07 22:48:34] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:48:34] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:48:34] Datos POST: servicio=1-1, socio_benef=5857, accion=preview, codigo=35n59w61
+[2026-04-07 22:48:34] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:48:34] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:48:34] Exception General: El código de promoción no es válido o ha expirado.
+[2026-04-07 22:48:35] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:48:35] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:48:35] Datos POST: servicio=1-1, socio_benef=5857, accion=preview, codigo=35n59w61
+[2026-04-07 22:48:35] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:48:35] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:48:35] Exception General: El código de promoción no es válido o ha expirado.
+[2026-04-07 22:48:35] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:48:35] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:48:35] Datos POST: servicio=1-1, socio_benef=5857, accion=preview, codigo=35n59w61
+[2026-04-07 22:48:35] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:48:35] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:48:35] Exception General: El código de promoción no es válido o ha expirado.
+[2026-04-07 22:48:39] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:48:39] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:48:39] Datos POST: servicio=167-1, socio_benef=5857, accion=preview, codigo=35n59w61
+[2026-04-07 22:48:39] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:48:39] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:48:39] Exception General: El servicio seleccionado no permite códigos promocionales.
+[2026-04-07 22:48:40] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:48:40] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:48:40] Datos POST: servicio=167-1, socio_benef=5857, accion=preview, codigo=35n59w61
+[2026-04-07 22:48:40] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:48:40] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:48:40] Exception General: El servicio seleccionado no permite códigos promocionales.
+[2026-04-07 22:48:42] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:48:42] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:48:42] Datos POST: servicio=1-1, socio_benef=5857, accion=preview, codigo=35n59w61
+[2026-04-07 22:48:42] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:48:42] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:48:42] Exception General: El código de promoción no es válido o ha expirado.
+[2026-04-07 22:48:44] --- INICIO DE SOLICITUD api/procesar_pago.php ---
+[2026-04-07 22:48:44] Datos de Sesión: id_socio_pagador=5857, id_empresa=1, id_usuario=99, id_consorcio=1
+[2026-04-07 22:48:44] Datos POST: servicio=1-1, socio_benef=5857, accion=preview, codigo=35n59w61
+[2026-04-07 22:48:44] Fechas POST: inicio=04-08-2027, fin=03-09-2027
+[2026-04-07 22:48:44] BaseURL calculada: https://sandysgym.com
+[2026-04-07 22:48:44] Exception General: El código de promoción no es válido o ha expirado.

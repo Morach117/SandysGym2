@@ -78,6 +78,28 @@ $serviciosPlanFamiliar = [123, 124, 125, 126, 127, 167];
 if ($miembroActivo && in_array($idServicioActivo, $serviciosPlanFamiliar)) {
     $mostrarAdminPlan = true;
 }
+
+// =========================================================================
+// --- LÓGICA DE REFERIDOS (VERIFICAR SI TIENE PADRINO Y CUPÓN) ---
+// =========================================================================
+$stmtRef = $conn->prepare("SELECT soc_id_referido_por FROM san_socios WHERE soc_id_socio = ?");
+$stmtRef->execute([$socioId]);
+$idPadrino = $stmtRef->fetchColumn();
+
+$cuponGenerado = null;
+if ($idPadrino > 0) {
+    // Verificamos si ya generó un cupón previamente buscando la promoción ligada a él
+    $stmtCupon = $conn->prepare("
+        SELECT c.codigo_generado 
+        FROM san_codigos c 
+        INNER JOIN san_promociones p ON c.id_promocion = p.id_promocion
+        WHERE p.titulo = ? LIMIT 1
+    ");
+    $tituloPromoBuscado = "REFERIDO-" . $socioId;
+    $stmtCupon->execute([$tituloPromoBuscado]);
+    $cuponGenerado = $stmtCupon->fetchColumn();
+}
+// =========================================================================
 ?>
 
 <style>
@@ -198,6 +220,58 @@ body {
     font-weight: 600 !important;
     max-width: 600px !important;
     margin: 0 auto !important;
+}
+
+/* --- BANNER DE REFERIDO (CUPÓN) --- */
+.referral-banner {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, #121212 100%) !important;
+    border: 1px solid rgba(59, 130, 246, 0.3) !important;
+    border-radius: 16px !important;
+    padding: 25px 30px !important;
+    text-align: center !important;
+    margin-top: 30px !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3) !important;
+}
+.referral-banner h4 {
+    color: #ffffff !important;
+    font-family: 'Oswald', sans-serif !important;
+    font-size: 24px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    margin-bottom: 10px !important;
+}
+.referral-banner h4 i { color: #3b82f6 !important; margin-right: 8px; }
+.referral-banner p { color: #aaaaaa !important; font-size: 15px !important; margin-bottom: 20px !important; }
+.referral-code {
+    font-size: 28px !important;
+    font-family: 'Oswald', sans-serif !important;
+    color: #10b981 !important;
+    letter-spacing: 3px !important;
+    background: #000000 !important;
+    padding: 10px 25px !important;
+    border-radius: 8px !important;
+    display: inline-block !important;
+    border: 1px dashed rgba(16, 185, 129, 0.5) !important;
+    margin-top: 5px !important;
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.1) !important;
+}
+.btn-generar-cupon {
+    background-color: #3b82f6 !important;
+    color: #ffffff !important;
+    border: none !important;
+    padding: 12px 35px !important;
+    border-radius: 50px !important;
+    font-weight: bold !important;
+    text-transform: uppercase !important;
+    font-size: 14px !important;
+    transition: 0.3s !important;
+    cursor: pointer !important;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2) !important;
+}
+.btn-generar-cupon:hover {
+    background-color: #2563eb !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4) !important;
 }
 
 /* --- Grid de Apps (Opciones) --- */
@@ -435,6 +509,25 @@ div.swal2-html-container {
 </section>
 
 <div class="container">
+    
+    <?php if ($idPadrino > 0): ?>
+    <div class="referral-banner">
+        <?php if ($cuponGenerado): ?>
+            <h4><i class="fas fa-gift"></i> ¡Tu código de bienvenida!</h4>
+            <p>Usa este código en tu próxima mensualidad para obtener un descuento especial:</p>
+            <span class="referral-code"><?php echo htmlspecialchars($cuponGenerado); ?></span>
+        <?php else: ?>
+            <h4><i class="fas fa-ticket-alt"></i> ¡Tienes un regalo de bienvenida!</h4>
+            <p>Por haber sido invitado por un amigo, tienes derecho a un código de descuento para tu mensualidad.</p>
+            <form action="api/procesar_cupon_referido.php" method="POST">
+                <input type="hidden" name="id_socio" value="<?php echo $socioId; ?>">
+                <button type="submit" name="generar_cupon" class="btn-generar-cupon">
+                    <i class="fas fa-magic mr-2"></i> Generar mi código ahora
+                </button>
+            </form>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
     <section class="dashboard-grid">
 
         <a href="index.php?page=user_pago_membresia" class="app-card">
@@ -490,6 +583,45 @@ div.swal2-html-container {
     </div>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<?php 
+// =========================================================================
+// --- ALERTAS DE GENERACIÓN DE CUPÓN ---
+// =========================================================================
+if (isset($_GET['success']) && $_GET['success'] === 'cupon_generado'): ?>
+<script>
+    $(document).ready(function() {
+        Swal.fire({
+            icon: 'success',
+            title: '¡Cupón Generado!',
+            text: 'Tu código de descuento está listo para usarse.',
+            confirmButtonColor: '#10b981'
+        });
+        // Limpiar la URL para evitar que la alerta salga si recargan la página
+        window.history.replaceState(null, null, window.location.pathname + "?page=user_home");
+    });
+</script>
+<?php endif; ?>
+
+<?php if (isset($_GET['error'])): ?>
+<script>
+    $(document).ready(function() {
+        let msg = 'Ocurrió un error al procesar tu solicitud.';
+        if ("<?php echo $_GET['error']; ?>" === 'cupon_invalido') msg = 'Ya has generado tu cupón de bienvenida o no tienes uno disponible.';
+        
+        Swal.fire({
+            icon: 'error',
+            title: 'Lo sentimos',
+            text: msg,
+            confirmButtonColor: '#ef4444'
+        });
+        window.history.replaceState(null, null, window.location.pathname + "?page=user_home");
+    });
+</script>
+<?php endif; ?>
+
 <?php 
 // =========================================================================
 // --- DETECTOR DE INVITACIONES MÁGICAS ---
@@ -498,8 +630,6 @@ $pendingInviteId = $_COOKIE['gym_pending_invite'] ?? $_SESSION['gym_pending_invi
 
 if ($pendingInviteId && $pendingInviteId != $socioId): 
 ?>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 $(document).ready(function() {
     const hostId = "<?php echo htmlspecialchars($pendingInviteId); ?>";

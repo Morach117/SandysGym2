@@ -236,11 +236,53 @@ if (($data['action'] ?? null) === 'payment.updated' || $type === 'payment') {
                     log_webhook("ÉXITO: Pago de membresía guardado en BD ID: {$id_pago_guardado}");
 
                     if ($id_pago_guardado) {
+                        // 1. Enviar correo de membresía
                         try {
                             enviar_correo_confirmacion_pdo($conn, $id_pago_guardado, (array) $metadata);
                         } catch (Exception $email_error) {
                             log_webhook("ERROR EMAIL: " . $email_error->getMessage());
                         }
+
+                        // ============================================================
+                        // 2. NUEVO: LÓGICA DE REFERIDOS (AL PAGAR LA 1RA MENSUALIDAD)
+                        // ============================================================
+                        try {
+                            $id_socio = (int) ($metadata['id_socio_beneficiario'] ?? 0);
+                            
+                            // Verificar si es su PRIMER pago
+                            $stmtPagos = $conn->prepare("SELECT COUNT(*) FROM san_pagos WHERE pag_id_socio = ?");
+                            $stmtPagos->execute([$id_socio]);
+                            
+                            if ($stmtPagos->fetchColumn() == 1) { // Si es 1, acaba de pagar por primera vez
+                                
+                                // Verificamos si este socio nuevo tiene padrino guardado
+                                $stmtSocio = $conn->prepare("SELECT soc_id_referido_por, soc_nombres, soc_apepat FROM san_socios WHERE soc_id_socio = ?");
+                                $stmtSocio->execute([$id_socio]);
+                                $datosSocio = $stmtSocio->fetch(PDO::FETCH_ASSOC);
+
+                                if ($datosSocio && $datosSocio['soc_id_referido_por'] > 0) {
+                                    require_once __DIR__ . '/lib/UserService.php';
+                                    $userService = new UserService($conn);
+
+                                    $idPadrino = $datosSocio['soc_id_referido_por'];
+                                    $nombreNuevoSocio = trim($datosSocio['soc_nombres'] . ' ' . $datosSocio['soc_apepat']);
+
+                                    // Extraemos los datos del padrino para enviarle el correo
+                                    $stmtPadrino = $conn->prepare("SELECT soc_nombres, soc_correo FROM san_socios WHERE soc_id_socio = ?");
+                                    $stmtPadrino->execute([$idPadrino]);
+                                    $datosPadrino = $stmtPadrino->fetch(PDO::FETCH_ASSOC);
+
+                                    if ($datosPadrino) {
+                                        // Damos la recompensa al padrino
+                                        $userService->darRecompensaPadrino($idPadrino, $datosPadrino, $nombreNuevoSocio);
+                                        log_webhook("ÉXITO: Recompensa de referido otorgada al padrino ID: {$idPadrino}");
+                                    }
+                                }
+                            }
+                        } catch (Exception $eRef) {
+                            log_webhook("ERROR EN LÓGICA DE REFERIDO: " . $eRef->getMessage());
+                        }
+                        // ============================================================
                     }
                 } else {
                     log_webhook("ADVERTENCIA: Pago de membresía duplicado. Ignorado.");
@@ -287,7 +329,6 @@ function registrar_recarga_monedero_pdo(PDO $conn, $payment_id, array $metadata)
         $conn->beginTransaction();
 
         $id_socio = (int) $metadata['id_socio'];
-        $id_empresa = (int) $metadata['id_empresa'];
         $id_usuario = (int) $metadata['id_usuario'];
         $importe_recarga = (float) $metadata['importe_recarga'];
         $incremento_monto = (float) $metadata['incremento_monto'];
@@ -295,8 +336,10 @@ function registrar_recarga_monedero_pdo(PDO $conn, $payment_id, array $metadata)
         $fecha_mov = date('Y-m-d H:i:s');
 
         // 1. Bloquear y obtener saldo actual
-        $stmtSocio = $conn->prepare("SELECT soc_mon_saldo FROM san_socios WHERE soc_id_socio = ? AND soc_id_empresa = ? FOR UPDATE");
-        $stmtSocio->execute([$id_socio, $id_empresa]);
+        // CORRECCIÓN MÁGICA: Eliminé "AND soc_id_empresa = ?" porque si MP enviaba 0 fallaba. 
+        // El id_socio es único de todas formas.
+        $stmtSocio = $conn->prepare("SELECT soc_mon_saldo FROM san_socios WHERE soc_id_socio = ? FOR UPDATE");
+        $stmtSocio->execute([$id_socio]);
         $saldo_actual = (float) $stmtSocio->fetchColumn();
 
         // Query Genérico de detalle
@@ -316,8 +359,9 @@ function registrar_recarga_monedero_pdo(PDO $conn, $payment_id, array $metadata)
         }
 
         // 4. Actualizar saldo total del socio
-        $sqlUpdateSocio = "UPDATE san_socios SET soc_mon_saldo = ? WHERE soc_id_socio = ? AND soc_id_empresa = ?";
-        $conn->prepare($sqlUpdateSocio)->execute([$saldo_final, $id_socio, $id_empresa]);
+        // CORRECCIÓN MÁGICA: También eliminé el filtro de empresa aquí.
+        $sqlUpdateSocio = "UPDATE san_socios SET soc_mon_saldo = ? WHERE soc_id_socio = ?";
+        $conn->prepare($sqlUpdateSocio)->execute([$saldo_final, $id_socio]);
 
         $conn->commit();
         return true;

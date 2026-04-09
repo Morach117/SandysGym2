@@ -2,34 +2,8 @@
 include('conn.php');
 include('./query/select_data.php');
 
-// Definir la variable $userName
-$userName = '';
-
-// Verificar si el usuario ha iniciado sesión
-if (isset($_SESSION['admin'])) {
-    // Obtener el nombre del usuario si está iniciado sesión
-    $user_email = $_SESSION['admin']['soc_correo'];
-    $consulta = "SELECT soc_nombres, soc_apepat, soc_apemat FROM san_socios WHERE soc_correo = :user_email";
-    
-    // Preparar la consulta
-    $stmt = $conn->prepare($consulta);
-    
-    // Vincular el parámetro
-    $stmt->bindParam(':user_email', $user_email);
-    
-    // Ejecutar la consulta
-    $stmt->execute();
-    
-    // Verificar si se encontró el usuario
-    if ($stmt->rowCount() > 0) {
-        // Obtener el nombre del usuario y mostrarlo
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        $userName = $row['soc_nombres'] . ' ' . $row['soc_apepat'] . ' ' . $row['soc_apemat'];
-    }
-
-    // Cerrar la cursor
-    $stmt->closeCursor();
-}
+// Solo necesitamos saber si el usuario ha iniciado sesión
+$isLoggedIn = isset($_SESSION['admin']);
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -38,17 +12,16 @@ if (isset($_SESSION['admin'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Sandys</title>
+    <title>Sandys Gym</title>
 
     <link href="https://fonts.googleapis.com/css?family=Muli:300,400,500,600,700,800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Oswald:300,400,500,600,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-
 
     <link rel="stylesheet" href="./assets/css/bootstrap.min.css" type="text/css">
-    <link rel="stylesheet" href="./assets/css/font-awesome.min.css" type="text/css">
     <link rel="stylesheet" href="./assets/css/flaticon.css" type="text/css">
     <link rel="stylesheet" href="./assets/css/owl.carousel.min.css" type="text/css">
     <link rel="stylesheet" href="./assets/css/barfiller.css" type="text/css">
@@ -69,7 +42,7 @@ if (isset($_SESSION['admin'])) {
         }
         .canvas-social .social-icon i {
             font-size: 22px;
-            color: #111111 !important; /* Color oscuro para ser visible en blanco */
+            color: #111111 !important;
             transition: all 0.3s ease;
         }
         .canvas-social .social-icon i:hover {
@@ -93,16 +66,15 @@ if (isset($_SESSION['admin'])) {
             transform: translateY(-3px);
         }
 
-        /* Ajuste del menú de escritorio para ocupar hasta las redes */
+        /* Ajuste del menú de escritorio para ocupar hasta las redes (EVITA QUE SE EMPALMEN) */
         @media (min-width: 992px) {
             .nav-menu ul {
                 display: flex;
-                justify-content: flex-end; /* Alinea los botones hacia la derecha */
                 gap: 40px; /* Separación uniforme entre los botones */
                 margin-right: 20px; /* Separación con las redes sociales */
             }
             .nav-menu ul li {
-                margin-right: 0 !important; /* Resetea márgenes residuales de la plantilla */
+                margin-right: 0 !important;
             }
         }
 
@@ -121,13 +93,14 @@ if (isset($_SESSION['admin'])) {
             border-radius: 30px;
             transition: all 0.3s ease;
             text-decoration: none !important;
+            white-space: nowrap; /* Evita que el texto salte a dos líneas */
         }
         .login-btn i, .user-logged-btn i {
             margin-right: 8px;
             color: #f36100;
             font-size: 16px;
         }
-        .login-btn:hover, .user-logged-btn:hover, .user-logged-btn[aria-expanded="true"] {
+        .login-btn:hover, .user-logged-btn:hover {
             background: #ffffff;
             color: #000000 !important;
             border-color: #ffffff;
@@ -174,38 +147,30 @@ if (isset($_SESSION['admin'])) {
                 
                 <li style="border-top: 1px solid #e5e5e5; margin-top: 10px; padding-top: 10px;"></li>
                 
-                <?php if ($userName): ?>
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle mobile-login-link" id="userDropdownMobile" role="button" aria-haspopup="true" aria-expanded="false">
-                            <i class="fa fa-user"></i> <?php echo $userName; ?>
-                        </a>
-                        <ul class="dropdown-menu" id="userMenuMobile" aria-labelledby="userDropdownMobile">
-                            <li><a class="dropdown-item" href="index.php?page=user_home">Inicio</a></li>
-                            <li><a class="dropdown-item" href="index.php?page=user">Ver datos</a></li>
-                            <li><a class="dropdown-item" href="index.php?page=user_information">Modificar información</a></li>
-                            <li><a class="dropdown-item" href="./query/logout.php">Cerrar sesión</a></li>
-                        </ul>
-                    </li>
+                <?php if ($isLoggedIn): ?>
+                    <li><a href="index.php?page=user_home" class="mobile-login-link"><i class="fa-solid fa-user"></i> MI CUENTA</a></li>
                 <?php else: ?>
-                    <li><a href="index.php?page=login" class="mobile-login-link"><i class="fa fa-user"></i> Iniciar Sesión</a></li>
+                    <li><a href="index.php?page=login" class="mobile-login-link"><i class="fa-solid fa-user"></i> INICIAR SESIÓN</a></li>
                 <?php endif; ?>
             </ul>
             <div class="canvas-social">
-                <a href="https://www.facebook.com/gymsandy" target="_blank" class="social-icon"><i class="fa fa-facebook"></i></a>
-                <a href="https://www.instagram.com/sandysgym?igsh=MXU0c3NrNWZjZzMzYw==" target="_blank" class="social-icon"><i class="fa fa-instagram"></i></a>
-                <a href="https://www.tiktok.com/@sandysgym" target="_blank" class="social-icon"><i class="fab fa-tiktok"></i></a>
+                <a href="https://www.facebook.com/gymsandy" target="_blank" class="social-icon"><i class="fa-brands fa-facebook-f"></i></a>
+                <a href="https://www.instagram.com/sandysgym?igsh=MXU0c3NrNWZjZzMzYw==" target="_blank" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
+                <a href="https://www.tiktok.com/@sandysgym" target="_blank" class="social-icon"><i class="fa-brands fa-tiktok"></i></a>
             </div>
 
         </nav>
         <div id="mobile-menu-wrap"></div>
     </div>
+    
     <header class="header-section">
         <div class="container-fluid">
             <div class="row align-items-center">
                 <div class="col-lg-2">
                     <div class="logo">
                         <a href="index.php?page=home">
-<img src="./assets/img/logo.png" alt="Logo Sandys Gym" style="width: 200px !important; height: auto !important; max-height: none !important;">                        </a>
+                            <img src="./assets/img/logo.png" alt="Logo Sandys Gym" style="width: 200px !important; height: auto !important; max-height: none !important;">
+                        </a>
                     </div>
                 </div>
                 
@@ -224,27 +189,20 @@ if (isset($_SESSION['admin'])) {
                     <div class="top-option d-flex justify-content-end align-items-center">
                         
                         <div class="to-social d-none d-lg-flex align-items-center" style="gap: 15px; margin-right: 20px; padding-right: 20px; border-right: 1px solid rgba(255, 255, 255, 0.2);">
-                            <a href="https://www.facebook.com/gymsandy" target="_blank"><i class="fa fa-facebook"></i></a>
-                            <a href="https://www.instagram.com/sandysgym?igsh=MXU0c3NrNWZjZzMzYw==" target="_blank"><i class="fa fa-instagram"></i></a>
-                            <a href="https://www.tiktok.com/@sandysgym" target="_blank"><i class="fab fa-tiktok"></i></a>
+                            <a href="https://www.facebook.com/gymsandy" target="_blank"><i class="fa-brands fa-facebook-f"></i></a>
+                            <a href="https://www.instagram.com/sandysgym?igsh=MXU0c3NrNWZjZzMzYw==" target="_blank"><i class="fa-brands fa-instagram"></i></a>
+                            <a href="https://www.tiktok.com/@sandysgym" target="_blank"><i class="fa-brands fa-tiktok"></i></a>
                         </div>
                         
                         <div class="d-none d-lg-block" style="margin-right: 15px;">
-                            <?php if ($userName): ?>
-                                <div class="dropdown">
-                                    <a href="#" class="dropdown-toggle user-logged-btn" id="userDropdown" role="button" aria-haspopup="true" aria-expanded="false">
-                                        <i class="fa fa-user"></i> <?php echo $userName; ?>
-                                    </a>
-                                    <div class="dropdown-menu dropdown-menu-right" id="userMenu" aria-labelledby="userDropdown">
-                                        <a class="dropdown-item" href="index.php?page=user_home">Inicio</a>
-                                        <a class="dropdown-item" href="index.php?page=user">Ver datos</a>
-                                        <a class="dropdown-item" href="index.php?page=user_information">Modificar información</a>
-                                        <div class="dropdown-divider"></div>
-                                        <a class="dropdown-item" href="./query/logout.php">Cerrar sesión</a>
-                                    </div>
-                                </div>
+                            <?php if ($isLoggedIn): ?>
+                                <a href="index.php?page=user_home" class="user-logged-btn">
+                                    <i class="fa-solid fa-user"></i> MI CUENTA
+                                </a>
                             <?php else: ?>
-                                <a href="index.php?page=login" class="login-btn"><i class="fa fa-user"></i> Iniciar Sesión</a>
+                                <a href="index.php?page=login" class="login-btn">
+                                    <i class="fa-solid fa-user"></i> INICIAR SESIÓN
+                                </a>
                             <?php endif; ?>
                         </div>
                         
@@ -259,6 +217,7 @@ if (isset($_SESSION['admin'])) {
             </div>
         </div>
     </header>
+
     <script src="./assets/js/jquery-3.3.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="./assets/js/bootstrap.min.js"></script>
@@ -268,43 +227,5 @@ if (isset($_SESSION['admin'])) {
     <script src="./assets/js/jquery.slicknav.js"></script>
     <script src="./assets/js/owl.carousel.min.js"></script>
     <script src="./assets/js/main.js"></script>
-
-    <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        var userDropdown = document.getElementById("userDropdown");
-        var userMenu = document.getElementById("userMenu");
-        var userDropdownMobile = document.getElementById("userDropdownMobile");
-        var userMenuMobile = document.getElementById("userMenuMobile");
-        
-        if (userDropdown && userMenu) {
-            userDropdown.addEventListener("click", function(event) {
-                event.preventDefault();
-                event.stopPropagation();
-                userMenu.classList.toggle("show");
-            });
-            
-            document.addEventListener("click", function(event) {
-                if (!userDropdown.contains(event.target)) {
-                    userMenu.classList.remove("show");
-                }
-            });
-        }
-
-        if (userDropdownMobile && userMenuMobile) {
-            userDropdownMobile.addEventListener("click", function(event) {
-                event.preventDefault();
-                event.stopPropagation();
-                userMenuMobile.classList.toggle("show");
-            });
-            
-            document.addEventListener("click", function(event) {
-                if (!userDropdownMobile.contains(event.target)) {
-                    userMenuMobile.classList.remove("show");
-                }
-            });
-        }
-    });
-    </script>
 </body>
-
 </html>

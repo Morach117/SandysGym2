@@ -51,7 +51,7 @@
                         <li>Vestidores y Regaderas</li>
                         <li>Asistencia de Coach</li>
                     </ul>
-                    <a href="#" class="primary-btn pricing-btn">Inscribirse ahora</a>
+                    <a href="index.php?page=inscribite" class="primary-btn pricing-btn">Inscribirse ahora</a>
                 </div>
             </div>
             <div class="col-lg-4 col-md-8">
@@ -68,7 +68,7 @@
                         <li>Asistencia de Coach</li>
                         <li>Monedero electrónico</li>
                     </ul>
-                    <a href="#" class="primary-btn pricing-btn">Inscribirse ahora</a>
+                    <a href="index.php?page=inscribite" class="primary-btn pricing-btn">Inscribirse ahora</a>
                 </div>
             </div>
             <div class="col-lg-4 col-md-8">
@@ -85,7 +85,7 @@
                         <li>Asistencia de Coach</li>
                         <li>Monedero electrónico</li>
                     </ul>
-                    <a href="#" class="primary-btn pricing-btn">Inscribirse ahora</a>
+                    <a href="index.php?page=inscribite" class="primary-btn pricing-btn">Inscribirse ahora</a>
                 </div>
             </div>
         </div>
@@ -105,7 +105,7 @@
                         <li>Asistencia de Coach</li>
                         <li>Monedero electrónico</li>
                     </ul>
-                    <a href="#" class="primary-btn pricing-btn">Inscribirse ahora</a>
+                    <a href="index.php?page=inscribite" class="primary-btn pricing-btn">Inscribirse ahora</a>
                 </div>
             </div>
             <div class="col-lg-4 col-md-8">
@@ -122,7 +122,7 @@
                         <li>Asistencia de Coach</li>
                         <li>Monedero electrónico</li>
                     </ul>
-                    <a href="#" class="primary-btn pricing-btn">Inscribirse ahora</a>
+                    <a href="index.php?page=inscribite" class="primary-btn pricing-btn">Inscribirse ahora</a>
                 </div>
             </div>
         </div>

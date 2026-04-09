@@ -31,6 +31,7 @@
                 <span class="touch-class">Opciones para cumpleaños</span>
             </li>
         </a>
+
         <a href=".?s=promociones">
             <li>
                 <span class="glyphicon glyphicon-gift"></span>
@@ -46,5 +47,13 @@
                 <span class="touch-class">Video</span>
             </li>
         </a>
-        </ul>
+
+        <a href=".?s=comentarios">
+            <li>
+                <span class="glyphicon glyphicon-comment"></span>
+                <h5><strong>Comentarios</strong></h5>
+                <span class="touch-class">Bandeja de contacto web</span>
+            </li>
+        </a>
+    </ul>
 </div>

@@ -347,7 +347,8 @@ $textoInvitacion = "¡Hola! Ven a entrenar conmigo a Sandys Gym. 🏋️‍♂�
                     },
                     dataType: 'json'
                 }).then(response => {
-                    if(response.status !== 'success') {
+                    // CORRECCIÓN: Tu backend funcional usa 'success' como booleano, no 'status'
+                    if(!response.success) { 
                         throw new Error(response.message);
                     }
                     return response;

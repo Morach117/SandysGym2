@@ -208,10 +208,47 @@ try {
         .service-dates { margin-top: 4px; }
         .action-btn { width: 100%; margin-top: 10px; }
     }
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        background: #1a1a1a;
+        color: #ffffff !important;
+        border: 1px solid #333;
+        padding: 8px 22px;
+        border-radius: 50px;
+        text-decoration: none !important;
+        transition: all 0.3s ease;
+        margin-bottom: 25px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .btn-back:hover {
+        background: #ef4444; 
+        color: #fff !important;
+        border-color: #ef4444;
+        transform: translateX(-5px);
+        box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+    }
+
+    .btn-back i {
+        margin-right: 10px;
+    }
+
+    /* Ajuste para que en móvil no se pegue al borde */
+    @media (max-width: 768px) {
+        .btn-back {
+            margin-bottom: 20px;
+        }
+    }
 </style>
 
 <div class="payments-wrapper">
     <div class="payments-container">
+        <a href="index.php?page=user_home" class="btn-back">
+            <i class="fa-solid fa-arrow-left"></i> Volver al Inicio
+        </a>
         
         <div class="page-header">
             <div class="page-title">

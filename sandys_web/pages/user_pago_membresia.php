@@ -289,11 +289,55 @@ if (!$selSocioData) {
         .payment-card, .summary-card { padding: 25px 20px; }
         .summary-total { font-size: 22px; }
     }
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        background: #1a1a1a;
+        color: #ffffff;
+        border: 1px solid #333;
+        padding: 8px 22px;
+        border-radius: 50px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+        font-size: 14px;
+        cursor: pointer;
+        font-weight: 600;
+        font-family: 'Muli', sans-serif;
+    }
+
+    .btn-back:hover {
+        background: #ef4444; /* Rojo Sandy's */
+        color: #fff;
+        border-color: #ef4444;
+        transform: translateX(-5px);
+        text-decoration: none;
+        box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+    }
+
+    .btn-back i {
+        margin-right: 10px;
+    }
+
+    /* Ajuste para que el botón no quede pegado al menú en móviles */
+    @media (max-width: 768px) {
+        .btn-back {
+            margin-left: 15px;
+        }
+    }
 </style>
 
 <br><br><br>
 <section class="membership-payment">
     <div class="container">
+
+    <div class="row">
+    <div class="col-12 mb-3">
+        <a href="index.php?page=user_home" class="btn-back">
+            <i class="fa-solid fa-arrow-left"></i> Volver al Inicio
+        </a>
+    </div>
+</div>
 
         <div class="row justify-content-center">
             <div class="col-lg-10 text-center">

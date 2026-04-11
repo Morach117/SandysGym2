@@ -167,10 +167,51 @@ $niveles = [
         .level-icon { font-size: 35px; }
         .card-title { font-size: 22px; }
     }
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        background: #1a1a1a;
+        color: #ffffff !important;
+        border: 1px solid #333;
+        padding: 8px 22px;
+        border-radius: 50px;
+        text-decoration: none !important;
+        transition: all 0.3s ease;
+        margin-bottom: 30px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .btn-back:hover {
+        background: #ef4444; 
+        color: #fff !important;
+        border-color: #ef4444;
+        transform: translateX(-5px);
+        box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+    }
+
+    .btn-back i {
+        margin-right: 10px;
+    }
+
+    /* Ajuste para móviles */
+    @media (max-width: 768px) {
+        .btn-back {
+            margin-left: 15px;
+        }
+    }
 </style>
 
 <section class="class-timetable-section">
     <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <a href="index.php?page=user_home" class="btn-back">
+                    <i class="fa-solid fa-arrow-left"></i> Volver al Inicio
+                </a>
+            </div>
+        </div>
         <?php if ($miembroActivo): ?>
             
             <div class="row">

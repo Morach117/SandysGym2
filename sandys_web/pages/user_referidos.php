@@ -41,7 +41,7 @@ $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "
 $host = $_SERVER['HTTP_HOST'];
 
 // Liga directa a la creación de cuenta
-$baseUrl = "$protocol://$host/index.php?page=registro_nuevo"; 
+$baseUrl = "$protocol://$host/index.php?page=inscribite"; 
 
 // CORRECCIÓN: Ahora el parámetro ref lleva el número de teléfono en lugar del ID
 $linkCompleto = $baseUrl . "&ref=" . $miTelefono;
@@ -199,7 +199,56 @@ $textoInvitacion = "¡Hola! Ven a entrenar conmigo a Sandys Gym. 🏋️‍♂�
         .share-code-box { font-size: 18px; padding: 10px 20px; width: 100%; justify-content: center; }
         .copy-input { font-size: 11px; }
     }
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        background: #1a1a1a;
+        color: #ffffff !important;
+        border: 1px solid #333;
+        padding: 8px 22px;
+        border-radius: 50px;
+        text-decoration: none !important;
+        transition: all 0.3s ease;
+        margin-bottom: 25px;
+        font-size: 14px;
+        font-weight: 600;
+        position: relative;
+        z-index: 10;
+    }
+
+    .btn-back:hover {
+        background: #ef4444; 
+        color: #fff !important;
+        border-color: #ef4444;
+        transform: translateX(-5px);
+        box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+    }
+
+    .btn-back i {
+        margin-right: 10px;
+    }
+
+    /* Ajuste para que el botón flote correctamente sobre el hero */
+    .back-button-container {
+        position: absolute;
+        top: 100px;
+        left: 20px;
+        z-index: 100;
+    }
+
+    @media (max-width: 768px) {
+        .back-button-container {
+            top: 90px;
+            left: 15px;
+        }
+    }
 </style>
+
+<div class="back-button-container">
+    <a href="index.php?page=user_home" class="btn-back">
+        <i class="fa-solid fa-arrow-left"></i> Volver al Inicio
+    </a>
+</div>
 
 <section class="referral-hero">
     <div class="container">

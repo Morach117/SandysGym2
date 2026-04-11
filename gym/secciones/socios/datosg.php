@@ -137,7 +137,12 @@
     <div class="row">
         <label class="col-md-2">Mes de Nacimiento</label>
         <div class="col-md-4">
-            <select class="form-control" name="soc_mes_nacimiento">
+            <?php 
+                // Verificamos si el usuario es Admin (Asumiendo que 'S' es administrador)
+                $es_admin = (isset($_SESSION['sans_rol']) && $_SESSION['sans_rol'] == 'S'); 
+            ?>
+            
+            <select class="form-control" <?= $es_admin ? 'name="soc_mes_nacimiento"' : 'disabled' ?>>
                 <option value="">-- Seleccionar Mes --</option>
                 <?php foreach($meses as $num => $nombre): ?>
                     <option value="<?= $num ?>" <?= ($mes_actual === $num) ? 'selected' : '' ?>>
@@ -145,6 +150,10 @@
                     </option>
                 <?php endforeach; ?>
             </select>
+            
+            <?php if (!$es_admin): ?>
+                <input type="hidden" name="soc_mes_nacimiento" value="<?= $mes_actual ?>">
+            <?php endif; ?>
         </div>
     </div>
     <div class="row">

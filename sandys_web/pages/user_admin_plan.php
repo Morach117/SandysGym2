@@ -163,11 +163,40 @@ $linkInvitacion = "http://" . $_SERVER['HTTP_HOST'] . "/SandysGym2/sandys_web/in
         transition: 0.3s; cursor: pointer; display: flex; align-items: center; justify-content: center; 
     }
     .btn-delete:hover { background: #ef4444; color: white; }
+    /* Botón de Regresar Estilo Frontend */
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        background: #1a1a1a;
+        color: #fff;
+        border: 1px solid #333;
+        padding: 8px 20px;
+        border-radius: 50px; /* Estilo píldora según manual */
+        text-decoration: none;
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+    .btn-back:hover {
+        background: #ef4444; /* Acento rojo */
+        color: #fff;
+        border-color: #ef4444;
+        transform: translateX(-5px);
+        text-decoration: none;
+    }
+
+    .btn-back i {
+        margin-right: 8px;
+    }
 </style>
 
 <div class="admin-plan-wrapper">
     <div class="container">
-        
+        <a href="javascript:void(0);" onclick="history.back();" class="btn-back">
+            <i class="fa-solid fa-arrow-left"></i> Volver
+        </a>
         <div class="plan-header-card">
             <h2 class="text-white text-uppercase" style="font-family: 'Oswald', sans-serif; letter-spacing: 1px;">
                 <?php echo $esTitular ? 'Administrar ' : 'Mi '; ?> 

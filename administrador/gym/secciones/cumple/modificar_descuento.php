@@ -1,30 +1,50 @@
 <?php
-// Función para actualizar el descuento de cumpleaños
+// Función para actualizar los descuentos y los servicios permitidos
 function actualizar_descuentos() {
-    $conexion = obtener_conexion();
+    global $conexion; // Usamos la conexión global del sistema
     $errores = array();
 
     if (isset($_POST['enviar'])) {
-        // Actualizar descuento de cumpleaños
-        $id_cumple = mysqli_real_escape_string($conexion, $_POST['id_cumple']);
-        $porcentaje_cumple = mysqli_real_escape_string($conexion, $_POST['porcentaje_cumple']);
-        $query_cumple = "UPDATE san_promociones SET porcentaje_descuento = '$porcentaje_cumple' WHERE id_promocion = '$id_cumple'";
-        $resultado_cumple = mysqli_query($conexion, $query_cumple);
-        if (!$resultado_cumple) {
-            $errores[] = 'Error al actualizar cumpleaños: ' . mysqli_error($conexion);
+        // 1. Actualizar descuento de cumpleaños (ID 104)
+        $id_cumple = intval($_POST['id_cumple']);
+        // CORRECCIÓN: Tu BD usa INT para el porcentaje
+        $porcentaje_cumple = intval($_POST['porcentaje_cumple']); 
+        
+        $query_cumple = "UPDATE san_promociones SET porcentaje_descuento = '$porcentaje_cumple' WHERE id_promocion = $id_cumple";
+        if (!mysqli_query($conexion, $query_cumple)) {
+            $errores[] = 'Error al actualizar descuento de cumpleaños: ' . mysqli_error($conexion);
         }
 
-        // Actualizar descuento referido
-        $id_referido = mysqli_real_escape_string($conexion, $_POST['id_referido']);
-        $porcentaje_referido = mysqli_real_escape_string($conexion, $_POST['porcentaje_referido']);
-        $query_referido = "UPDATE san_promociones SET porcentaje_descuento = '$porcentaje_referido' WHERE id_promocion = '$id_referido'";
-        $resultado_referido = mysqli_query($conexion, $query_referido);
-        if (!$resultado_referido) {
-            $errores[] = 'Error al actualizar referido: ' . mysqli_error($conexion);
+        // 2. LÓGICA DE SERVICIOS
+        // CORRECCIÓN DE ERROR: Nombre exacto de la tabla (san_descuentos_promociones)
+        $query_borrar_servicios = "DELETE FROM san_descuentos_promociones WHERE id_promocion = $id_cumple";
+        mysqli_query($conexion, $query_borrar_servicios);
+
+        // Si marcaron checkboxes, los insertamos con permitir_descuento = 1
+        if (!empty($_POST['servicios_permitidos']) && is_array($_POST['servicios_permitidos'])) {
+            foreach ($_POST['servicios_permitidos'] as $id_servicio) {
+                $id_servicio_seguro = intval($id_servicio);
+                
+                // CORRECCIÓN DE ERROR: Nombre exacto de la tabla
+                $query_insertar_servicio = "INSERT INTO san_descuentos_promociones (id_promocion, id_servicio, permitir_descuento) 
+                                            VALUES ($id_cumple, $id_servicio_seguro, 1)";
+                if (!mysqli_query($conexion, $query_insertar_servicio)) {
+                    $errores[] = 'Error al guardar un servicio permitido: ' . mysqli_error($conexion);
+                }
+            }
+        }
+
+        // 3. Actualizar descuento referido (ID 167)
+        $id_referido = intval($_POST['id_referido']);
+        $porcentaje_referido = intval($_POST['porcentaje_referido']);
+        
+        $query_referido = "UPDATE san_promociones SET porcentaje_descuento = '$porcentaje_referido' WHERE id_promocion = $id_referido";
+        if (!mysqli_query($conexion, $query_referido)) {
+            $errores[] = 'Error al actualizar descuento de referido: ' . mysqli_error($conexion);
         }
 
         if (empty($errores)) {
-            return array('num' => 1, 'msj' => 'Descuentos actualizados correctamente.');
+            return array('num' => 1, 'msj' => 'Descuentos y servicios actualizados correctamente.');
         } else {
             return array('num' => 2, 'msj' => implode('<br>', $errores));
         }
@@ -46,47 +66,41 @@ if (isset($_POST['enviar'])) {
 }
 
 // Función para obtener el porcentaje de descuento
-function obtener_porcentaje_descuento($id_promocion)
-{
-    $conexion = obtener_conexion();
+function obtener_porcentaje_descuento($id_promocion) {
+    global $conexion;
     
-    if ($conexion) {
-        // Escapar el ID de promoción para prevenir inyecciones SQL
-        $id_promocion = mysqli_real_escape_string($conexion, $id_promocion);
-
-        // Consulta SQL para obtener el porcentaje de descuento
-        $query = "SELECT porcentaje_descuento FROM san_promociones WHERE id_promocion = '$id_promocion'";
-        
-        // Ejecutar la consulta
-        $resultado = mysqli_query($conexion, $query);
-        
-        if ($resultado) {
-            // Extraer el resultado
-            $fila = mysqli_fetch_assoc($resultado);
-            
-            // Liberar el resultado
-            mysqli_free_result($resultado);
-            
-            // Cerrar la conexión
-            mysqli_close($conexion);
-            
-            // Retornar el porcentaje de descuento
-            return $fila['porcentaje_descuento'];
-        } else {
-            // Si la consulta falla, mostrar error
-            echo "Error al ejecutar la consulta: " . mysqli_error($conexion);
-        }
-    } else {
-        // Si no se puede conectar a la base de datos, mostrar error
-        echo "Error al conectar a la base de datos.";
+    $id_promocion = intval($id_promocion);
+    $query = "SELECT porcentaje_descuento FROM san_promociones WHERE id_promocion = $id_promocion";
+    $resultado = mysqli_query($conexion, $query);
+    
+    if ($resultado && $fila = mysqli_fetch_assoc($resultado)) {
+        return intval($fila['porcentaje_descuento']);
     }
     
-    // Si ocurre un error, retorna falso
-    return false;
+    return 0; 
 }
 
-// Ejemplo de uso
-$porcentaje_descuento = obtener_porcentaje_descuento($id_promocion);
+// NUEVA FUNCIÓN: Obtener servicios permitidos de tu tabla
+function obtener_servicios_promocion($id_promocion) {
+    global $conexion;
+    $servicios_marcados = array();
+    
+    $id_promocion = intval($id_promocion);
+    // CORRECCIÓN DE ERROR: Nombre exacto de la tabla (san_descuentos_promociones)
+    $query = "SELECT id_servicio FROM san_descuentos_promociones WHERE id_promocion = $id_promocion AND permitir_descuento = 1";
+    $resultado = mysqli_query($conexion, $query);
+    
+    if ($resultado) {
+        while ($fila = mysqli_fetch_assoc($resultado)) {
+            $servicios_marcados[] = $fila['id_servicio'];
+        }
+    }
+    
+    return $servicios_marcados;
+}
+
+// Obtenemos los servicios guardados para el ID 104
+$servicios_guardados_cumple = obtener_servicios_promocion(104);
 
 ?>
 
@@ -97,31 +111,62 @@ $porcentaje_descuento = obtener_porcentaje_descuento($id_promocion);
         </h4>
     </div>
 </div>
-
 <hr/>
 
 <form method="post" action="?s=cumple&i=modificar_descuento">
-    <!-- Descuento Cumpleaños -->
+    
     <div class="row">
-        <label class="col-md-2">Descuento Cumpleaños</label>
+        <label class="col-md-2">Descuento Cumpleaños (%)</label>
         <div class="col-md-4">
             <input type="hidden" name="id_cumple" value="104" />
             <input type="number" name="porcentaje_cumple" class="form-control" value="<?= obtener_porcentaje_descuento(104) ?>" min="0" max="100" required />
         </div>
     </div>
 
-    <!-- Descuento Referido -->
-    <div class="row" style="margin-top: 10px;">
-        <label class="col-md-2">Descuento Referido</label>
+    <div class="row" style="margin-top: 15px;">
+        <label class="col-md-2">Servicios Permitidos (Cumpleaños)</label>
+        <div class="col-md-4">
+            <div class="well well-sm" style="max-height: 200px; overflow-y: auto; background-color: #fff;">
+                <?php
+                    // Obtener todos los servicios activos
+                    $query_servicios = "SELECT ser_id_servicio, ser_descripcion FROM san_servicios WHERE ser_id_giro = 1 AND ser_status = 'A'";
+                    $result_servicios = mysqli_query($conexion, $query_servicios);
+
+                    if ($result_servicios && mysqli_num_rows($result_servicios) > 0) {
+                        while ($row = mysqli_fetch_assoc($result_servicios)) {
+                            $id_servicio = $row['ser_id_servicio'];
+                            $nombre_servicio = htmlspecialchars($row['ser_descripcion']);
+                            
+                            // Verificamos si este servicio está permitido
+                            $checked = in_array($id_servicio, $servicios_guardados_cumple) ? 'checked' : '';
+                            
+                            echo "<div class='checkbox' style='margin-top: 5px; margin-bottom: 5px;'>
+                                    <label>
+                                        <input type='checkbox' name='servicios_permitidos[]' value='$id_servicio' $checked> $nombre_servicio
+                                    </label>
+                                  </div>";
+                        }
+                    } else {
+                        echo "<p class='text-muted'>No hay servicios disponibles.</p>";
+                    }
+                ?>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" style="margin-top: 15px;">
+        <label class="col-md-2">Descuento Referido (%)</label>
         <div class="col-md-4">
             <input type="hidden" name="id_referido" value="167" />
             <input type="number" name="porcentaje_referido" class="form-control" value="<?= obtener_porcentaje_descuento(167) ?>" min="0" max="100" required />
         </div>
     </div>
 
-    <div class="row" style="margin-top: 20px;">
+    <div class="row" style="margin-top: 30px; margin-bottom: 30px;">
         <div class="col-md-offset-2 col-md-4">
-            <input type="submit" name="enviar" class="btn btn-primary" value="Guardar" />
+            <button type="submit" name="enviar" class="btn btn-primary">
+                <span class="glyphicon glyphicon-floppy-disk"></span> Guardar Cambios
+            </button>
         </div>
     </div>
 </form>

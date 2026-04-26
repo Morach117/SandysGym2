@@ -4,8 +4,8 @@
 | Instalador Independiente de Base de Datos - Sandys Gym
 |--------------------------------------------------------------------------
 |
-| Este script detecta el entorno, se conecta mediante PDO y crea la
-| tabla necesaria para el módulo de contactos.
+| Este script detecta el entorno, se conecta mediante PDO, crea la
+| tabla de contactos y actualiza la tabla de pagos.
 |
 */
 
@@ -46,7 +46,7 @@ try {
     $conn = new PDO($dsn, $user, $pass, $options);
     echo "<p style='color: #10b981;'>✅ Conexión a la base de datos establecida con éxito (Entorno: <b>{$current_host}</b>).</p>";
 
-    // 3. --- CONSULTA SQL PARA CREAR LA TABLA ---
+    // 3. --- CREACIÓN DE TABLAS NUEVAS ---
     $sql_contactos = "
         CREATE TABLE IF NOT EXISTS `san_contactos` (
             `id_contacto` int(11) NOT NULL AUTO_INCREMENT,
@@ -59,19 +59,37 @@ try {
             PRIMARY KEY (`id_contacto`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     ";
-
-    // 4. --- EJECUTAR LA CREACIÓN ---
+    
     $conn->exec($sql_contactos);
     echo "<p style='color: #10b981;'>✅ Tabla <b>'san_contactos'</b> verificada/creada con éxito.</p>";
+
+    // 4. --- ACTUALIZACIÓN DE TABLAS EXISTENTES (ALTER) ---
+    try {
+        $sql_alter_pagos = "
+            ALTER TABLE san_pagos 
+            ADD COLUMN pag_id_prepago_abono INT(11) NOT NULL DEFAULT 0 
+            COMMENT 'ID del registro en san_prepago_detalle correspondiente al abono de cashback/consorcio'
+        ";
+        $conn->exec($sql_alter_pagos);
+        echo "<p style='color: #10b981;'>✅ Columna <b>'pag_id_prepago_abono'</b> añadida a 'san_pagos'.</p>";
+    } catch (PDOException $e) {
+        // Código 42S21 o mensaje de columna duplicada
+        if ($e->getCode() == '42S21' || strpos($e->getMessage(), 'Duplicate column name') !== false) {
+            echo "<p style='color: #F28123;'>⚠️ La columna <b>'pag_id_prepago_abono'</b> ya existe en 'san_pagos'. Se omitió su creación.</p>";
+        } else {
+            // Si es otro tipo de error SQL, lo lanzamos para que lo atrape el catch principal
+            throw $e;
+        }
+    }
 
     // 5. --- AVISO DE SEGURIDAD ---
     echo "<br><div style='background-color: #1a1a1a; padding: 20px; border-left: 5px solid #F28123; border-radius: 5px;'>";
     echo "<h3 style='color: #F28123; margin-top: 0;'>⚠️ ALERTA DE SEGURIDAD CRÍTICA</h3>";
-    echo "<p>La tabla está lista para usarse. <b>Por favor, elimina este archivo (instalar_bd.php) de tu servidor inmediatamente.</b> Dejarlo público expone la estructura de tu base de datos y tus credenciales de producción.</p>";
+    echo "<p>La base de datos está actualizada y lista. <b>Por favor, elimina este archivo del servidor inmediatamente.</b> Dejarlo público expone la estructura de tu base de datos y tus credenciales.</p>";
     echo "</div>";
 
 } catch (PDOException $e) {
-    // Si falla la conexión o la consulta
+    // Si falla la conexión u otra consulta no controlada
     echo "<p style='color: #ef4444;'>❌ <b>Error crítico:</b> " . $e->getMessage() . "</p>";
 }
 

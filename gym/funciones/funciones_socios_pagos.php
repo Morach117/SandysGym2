@@ -183,10 +183,6 @@ function guardar_pago_socio()
 
         // --- INICIO DE LÓGICA DE CÓDIGO PROMOCIONAL ---
         if (!empty($codigo_promocion)) {
-            // NOTA: Para el cumpleaños, asumimos que el código ya fue validado en frontend o que existe en BD.
-            // Si usas lógica exclusiva de JS para el monto del cumple, asegúrate de que el código exista en san_codigos
-            // o agrega aquí una excepción para saltar esta validación si es el código de cumple.
-            
             $current_date = date("Y-m-d");
             $query_validar_codigo = "SELECT p.porcentaje_descuento, p.tipo_promocion, c.status
                                      FROM san_codigos c
@@ -219,13 +215,6 @@ function guardar_pago_socio()
                 mysqli_stmt_bind_param($stmt_insert, "issi", $id_socio, $codigo_promocion, $fecha_mov, $id_empresa);
                 mysqli_stmt_execute($stmt_insert);
             } 
-            // IMPORTANTE: Si es el código de CUMPLEAÑOS y no está en la tabla de cupones (porque es especial), 
-            // puedes agregar un 'else if' aquí para asignar el descuento manualmente y evitar la Excepción.
-            // Por ahora, asumimos que está en la tabla o que la validación estricta es deseada.
-            else {
-                 // Descomentar si quieres bloquear códigos inválidos en BD:
-                 // throw new Exception("El código de promoción no es válido, ya fue utilizado o ha expirado.");
-            }
         }
         // --- FIN DE LÓGICA DE CÓDIGO PROMOCIONAL ---
 
@@ -274,6 +263,8 @@ function guardar_pago_socio()
         $res_consorcio = mysqli_stmt_get_result($stmt_consorcio);
         $porcentaje = ($fila = mysqli_fetch_assoc($res_consorcio)) ? floatval($fila['con_mensualidad']) : 0;
 
+        $id_prepago_abono = 0; // NUEVO: Inicializamos el identificador del incremento
+
         if ($porcentaje > 0) {
             $incremento_monedero = round($importe_final * ($porcentaje / 100), 2);
             if ($incremento_monedero > 0) {
@@ -287,8 +278,24 @@ function guardar_pago_socio()
                 if (!mysqli_stmt_execute($stmt_saldo_inc)) {
                     throw new Exception("Error al abonar bonificación al monedero.");
                 }
-                $detalle_abono = ['pred_descripcion' => 'Abono por pago de Membresía', 'pred_importe' => $incremento_monedero, 'pred_saldo' => $nuevo_saldo, 'pred_movimiento' => 'A', 'pred_fecha' => $fecha_mov, 'pred_id_socio' => $id_socio, 'pred_id_usuario' => $id_usuario];
-                mysqli_query($conexion, construir_insert('san_prepago_detalle', $detalle_abono));
+                
+                $detalle_abono = [
+                    'pred_descripcion' => 'Abono por pago de Membresía', 
+                    'pred_importe' => $incremento_monedero, 
+                    'pred_saldo' => $nuevo_saldo, 
+                    'pred_movimiento' => 'A', 
+                    'pred_fecha' => $fecha_mov, 
+                    'pred_id_socio' => $id_socio, 
+                    'pred_id_usuario' => $id_usuario
+                ];
+                
+                // NUEVO: Ejecutamos el insert y capturamos el ID
+                $query_abono = construir_insert('san_prepago_detalle', $detalle_abono);
+                if (mysqli_query($conexion, $query_abono)) {
+                    $id_prepago_abono = mysqli_insert_id($conexion); // Captura el ID para usarlo en san_pagos
+                } else {
+                    throw new Exception("Error al registrar el detalle del incremento.");
+                }
             }
         }
 
@@ -325,13 +332,15 @@ function guardar_pago_socio()
                     $pago_tarjeta = ($v_metodo_pago == 'T') ? $importe_final : 0;
                     $pago_monedero_actual = $pag_monedero;
                     $importe_pago = round($importe_final, 2);
-                    $codigo_a_guardar = $codigo_promocion; // Solo guardamos el codigo en el registro del socio principal
+                    $codigo_a_guardar = $codigo_promocion; 
+                    $id_abono_a_guardar = $id_prepago_abono; // NUEVO: Vinculamos el ID del incremento
                 } else {
                     $pago_efectivo = 0;
                     $pago_tarjeta = 0;
                     $pago_monedero_actual = 0;
                     $importe_pago = 0;
                     $codigo_a_guardar = '';
+                    $id_abono_a_guardar = 0; // NUEVO: Socios adicionales no llevan registro de abono
                 }
 
                 $datos_sql = [
@@ -347,8 +356,8 @@ function guardar_pago_socio()
                     'pag_tipo_pago' => $v_metodo_pago,
                     'pag_id_usuario' => $id_usuario,
                     'pag_id_empresa' => $id_empresa,
-                    // *** AQUÍ ESTÁ LA CORRECCIÓN SOLICITADA ***
-                    'pag_codigo_promocion' => $codigo_a_guardar 
+                    'pag_codigo_promocion' => $codigo_a_guardar,
+                    'pag_id_prepago_abono' => $id_abono_a_guardar // NUEVO: Se guarda en la BD
                 ];
 
                 $query_pago = construir_insert('san_pagos', $datos_sql);

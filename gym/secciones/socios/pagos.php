@@ -929,7 +929,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 socios.forEach(s => {
                     var li = $(
                         `<li class="list-group-item list-group-item-action">${s.nombre}</li>`
-                        );
+                    );
                     li.click(function() {
                         $('#referidos').val(s.soc_id_socio);
                         verificarTelefono(s.soc_id_socio);

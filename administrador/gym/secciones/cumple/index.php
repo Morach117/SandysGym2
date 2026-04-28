@@ -3,29 +3,25 @@
 $mes_filtro = isset($_GET['mes_filtro']) ? (int) $_GET['mes_filtro'] : (int) date('n');
 $anio_filtro = isset($_GET['anio_filtro']) ? (int) $_GET['anio_filtro'] : (int) date('Y');
 
+// Rescatamos variables de entorno para evitar que el filtro te saque de la página
+$s_param = isset($_GET['s']) ? htmlspecialchars($_GET['s']) : '';
+$i_param = isset($_GET['i']) ? htmlspecialchars($_GET['i']) : '';
+
 $meses_nombres = [
-    1 => 'Enero',
-    2 => 'Febrero',
-    3 => 'Marzo',
-    4 => 'Abril',
-    5 => 'Mayo',
-    6 => 'Junio',
-    7 => 'Julio',
-    8 => 'Agosto',
-    9 => 'Septiembre',
-    10 => 'Octubre',
-    11 => 'Noviembre',
-    12 => 'Diciembre'
+    1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
+    5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
+    9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'
 ];
 
 function obtener_socios_cumpleaños($mes_filtro, $meses_nombres)
 {
     global $conexion, $id_empresa;
 
-    // Consulta optimizada solo con los campos solicitados
+    // Se solicita soc_nombres por separado para usarlo en el correo sin apellidos
     $query = "SELECT 
                 soc_id_socio AS id_socio,
-                CONCAT(soc_apepat, ' ', soc_apemat, ' ', soc_nombres) AS nombres,
+                soc_nombres AS nombre_pila,
+                CONCAT(soc_apepat, ' ', soc_apemat, ' ', soc_nombres) AS nombres_completos,
                 MONTH(soc_fecha_nacimiento) AS mes_nacimiento,
                 soc_tel_cel,
                 soc_correo
@@ -46,15 +42,16 @@ function obtener_socios_cumpleaños($mes_filtro, $meses_nombres)
             $num_mes = (int) $fila['mes_nacimiento'];
             $mes_texto = isset($meses_nombres[$num_mes]) ? $meses_nombres[$num_mes] : 'Desconocido';
 
-            // Si no tiene correo, mostramos una advertencia con label
             $correo_badge = !empty($fila['soc_correo']) ? $fila['soc_correo'] : '<span class="label label-default">Sin correo</span>';
+            
+            // Botón individual preparado para abrir el modal mandando sus datos
             $btn_correo = !empty($fila['soc_correo'])
-                ? "<button class='btn btn-primary btn-xs' onclick=\"abrirModalCorreo('{$fila['soc_correo']}', '{$fila['nombres']}')\"><span class='glyphicon glyphicon-envelope'></span> Enviar Felicitación</button>"
-                : "<button class='btn btn-default btn-xs' disabled><span class='glyphicon glyphicon-ban-circle'></span> No disponible</button>";
+                ? "<button type='button' class='btn btn-primary btn-xs btn-enviar-correo' data-correo='{$fila['soc_correo']}' data-nombre='{$fila['nombre_pila']}' onclick='abrirModalCorreo(this)'><span class='glyphicon glyphicon-envelope'></span> Enviar</button>"
+                : "<button type='button' class='btn btn-default btn-xs' disabled><span class='glyphicon glyphicon-ban-circle'></span> N/A</button>";
 
             $datos .= "<tr>
                         <td>$i</td>
-                        <td>{$fila['nombres']}</td>
+                        <td>{$fila['nombres_completos']}</td>
                         <td>$mes_texto</td>
                         <td>{$fila['soc_tel_cel']}</td>
                         <td>$correo_badge</td>
@@ -77,7 +74,6 @@ function obtener_reporte_concentrado($anio_filtro, $meses_nombres)
 {
     global $conexion, $id_empresa;
 
-    // Consulta para el concentrado cruzando pagos del mes de cumpleaños en el año seleccionado
     $query = "SELECT 
                 MONTH(s.soc_fecha_nacimiento) AS mes,
                 COUNT(DISTINCT s.soc_id_socio) AS total_cumpleaneros,
@@ -117,13 +113,11 @@ $var_exito_reporte = obtener_reporte_concentrado($anio_filtro, $meses_nombres);
 
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <title>Módulo de Cumpleaños</title>
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
 </head>
-
 <body>
     <div class="container-fluid">
         <div class="row">
@@ -137,12 +131,14 @@ $var_exito_reporte = obtener_reporte_concentrado($anio_filtro, $meses_nombres);
 
         <div class="row well well-sm">
             <form method="GET" action="">
+                <?php if($s_param): ?><input type="hidden" name="s" value="<?= $s_param ?>"><?php endif; ?>
+                <?php if($i_param): ?><input type="hidden" name="i" value="<?= $i_param ?>"><?php endif; ?>
+
                 <div class="col-md-3">
                     <label>Filtrar Lista por Mes:</label>
                     <select name="mes_filtro" class="form-control">
                         <?php foreach ($meses_nombres as $num => $nombre): ?>
-                        <option value="<?= $num ?>" <?= ($num == $mes_filtro) ? 'selected' : '' ?>><?= $nombre ?>
-                        </option>
+                        <option value="<?= $num ?>" <?= ($num == $mes_filtro) ? 'selected' : '' ?>><?= $nombre ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -163,45 +159,41 @@ $var_exito_reporte = obtener_reporte_concentrado($anio_filtro, $meses_nombres);
             </form>
         </div>
 
-        <div class="row">
-            <div class="col-md-12">
-                <div class="panel panel-success">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">
-                            <span class="glyphicon glyphicon-stats"></span> Concentrado del Año <?= $anio_filtro ?>
-                        </h3>
-                    </div>
-                    <div class="panel-body table-responsive">
-                        <table class="table table-hover table-condensed table-striped table-bordered text-center"
-                            style="margin-bottom: 0;">
-                            <thead>
-                                <tr class="success">
-                                    <th class="text-center">Mes</th>
-                                    <th class="text-center">N° Cumpleañeros</th>
-                                    <th class="text-center">N° Pagaron su Mes</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php echo $var_exito_reporte; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active">
+                <a href="#tab_listado" aria-controls="tab_listado" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-user"></span> Listado de Cumpleañeros</a>
+            </li>
+            <li role="presentation">
+                <a href="#tab_concentrado" aria-controls="tab_concentrado" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-stats"></span> Reporte Concentrado</a>
+            </li>
+        </ul>
 
-        <div class="row">
-            <div class="col-md-12">
+        <div class="tab-content" style="padding-top: 20px;">
+            <div role="tabpanel" class="tab-pane active" id="tab_listado">
+                
+                <div class="well">
+                    <label class="text-primary"><span class="glyphicon glyphicon-pencil"></span> Plantilla Global de Mensaje</label>
+                    <textarea id="mensajeGlobal" class="form-control" rows="4">¡Feliz cumpleaños! 🎂
+
+Hoy celebramos a uno de nuestros socios más dedicados 💪🔥
+
+De parte de Sandy's Gym, te deseamos un día lleno de energía, risas y muchas repeticiones... pero solo de pastel 😋🎂
+
+Gracias por ser parte de esta gran familia fitness. Que este nuevo año venga cargado de fuerza, disciplina y metas cumplidas.
+
+¡A seguir dando lo mejor en cada entrenamiento! 🚀</textarea>
+                    <p class="help-block"><small>Este es el texto base. Si das clic en "Enviar" a un solo socio, podrás editar este mensaje solo para él. Si usas el botón masivo, se enviará este texto a todos.</small></p>
+                    <button class="btn btn-success" id="btnEnvioMasivo" onclick="enviarMasivo()">
+                        <span class="glyphicon glyphicon-send"></span> Enviar Correo a Todos los del Mes
+                    </button>
+                </div>
+
                 <div class="panel panel-info">
                     <div class="panel-heading">
-                        <h3 class="panel-title">
-                            <span class="glyphicon glyphicon-list-alt"></span> Cumpleañeros de
-                            <?= $meses_nombres[$mes_filtro] ?>
-                        </h3>
+                        <h3 class="panel-title">Cumpleañeros de <?= $meses_nombres[$mes_filtro] ?></h3>
                     </div>
                     <div class="panel-body table-responsive">
-                        <table id="tabla_cumpleaños"
-                            class="table table-hover table-condensed table-bordered text-center" style="width: 100%;">
+                        <table id="tabla_cumpleaños" class="table table-hover table-condensed table-bordered text-center" style="width: 100%;">
                             <thead>
                                 <tr class="info">
                                     <th class="text-center">#</th>
@@ -219,23 +211,41 @@ $var_exito_reporte = obtener_reporte_concentrado($anio_filtro, $meses_nombres);
                     </div>
                 </div>
             </div>
+
+            <div role="tabpanel" class="tab-pane" id="tab_concentrado">
+                <div class="panel panel-success">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Concentrado del Año <?= $anio_filtro ?></h3>
+                    </div>
+                    <div class="panel-body table-responsive">
+                        <table class="table table-hover table-condensed table-striped table-bordered text-center" style="margin-bottom: 0;">
+                            <thead>
+                                <tr class="success">
+                                    <th class="text-center">Mes</th>
+                                    <th class="text-center">N° Cumpleañeros</th>
+                                    <th class="text-center">N° Pagaron su Mes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php echo $var_exito_reporte; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="row" style="margin-top: 20px;">
             <div class="col-md-12">
-                <a href="javascript:history.back()" class="btn btn-default"><span
-                        class="glyphicon glyphicon-arrow-left"></span> Regresar</a>
+                <a href="javascript:history.back()" class="btn btn-default"><span class="glyphicon glyphicon-arrow-left"></span> Regresar</a>
             </div>
         </div>
-    </div>
-
-    <div class="modal fade" id="modalCorreo" tabindex="-1" role="dialog">
+    </div> <div class="modal fade" id="modalCorreo" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-primary">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                            aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title"><span class="glyphicon glyphicon-envelope"></span> Enviar Felicitación</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" style="color: white;"><span class="glyphicon glyphicon-envelope"></span> Enviar Felicitación Personalizada</h4>
                 </div>
                 <div class="modal-body">
                     <form id="formCorreoFelicitacion">
@@ -248,17 +258,14 @@ $var_exito_reporte = obtener_reporte_concentrado($anio_filtro, $meses_nombres);
                             <input type="text" id="nombreSocio" class="form-control" readonly>
                         </div>
                         <div class="form-group">
-                            <label>Mensaje Personalizado:</label>
-                            <textarea id="mensajeCorreo" class="form-control"
-                                rows="5">¡Hola! De parte de todo el equipo de Sandys Gym queremos desearte un muy feliz cumpleaños. ¡Que pases un excelente día lleno de energía!</textarea>
-                            <p class="help-block"><small>Este mensaje se incrustará en la plantilla HTML
-                                    correspondiente.</small></p>
+                            <label>Mensaje (Modificable solo para este socio):</label>
+                            <textarea id="mensajeCorreoIndividual" class="form-control" rows="6"></textarea>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
-                    <button type="button" class="btn btn-primary" onclick="enviarCorreoAjax()">
+                    <button type="button" class="btn btn-primary" id="btnEnviarIndividual" onclick="enviarCorreoIndividualAjax()">
                         <span class="glyphicon glyphicon-send"></span> Enviar Correo
                     </button>
                 </div>
@@ -266,47 +273,62 @@ $var_exito_reporte = obtener_reporte_concentrado($anio_filtro, $meses_nombres);
         </div>
     </div>
 
-    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js">
-    </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+
     <script>
     $(document).ready(function() {
+        // Inicialización de DataTables
         $('#tabla_cumpleaños').DataTable({
             "language": {
-                "url": "//cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json" // Más limpio cargar la traducción oficial
+                "url": "https://cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json"
             }
         });
     });
 
-    function abrirModalCorreo(correo, nombre) {
+    var botonIndividualActual = null; 
+
+    // Función para abrir el modal individual
+    function abrirModalCorreo(btnHtml) {
+        botonIndividualActual = $(btnHtml);
+        var correo = botonIndividualActual.data('correo');
+        var nombre = botonIndividualActual.data('nombre');
+        
+        // Copia el texto del text-area global al modal
+        var mensajeBase = $('#mensajeGlobal').val(); 
+
         $('#correoDestino').val(correo);
         $('#nombreSocio').val(nombre);
+        $('#mensajeCorreoIndividual').val(mensajeBase);
+
+        // Bootstrap JS abre el modal
         $('#modalCorreo').modal('show');
     }
 
-    function enviarCorreoAjax() {
+    // Función para procesar el envío INDIVIDUAL desde el Modal
+    function enviarCorreoIndividualAjax() {
         var correo = $('#correoDestino').val();
         var nombre = $('#nombreSocio').val();
-        var mensaje = $('#mensajeCorreo').val();
+        var mensaje = $('#mensajeCorreoIndividual').val(); 
 
-        // Bloquear botón para evitar doble envío
-        var btn = $('#modalCorreo .btn-primary');
-        var btnTextoOriginal = btn.html();
-        btn.html('<span class="glyphicon glyphicon-refresh form-control-feedback"></span> Enviando...').prop('disabled',
-            true);
+        var btnModal = $('#btnEnviarIndividual');
+        var btnTextoOriginal = btnModal.html();
+        
+        btnModal.html('<span class="glyphicon glyphicon-refresh form-control-feedback"></span> Enviando...').prop('disabled', true);
 
         $.ajax({
-            url: 'secciones/cumple/correo.php', // Ruta relativa desde la vista
+            url: 'secciones/cumple/correo.php',
             type: 'POST',
-            data: {
-                email: correo,
-                socio: nombre,
-                mensaje: mensaje
-            },
+            data: { email: correo, socio: nombre, mensaje: mensaje },
             dataType: 'json',
             success: function(response) {
                 if (response.exito) {
-                    alert("¡Correo enviado exitosamente a " + nombre + "!");
                     $('#modalCorreo').modal('hide');
+                    botonIndividualActual.removeClass('btn-primary').addClass('btn-success').html('<span class="glyphicon glyphicon-ok"></span> Enviado');
+                    alert("¡Correo enviado exitosamente a " + nombre + "!");
                 } else {
                     alert("Error al enviar el correo: " + response.mensaje);
                 }
@@ -315,12 +337,65 @@ $var_exito_reporte = obtener_reporte_concentrado($anio_filtro, $meses_nombres);
                 alert("Ocurrió un error de red o de servidor al intentar enviar el correo.");
             },
             complete: function() {
-                // Restaurar botón
-                btn.html(btnTextoOriginal).prop('disabled', false);
+                btnModal.html(btnTextoOriginal).prop('disabled', false);
+            }
+        });
+    }
+
+    // Función para procesar el envío MASIVO 
+    function enviarMasivo() {
+        var botones = $('.btn-enviar-correo'); 
+        if(botones.length === 0) {
+            alert("No hay socios con correo para enviar en este listado.");
+            return;
+        }
+
+        if(!confirm("¿Estás seguro de enviar " + botones.length + " correos? Usará la 'Plantilla Global'. Esto puede demorar unos segundos.")) return;
+        
+        var mensajeGlobal = $('#mensajeGlobal').val();
+        var btnMasivo = $('#btnEnvioMasivo');
+        
+        btnMasivo.prop('disabled', true).html('<span class="glyphicon glyphicon-refresh"></span> Procesando Envío Masivo...');
+
+        var promesas = [];
+
+        botones.each(function() {
+            var btn = $(this);
+            var correo = btn.data('correo');
+            var nombre = btn.data('nombre');
+            
+            var peticion = procesarEnvioAjaxSilencioso(correo, nombre, mensajeGlobal, btn);
+            promesas.push(peticion);
+        });
+
+        $.when.apply($, promesas).always(function() {
+            btnMasivo.prop('disabled', false).html('<span class="glyphicon glyphicon-send"></span> Enviar Correo a Todos los del Mes');
+            alert("¡Proceso de envío masivo finalizado!");
+        });
+    }
+
+    // Función auxiliar para el envío masivo silencioso
+    function procesarEnvioAjaxSilencioso(correo, nombre, mensaje, botonHtml) {
+        return $.ajax({
+            url: 'secciones/cumple/correo.php', 
+            type: 'POST',
+            data: { email: correo, socio: nombre, mensaje: mensaje },
+            dataType: 'json',
+            beforeSend: function() {
+                botonHtml.prop('disabled', true).html('Enviando...');
+            },
+            success: function(response) {
+                if (response.exito) {
+                    botonHtml.removeClass('btn-primary').addClass('btn-success').html('<span class="glyphicon glyphicon-ok"></span> Enviado');
+                } else {
+                    botonHtml.removeClass('btn-primary').addClass('btn-danger').html('Error');
+                }
+            },
+            error: function() {
+                botonHtml.removeClass('btn-primary').addClass('btn-danger').html('Error');
             }
         });
     }
     </script>
 </body>
-
 </html>

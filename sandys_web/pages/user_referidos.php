@@ -32,7 +32,7 @@ try {
 }
 
 // Cálculos
-$totalReferidos = count($listaReferidos);
+$totalReferidos = count($listaReferidos);   
 $gananciaPorReferido = 35; 
 $gananciaTotal = $totalReferidos * $gananciaPorReferido;
 

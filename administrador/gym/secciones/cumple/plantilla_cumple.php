@@ -19,16 +19,17 @@
         .content p { font-size: 16px; line-height: 1.6; margin-bottom: 20px; }
         .content .greeting { text-align: center; font-size: 18px; color: #333333; }
         
-        /* Estilo adaptado para la caja del mensaje personalizado */
         .message-box { 
             background-color: #fcfcfc; 
-            border-left: 4px solid #e74c3c; /* Acento rojo de tu diseño */
+            border-left: 4px solid #e74c3c; 
             padding: 20px; 
             margin: 30px 0; 
             font-style: italic; 
             color: #333333;
             border-radius: 0 8px 8px 0;
             box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            /* Preservar los saltos de línea del textarea */
+            white-space: pre-wrap; 
         }
 
         .footer { padding: 40px 50px; background-color: #222222; color: #aaaaaa; text-align: center; font-size: 13px; line-height: 1.5; }
@@ -49,17 +50,10 @@
                     <strong>¡Hola, <?= htmlspecialchars($data_nombre, ENT_QUOTES, 'UTF-8') ?>!</strong>
                 </p>
                 
-                <p style="text-align: center;">
-                    Hoy es un día muy especial y no queríamos dejar pasar la oportunidad de felicitarte.
-                </p>
-                
                 <div class="message-box">
                     <?= $data_mensaje ?>
                 </div>
                 
-                <p style="text-align: center;">
-                    Te deseamos mucha salud, éxito y que sigas cumpliendo todas tus metas fitness. ¡Te esperamos pronto para entrenar con todo!
-                </p>
                 <p style="text-align: center; margin-top: 30px;">
                     <strong>Un abrazo fuerte,</strong><br>El equipo de Sandy's Gym 💪
                 </p>

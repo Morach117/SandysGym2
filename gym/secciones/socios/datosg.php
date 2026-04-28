@@ -134,25 +134,30 @@
         </div>
     </div>
 
-    <div class="row">
+<div class="row">
         <label class="col-md-2">Mes de Nacimiento</label>
         <div class="col-md-4">
             <?php 
                 // Verificamos si el usuario es Admin (Asumiendo que 'S' es administrador)
                 $es_admin = (isset($_SESSION['sans_rol']) && $_SESSION['sans_rol'] == 'S'); 
+                
+                // Nueva regla de negocio:
+                // Puede editar si es Admin O si NO tiene un mes previamente registrado.
+                // Asumimos que si no tiene registro, $mes_actual estará vacío, null o será un string vacío.
+                $puede_editar = $es_admin || empty($mes_actual);
             ?>
             
-            <select class="form-control" <?= $es_admin ? 'name="soc_mes_nacimiento"' : 'disabled' ?>>
+            <select class="form-control" <?= $puede_editar ? 'name="soc_mes_nacimiento"' : 'disabled' ?>>
                 <option value="">-- Seleccionar Mes --</option>
                 <?php foreach($meses as $num => $nombre): ?>
-                    <option value="<?= $num ?>" <?= ($mes_actual === $num) ? 'selected' : '' ?>>
+                    <option value="<?= $num ?>" <?= ($mes_actual == $num) ? 'selected' : '' ?>>
                         <?= $nombre ?>
                     </option>
                 <?php endforeach; ?>
             </select>
             
-            <?php if (!$es_admin): ?>
-                <input type="hidden" name="soc_mes_nacimiento" value="<?= $mes_actual ?>">
+            <?php if (!$puede_editar): ?>
+                <input type="hidden" name="soc_mes_nacimiento" value="<?= htmlspecialchars($mes_actual, ENT_QUOTES, 'UTF-8') ?>">
             <?php endif; ?>
         </div>
     </div>

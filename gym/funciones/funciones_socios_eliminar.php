@@ -1,205 +1,183 @@
 <?php
-	function eliminar_socio()
-	{
-		global $conexion, $id_empresa;
-		
-		$id_socio	= request_var( 'id_socio', 0 );
-		$exito		= array();
-		$e_pagos	= false;
-		$e_prepagos	= false;
-		$e_ventas	= false;
-		
-		mysqli_autocommit( $conexion, false );
-		
-		$query		= "	SELECT 		soc_id_socio,
-									COUNT( pag_id_socio ) AS pagos,
-									COUNT( prep_id_socio ) AS prepagos,
-									COUNT( ven_id_socio ) AS ventas,
-									COUNT( id_socio ) AS codigos
-                  				FROM 		san_socios
-						LEFT JOIN	san_pagos ON pag_id_socio = soc_id_socio
-						LEFT JOIN	san_prepago ON prep_id_socio = soc_id_socio
-						LEFT JOIN	san_venta ON ven_id_socio = soc_id_socio
-						LEFT JOIN	san_codigos_usados ON id_socio = soc_id_socio
-						WHERE		soc_id_socio = $id_socio
-						AND			soc_id_empresa = $id_empresa
-						GROUP BY	soc_id_socio";
-		
-		$resultado	= mysqli_query( $conexion, $query );
-		
-		if( $resultado )
-		{
-			if( $fila = mysqli_fetch_assoc( $resultado ) )
-			{
-				//para eliminar mensualidades pagadas
-				if( $fila['pagos'] > 0 )
-				{
-					$query		= "DELETE FROM san_pagos_actualizados WHERE pag_id_pago IN (	SELECT	pag_id_pago 
-																								FROM 	san_pagos 
-																								WHERE 	pag_id_socio = $id_socio 
-																								AND 	pag_id_empresa = $id_empresa)";
-					$resultado	= mysqli_query( $conexion, $query );
-					
-					if( $resultado )
-					{
-						$query		= "DELETE FROM san_pagos WHERE pag_id_socio = $id_socio AND pag_id_empresa = $id_empresa";
-						$resultado	= mysqli_query( $conexion, $query );
-						
-						if( $resultado )
-							$e_pagos = true;
-						else
-						{
-							$exito['num'] = 5;
-							$exito['msj'] = "Ha ocurrido un error al tratar de Eliminar las vigencias de este Socio. ".mysqli_error( $conexion );
-						}
-					}
-					else
-					{
-						$exito['num'] = 4;
-						$exito['msj'] = "Ha ocurrido un error al tratar de Eliminar las vigencias actualizadas de este Socio. ".mysqli_error( $conexion );
-					}
-				}
-				else
-					$e_pagos = true;
-				
-                                 //para eliminar codigos utilizados
-				if( $fila['codigos'] > 0 )
-				{
-				
-						$query		= "DELETE FROM san_codigos_usados WHERE id_socio = $id_socio";
-						$resultado	= mysqli_query( $conexion, $query );
-						
-						if( $resultado )
-							$e_prepagos = true;
-						else
-						{
-							$exito['num'] = 7;
-							$exito['msj'] = "Ha ocurrido un error al tratar de Eliminar los Prepagos de este Socio. ".mysqli_error( $conexion );
-						}
-				
-				}
-				else
-					$e_prepagos = true;
-				
+// api_socios.php
 
-				//para eliminar prepagos
-				if( $fila['prepagos'] > 0 )
-				{
-					$query		= "DELETE FROM san_prepago_detalle WHERE pred_id_prepago IN (	SELECT	prep_id_prepago
-																								FROM	san_prepago
-																								WHERE	prep_id_socio = $id_socio
-																								AND		prep_id_empresa = $id_empresa )";
-					$resultado	= mysqli_query( $conexion, $query );
-					
-					if( $resultado )
-					{
-						$query		= "DELETE FROM san_prepago WHERE prep_id_socio = $id_socio AND prep_id_empresa = $id_empresa";
-						$resultado	= mysqli_query( $conexion, $query );
-						
-						if( $resultado )
-							$e_prepagos = true;
-						else
-						{
-							$exito['num'] = 7;
-							$exito['msj'] = "Ha ocurrido un error al tratar de Eliminar los Prepagos de este Socio. ".mysqli_error( $conexion );
-						}
-					}
-					else
-					{
-						$exito['num'] = 6;
-						$exito['msj'] = "Ha ocurrido un error al tratar de Eliminar el detalle de Prepagos de este Socio. ".mysqli_error( $conexion );
-					}
-				}
-				else
-					$e_prepagos = true;
-				
-				//se eliminan las ventas de este socio
-				if( $fila['ventas'] > 0 )
-				{
-					$query		= "DELETE FROM san_venta_historico WHERE venh_id_usuario = $id_socio AND venh_id_empresa = $id_empresa";
-					$resultado	= mysqli_query( $conexion, $query );
-					
-					if( $resultado )
-					{
-						$query		= "DELETE FROM san_venta_detalle WHERE vende_id_venta IN (	SELECT	ven_id_venta
-																								FROM	san_venta
-																								WHERE 	ven_id_usuario = $id_socio 
-																								AND 	ven_id_empresa = $id_empresa )";
-						$resultado	= mysqli_query( $conexion, $query );
-						
-						if( $resultado )
-						{
-							$query		= "DELETE FROM san_venta WHERE ven_id_usuario = $id_socio AND ven_id_empresa = $id_empresa";
-							$resultado	= mysqli_query( $conexion, $query );
-							
-							if( $resultado )
-							{
-								$e_ventas = true;
-							}
-							else
-							{
-								$exito['num'] = 10;
-								$exito['msj'] = "Ha ocurrido un error al tratar de Eliminar las Ventas de este Socio. ".mysqli_error( $conexion );
-							}
-						}
-						else
-						{
-							$exito['num'] = 9;
-							$exito['msj'] = "Ha ocurrido un error al tratar de Eliminar el detalle de Ventas de este Socio. ".mysqli_error( $conexion );
-						}
-					}
-					else
-					{
-						$exito['num'] = 8;
-						$exito['msj'] = "Ha ocurrido un error al tratar de Eliminar el histórico de Ventas de este Socio. ".mysqli_error( $conexion );
-					}
-				}
-				else
-					$e_ventas = true;
-				
-				if( $e_ventas && $e_pagos && $e_prepagos )
-				{
-					$query		= "DELETE FROM san_socios WHERE soc_id_socio = $id_socio AND soc_id_empresa = $id_empresa";
-					$resultado	= mysqli_query( $conexion, $query );
-				
-					if( $resultado )
-					{
-						if( mysqli_affected_rows( $conexion ) == 1 )
-						{
-							$exito['num'] = 1;
-							$exito['msj'] = "Socio Eliminado.";
-						}
-						else
-						{
-							$exito['num'] = 12;
-							$exito['msj'] = "No se Elimino ningun Socio.";
-						}
-					}
-					else
-					{
-						$exito['num'] = 11;
-						$exito['msj'] = "Ha ocurrio un error al tratar de Eliminar este Socio. ".mysqli_error( $conexion );
-					}
-				}
-			}
-			else
-			{
-				$exito['num'] = 3;
-				$exito['msj'] = "Número de Socio no válido.";
-			}
-		}
-		else
-		{
-			$exito['num'] = 2;
-			$exito['msj'] = "Ha ocurrio un error al tratar de verificar este Socio. ".mysqli_error( $conexion );
-		}
-		
-		if( $exito['num'] == 1 )
-			mysqli_commit( $conexion );
-		else
-			mysqli_rollback( $conexion );
-		
-		return $exito;
-	}
-	
+require_once '../../funciones_globales/funciones_conexion.php';
+require_once '../../funciones_globales/funciones_comunes.php';
+
+// Establecer zona horaria de PHP
+date_default_timezone_set('America/Mexico_City');
+
+// Establecer conexión a la BD
+$conexion = obtener_conexion();
+if (!$conexion) {
+    header('Content-Type: application/json');
+    http_response_code(500);
+    echo json_encode(['error' => 'No se pudo establecer la conexión con la base de datos.']);
+    exit;
+}
+// Establecer zona horaria de la conexión MYSQL
+mysqli_query($conexion, "SET time_zone = '-06:00'");
+
+session_start();
+$id_empresa = isset($_SESSION['id_empresa']) ? intval($_SESSION['id_empresa']) : 1; 
+
+$draw = isset($_POST['draw']) ? intval($_POST['draw']) : 0;
+
+if (empty($id_empresa)) {
+    header('Content-Type: application/json');
+    echo json_encode(["draw" => $draw, "recordsTotal" => 0, "recordsFiltered" => 0, "data" => [], "error" => "Sesión no válida o ID de empresa no encontrado."]);
+    exit;
+}
+
+// Parámetros de DataTables
+$start = isset($_POST['start']) ? intval($_POST['start']) : 0;
+$length = isset($_POST['length']) ? intval($_POST['length']) : 10;
+$orderColumnIndex = isset($_POST['order'][0]['column']) ? intval($_POST['order'][0]['column']) : 3; 
+$orderColumnName = isset($_POST['columns'][$orderColumnIndex]['data']) ? mysqli_real_escape_string($conexion, $_POST['columns'][$orderColumnIndex]['data']) : 'nombres';
+$orderDir = isset($_POST['order'][0]['dir']) && strtolower($_POST['order'][0]['dir']) == 'desc' ? 'DESC' : 'ASC';
+
+$searchValue = isset($_POST['search']['value']) ? mysqli_real_escape_string($conexion, $_POST['search']['value']) : '';
+$pag_opciones = isset($_POST['pag_opciones']) ? intval($_POST['pag_opciones']) : 0;
+
+$fecha_mov = date('Y-m-d');
+$condicion = "";
+
+if (!empty($searchValue)) {
+    $condicion .= " AND (LOWER(CONCAT(s.soc_apepat, ' ', s.soc_apemat, ' ', s.soc_nombres)) LIKE LOWER('%$searchValue%') 
+                       OR LOWER(s.soc_correo) LIKE LOWER('%$searchValue%') 
+                       OR s.soc_tel_cel LIKE '%$searchValue%')";
+}
+
+// =========== APLICAR FILTRO DE OPCIONES ===========
+if ( $pag_opciones > 0 ) {
+    switch( $pag_opciones ) {
+        case 1: // Socios agregados hoy
+            $condicion .= " AND DATE(s.soc_fecha_captura) = '$fecha_mov'";
+            break;
+        
+        case 2: // Socios que pagaron hoy
+            $condicion .= " AND s.soc_id_socio IN (SELECT pag_id_socio FROM san_pagos WHERE DATE(pag_fecha_pago) = '$fecha_mov')";
+            break;
+        
+        case 3: // Los que se vencen hoy (Excluyendo status E)
+            $condicion .= " AND p.pag_fecha_fin = '$fecha_mov' AND (p.pag_status IS NULL OR p.pag_status != 'E')";
+            break;
+
+        case 4: // Socios vencidos (Incluyendo status E)
+            $condicion .= " AND (p.pag_fecha_fin < '$fecha_mov' OR p.pag_id_pago IS NULL OR p.pag_status = 'E')";
+            break;
+    }
+}
+
+$from_clause = "
+    FROM san_socios s
+    LEFT JOIN san_pagos p ON p.pag_id_pago = (
+        SELECT pag_id_pago 
+        FROM san_pagos
+        WHERE pag_id_socio = s.soc_id_socio
+        ORDER BY pag_fecha_fin DESC, pag_id_pago DESC
+        LIMIT 1
+    )
+    WHERE s.soc_id_empresa = $id_empresa
+";
+
+// CONTEOS
+$queryTotal = "SELECT COUNT(soc_id_socio) AS total FROM san_socios WHERE soc_id_empresa = $id_empresa";
+$resTotal = mysqli_query($conexion, $queryTotal);
+$recordsTotal = $resTotal ? intval(mysqli_fetch_assoc($resTotal)['total']) : 0;
+
+$queryFiltered = "SELECT COUNT(s.soc_id_socio) AS total " . $from_clause . $condicion;
+$resFiltered = mysqli_query($conexion, $queryFiltered);
+$recordsFiltered = $resFiltered ? intval(mysqli_fetch_assoc($resFiltered)['total']) : 0;
+
+
+// LÓGICA DE ORDENAMIENTO (Ignora estatus E como activo)
+$active_condition = "(p.pag_status IS NULL OR p.pag_status != 'E') AND p.pag_fecha_ini <= '$fecha_mov' AND p.pag_fecha_fin >= '$fecha_mov'";
+$secondary_order = "$orderColumnName $orderDir";
+
+$orderByClause = "ORDER BY
+    CASE WHEN $active_condition THEN 0 ELSE 1 END ASC,
+    p.pag_fecha_ini DESC,
+    CASE
+        WHEN (s.soc_tel_cel IS NOT NULL AND s.soc_tel_cel <> '') AND (s.soc_correo IS NOT NULL AND s.soc_correo <> '') THEN 1
+        WHEN (s.soc_tel_cel IS NOT NULL AND s.soc_tel_cel <> '') OR (s.soc_correo IS NOT NULL AND s.soc_correo <> '') THEN 2
+        ELSE 3
+    END ASC,
+    $secondary_order";
+
+
+// CONSULTA DE DATOS PARA LA PÁGINA ACTUAL
+$queryData = "
+    SELECT
+        s.soc_id_socio AS id_socio,
+        p.pag_id_pago AS id_pago,
+        p.pag_fecha_ini,
+        p.pag_fecha_fin,
+        p.pag_fecha_pago, 
+        s.soc_fecha_captura, 
+        CONCAT(s.soc_apepat, ' ', s.soc_apemat, ' ', s.soc_nombres) AS nombres,
+        s.soc_correo,
+        s.soc_tel_cel,
+        s.soc_correo_status,
+        CASE 
+            WHEN p.pag_id_pago IS NULL THEN 'Sin Pago'
+            WHEN p.pag_status = 'E' THEN 'Pago Vencido'
+            WHEN p.pag_fecha_fin >= '$fecha_mov' THEN CONCAT(DATE_FORMAT(p.pag_fecha_ini, '%d-%m-%Y'), ' al ', DATE_FORMAT(p.pag_fecha_fin, '%d-%m-%Y'))
+            ELSE 'Pago Vencido'
+        END AS status_pago
+    " . $from_clause . $condicion . "
+    " . $orderByClause . "
+    LIMIT $start, $length";
+
+$resultado = mysqli_query($conexion, $queryData);
+
+// FORMATEO DE DATOS
+$data = [];
+$contador = $start + 1;
+if ($resultado) {
+    while ($fila = mysqli_fetch_assoc($resultado)) {
+        
+        if (file_exists("../../imagenes/avatar/$fila[id_socio].jpg")) {
+            $fotografia = "<button type='button' class='btn btn-xs btn-info btn-ver-foto' data-src='../imagenes/avatar/$fila[id_socio].jpg' style='color:#fff; font-weight:bold;'>Ver Foto</button>";
+        } else {
+            $fotografia = "<span class='label label-danger' style='font-size: 11px; font-weight: bold;'>SIN FOTO</span>";
+        }
+
+        $acciones = "<div class='btn-group'>
+                        <a class='pointer' data-toggle='dropdown'><span class='glyphicon glyphicon-chevron-down'></span></a>
+                        <ul class='dropdown-menu'>
+                            <li><a href='.?s=socios&i=datosg&id_socio=$fila[id_socio]'><span class='glyphicon glyphicon-edit'></span> Actualizar</a></li>
+                            <li><a href='.?s=socios&i=pagos&id_socio=$fila[id_socio]'><span class='glyphicon glyphicon-usd'></span> Pagos</a></li>
+                            <li><a href='?s=prepagos&i=editar&id_socio=$fila[id_socio]'><span class='glyphicon glyphicon-credit-card'></span> Monedero</a></li>
+                            <li><a href='.?s=socios&i=fotografia&id_socio=$fila[id_socio]'><span class='glyphicon glyphicon-picture'></span> Fotografía</a></li>
+                            <li><a href='.?s=socios&i=fechas&id_socio=$fila[id_socio]&id_pago=$fila[id_pago]'><span class='glyphicon glyphicon-calendar'></span> Fechas</a></li>
+                            <li><a href='.?s=socios&i=eliminar&id_socio=$fila[id_socio]'><span class='glyphicon glyphicon-remove'></span> Eliminar</a></li>
+                        </ul>
+                    </div>";
+        
+        $data[] = [
+            "contador"          => $contador, 
+            "acciones"          => $acciones, 
+            "id_socio"          => $fila['id_socio'],
+            "nombres"           => $fila['nombres'], 
+            "soc_correo"        => $fila['soc_correo'], 
+            "soc_correo_status" => $fila['soc_correo_status'],
+            "soc_tel_cel"       => $fila['soc_tel_cel'],
+            "status_pago"       => $fila['status_pago'], 
+            "foto"              => $fotografia
+        ];
+        $contador++;
+    }
+}
+
+// RESPUESTA FINAL JSON
+$response = [
+    "draw"            => $draw,
+    "recordsTotal"    => $recordsTotal,
+    "recordsFiltered" => $recordsFiltered,
+    "data"            => $data
+];
+
+header('Content-Type: application/json');
+echo json_encode($response);
 ?>

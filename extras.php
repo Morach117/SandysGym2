@@ -4,8 +4,8 @@
 | Instalador Independiente de Base de Datos - Sandys Gym
 |--------------------------------------------------------------------------
 |
-| Este script detecta el entorno, se conecta mediante PDO, crea la
-| tabla de contactos y actualiza la tabla de pagos.
+| Este script detecta el entorno, se conecta mediante PDO, crea las
+| tablas de contactos y plantillas, y actualiza la tabla de pagos.
 |
 */
 
@@ -47,6 +47,8 @@ try {
     echo "<p style='color: #10b981;'>✅ Conexión a la base de datos establecida con éxito (Entorno: <b>{$current_host}</b>).</p>";
 
     // 3. --- CREACIÓN DE TABLAS NUEVAS ---
+
+    // Tabla: san_contactos
     $sql_contactos = "
         CREATE TABLE IF NOT EXISTS `san_contactos` (
             `id_contacto` int(11) NOT NULL AUTO_INCREMENT,
@@ -59,9 +61,22 @@ try {
             PRIMARY KEY (`id_contacto`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     ";
-    
     $conn->exec($sql_contactos);
     echo "<p style='color: #10b981;'>✅ Tabla <b>'san_contactos'</b> verificada/creada con éxito.</p>";
+
+    // Tabla: san_plantillas_correo (NUEVA)
+    $sql_plantillas = "
+        CREATE TABLE IF NOT EXISTS `san_plantillas_correo` (
+            `plan_id` int(11) NOT NULL AUTO_INCREMENT,
+            `plan_id_empresa` int(11) NOT NULL,
+            `plan_nombre` varchar(50) NOT NULL,
+            `plan_cuerpo` text NOT NULL,
+            PRIMARY KEY (`plan_id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    ";
+    $conn->exec($sql_plantillas);
+    echo "<p style='color: #10b981;'>✅ Tabla <b>'san_plantillas_correo'</b> verificada/creada con éxito.</p>";
+
 
     // 4. --- ACTUALIZACIÓN DE TABLAS EXISTENTES (ALTER) ---
     try {
@@ -77,7 +92,6 @@ try {
         if ($e->getCode() == '42S21' || strpos($e->getMessage(), 'Duplicate column name') !== false) {
             echo "<p style='color: #F28123;'>⚠️ La columna <b>'pag_id_prepago_abono'</b> ya existe en 'san_pagos'. Se omitió su creación.</p>";
         } else {
-            // Si es otro tipo de error SQL, lo lanzamos para que lo atrape el catch principal
             throw $e;
         }
     }
@@ -89,7 +103,6 @@ try {
     echo "</div>";
 
 } catch (PDOException $e) {
-    // Si falla la conexión u otra consulta no controlada
     echo "<p style='color: #ef4444;'>❌ <b>Error crítico:</b> " . $e->getMessage() . "</p>";
 }
 

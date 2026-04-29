@@ -1,11 +1,12 @@
 <?php
-// Validaciones de seguridad para los filtros (Casteo a entero para evitar SQLi)
-$mes_filtro = isset($_GET['mes_filtro']) ? (int) $_GET['mes_filtro'] : (int) date('n');
-$anio_filtro = isset($_GET['anio_filtro']) ? (int) $_GET['anio_filtro'] : (int) date('Y');
+/**
+ * Módulo: cumple_gestion.php
+ * Descripción: Gestión de cumpleañeros, integración con plantillas de DB y envío de correos.
+ */
 
-// Rescatamos variables de entorno para evitar que el filtro te saque de la página
-$s_param = isset($_GET['s']) ? htmlspecialchars($_GET['s']) : '';
-$i_param = isset($_GET['i']) ? htmlspecialchars($_GET['i']) : '';
+// 1. SEGURIDAD Y FILTROS
+$mes_filtro = isset($_GET['mes_filtro']) ? (int) $_GET['mes_filtro'] : (int) date('n');
+$id_empresa_esc = mysqli_real_escape_string($conexion, $id_empresa);
 
 $meses_nombres = [
     1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
@@ -13,11 +14,20 @@ $meses_nombres = [
     9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'
 ];
 
-function obtener_socios_cumpleaños($mes_filtro, $meses_nombres)
-{
-    global $conexion, $id_empresa;
+// 2. OBTENCIÓN DE PLANTILLAS DESDE BD
+$plantillas_db = [];
+$query_plan = "SELECT plan_nombre, plan_cuerpo FROM san_plantillas_correo WHERE plan_id_empresa = '$id_empresa_esc'";
+$res_plan = mysqli_query($conexion, $query_plan);
+if ($res_plan) {
+    while ($row = mysqli_fetch_assoc($res_plan)) {
+        $plantillas_db[$row['plan_nombre']] = $row['plan_cuerpo'];
+    }
+}
+$plantillas_json = json_encode($plantillas_db, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE);
 
-    // Se solicita soc_nombres por separado para usarlo en el correo sin apellidos
+// 3. FUNCIÓN DE CARGA DE SOCIOS
+function obtener_socios_cumpleaños($mes_filtro, $meses_nombres, $id_empresa_esc) {
+    global $conexion;
     $query = "SELECT 
                 soc_id_socio AS id_socio,
                 soc_nombres AS nombre_pila,
@@ -25,377 +35,289 @@ function obtener_socios_cumpleaños($mes_filtro, $meses_nombres)
                 MONTH(soc_fecha_nacimiento) AS mes_nacimiento,
                 soc_tel_cel,
                 soc_correo
-            FROM 
-                san_socios
-            WHERE 
-                soc_id_empresa = $id_empresa 
-            AND 
-                MONTH(soc_fecha_nacimiento) = $mes_filtro";
+            FROM san_socios
+            WHERE soc_id_empresa = '$id_empresa_esc' 
+            AND MONTH(soc_fecha_nacimiento) = $mes_filtro";
 
     $resultado = mysqli_query($conexion, $query);
+    $datos = "";
+    $i = 1;
 
     if ($resultado) {
-        $datos = "";
-        $i = 1;
-
         while ($fila = mysqli_fetch_assoc($resultado)) {
-            $num_mes = (int) $fila['mes_nacimiento'];
-            $mes_texto = isset($meses_nombres[$num_mes]) ? $meses_nombres[$num_mes] : 'Desconocido';
-
-            $correo_badge = !empty($fila['soc_correo']) ? $fila['soc_correo'] : '<span class="label label-default">Sin correo</span>';
+            $correo = $fila['soc_correo'];
+            $nombre = $fila['nombre_pila'];
+            $correo_badge = !empty($correo) ? "<span class='label label-info'>$correo</span>" : '<span class="label label-default">Sin correo</span>';
             
-            // Botón individual preparado para abrir el modal mandando sus datos
-            $btn_correo = !empty($fila['soc_correo'])
-                ? "<button type='button' class='btn btn-primary btn-xs btn-enviar-correo' data-correo='{$fila['soc_correo']}' data-nombre='{$fila['nombre_pila']}' onclick='abrirModalCorreo(this)'><span class='glyphicon glyphicon-envelope'></span> Enviar</button>"
+            $btn_correo = !empty($correo)
+                ? "<button type='button' class='btn btn-primary btn-xs btn-correo-individual' data-correo='$correo' data-nombre='$nombre' onclick='abrirModalCorreo(\"$correo\", \"$nombre\")'><span class='glyphicon glyphicon-envelope'></span> Enviar</button>"
                 : "<button type='button' class='btn btn-default btn-xs' disabled><span class='glyphicon glyphicon-ban-circle'></span> N/A</button>";
 
             $datos .= "<tr>
                         <td>$i</td>
                         <td>{$fila['nombres_completos']}</td>
-                        <td>$mes_texto</td>
+                        <td>{$meses_nombres[(int)$fila['mes_nacimiento']]}</td>
                         <td>{$fila['soc_tel_cel']}</td>
                         <td>$correo_badge</td>
-                        <td>$btn_correo</td>
+                        <td class='text-center'>$btn_correo</td>
                       </tr>";
             $i++;
         }
-        mysqli_free_result($resultado);
-
-        if ($i == 1) {
-            $datos = "<tr><td colspan='6' class='text-center'>No hay socios que cumplan años en este mes.</td></tr>";
-        }
         return $datos;
-    } else {
-        return "<tr><td colspan='6' class='text-danger'>Error SQL: " . mysqli_error($conexion) . "</td></tr>";
     }
+    return "<tr><td colspan='6' class='text-danger'>Error SQL: " . mysqli_error($conexion) . "</td></tr>";
 }
-
-function obtener_reporte_concentrado($anio_filtro, $meses_nombres)
-{
-    global $conexion, $id_empresa;
-
-    $query = "SELECT 
-                MONTH(s.soc_fecha_nacimiento) AS mes,
-                COUNT(DISTINCT s.soc_id_socio) AS total_cumpleaneros,
-                COUNT(DISTINCT p.pag_id_socio) AS total_pagaron
-              FROM san_socios s
-              LEFT JOIN san_pagos p 
-                ON s.soc_id_socio = p.pag_id_socio 
-                AND p.pag_status = 'A' 
-                AND YEAR(p.pag_fecha_ini) = $anio_filtro 
-                AND MONTH(p.pag_fecha_ini) = MONTH(s.soc_fecha_nacimiento)
-              WHERE s.soc_id_empresa = $id_empresa
-              GROUP BY MONTH(s.soc_fecha_nacimiento)
-              ORDER BY mes ASC";
-
-    $resultado = mysqli_query($conexion, $query);
-
-    if ($resultado) {
-        $datos = "";
-        while ($fila = mysqli_fetch_assoc($resultado)) {
-            $mes_texto = isset($meses_nombres[$fila['mes']]) ? $meses_nombres[$fila['mes']] : 'Desconocido';
-            $datos .= "<tr>
-                        <td><strong>$mes_texto</strong></td>
-                        <td><span class='badge'>{$fila['total_cumpleaneros']}</span></td>
-                        <td><span class='label label-success'>{$fila['total_pagaron']}</span></td>
-                      </tr>";
-        }
-        mysqli_free_result($resultado);
-        return $datos ?: "<tr><td colspan='3' class='text-center'>Sin datos para este año.</td></tr>";
-    } else {
-        return "<tr><td colspan='3' class='text-danger'>Error SQL: " . mysqli_error($conexion) . "</td></tr>";
-    }
-}
-
-$var_exito_cumpleaños = obtener_socios_cumpleaños($mes_filtro, $meses_nombres);
-$var_exito_reporte = obtener_reporte_concentrado($anio_filtro, $meses_nombres);
 ?>
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Módulo de Cumpleaños</title>
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
-</head>
-<body>
-    <div class="container-fluid">
+<div class="well well-sm">
+    <form method="GET" action="">
+        <input type="hidden" name="s" value="<?= htmlspecialchars($_GET['s'] ?? '') ?>">
         <div class="row">
-            <div class="col-md-12">
-                <h3 class="text-info">
-                    <span class="glyphicon glyphicon-gift"></span> Gestión y Reporte de Cumpleaños
-                </h3>
-                <hr />
-            </div>
-        </div>
-
-        <div class="row well well-sm">
-            <form method="GET" action="">
-                <?php if($s_param): ?><input type="hidden" name="s" value="<?= $s_param ?>"><?php endif; ?>
-                <?php if($i_param): ?><input type="hidden" name="i" value="<?= $i_param ?>"><?php endif; ?>
-
-                <div class="col-md-3">
-                    <label>Filtrar Lista por Mes:</label>
-                    <select name="mes_filtro" class="form-control">
+            <div class="col-md-3 col-sm-6">
+                <div class="input-group">
+                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span> Mes</span>
+                    <select name="mes_filtro" class="form-control input-sm">
                         <?php foreach ($meses_nombres as $num => $nombre): ?>
-                        <option value="<?= $num ?>" <?= ($num == $mes_filtro) ? 'selected' : '' ?>><?= $nombre ?></option>
+                            <option value="<?= $num ?>" <?= ($num == $mes_filtro) ? 'selected' : '' ?>><?= $nombre ?></option>
                         <?php endforeach; ?>
                     </select>
-                </div>
-                <div class="col-md-3">
-                    <label>Filtrar Reporte por Año:</label>
-                    <select name="anio_filtro" class="form-control">
-                        <?php for ($y = date('Y') - 5; $y <= date('Y') + 1; $y++): ?>
-                        <option value="<?= $y ?>" <?= ($y == $anio_filtro) ? 'selected' : '' ?>><?= $y ?></option>
-                        <?php endfor; ?>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label>&nbsp;</label>
-                    <button type="submit" class="btn btn-info btn-block">
-                        <span class="glyphicon glyphicon-search"></span> Aplicar Filtros
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <ul class="nav nav-tabs" role="tablist">
-            <li role="presentation" class="active">
-                <a href="#tab_listado" aria-controls="tab_listado" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-user"></span> Listado de Cumpleañeros</a>
-            </li>
-            <li role="presentation">
-                <a href="#tab_concentrado" aria-controls="tab_concentrado" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-stats"></span> Reporte Concentrado</a>
-            </li>
-        </ul>
-
-        <div class="tab-content" style="padding-top: 20px;">
-            <div role="tabpanel" class="tab-pane active" id="tab_listado">
-                
-                <div class="well">
-                    <label class="text-primary"><span class="glyphicon glyphicon-pencil"></span> Plantilla Global de Mensaje</label>
-                    <textarea id="mensajeGlobal" class="form-control" rows="4">¡Feliz cumpleaños! 🎂
-
-Hoy celebramos a uno de nuestros socios más dedicados 💪🔥
-
-De parte de Sandy's Gym, te deseamos un día lleno de energía, risas y muchas repeticiones... pero solo de pastel 😋🎂
-
-Gracias por ser parte de esta gran familia fitness. Que este nuevo año venga cargado de fuerza, disciplina y metas cumplidas.
-
-¡A seguir dando lo mejor en cada entrenamiento! 🚀</textarea>
-                    <p class="help-block"><small>Este es el texto base. Si das clic en "Enviar" a un solo socio, podrás editar este mensaje solo para él. Si usas el botón masivo, se enviará este texto a todos.</small></p>
-                    <button class="btn btn-success" id="btnEnvioMasivo" onclick="enviarMasivo()">
-                        <span class="glyphicon glyphicon-send"></span> Enviar Correo a Todos los del Mes
-                    </button>
-                </div>
-
-                <div class="panel panel-info">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">Cumpleañeros de <?= $meses_nombres[$mes_filtro] ?></h3>
-                    </div>
-                    <div class="panel-body table-responsive">
-                        <table id="tabla_cumpleaños" class="table table-hover table-condensed table-bordered text-center" style="width: 100%;">
-                            <thead>
-                                <tr class="info">
-                                    <th class="text-center">#</th>
-                                    <th class="text-center">Nombre Completo</th>
-                                    <th class="text-center">Mes</th>
-                                    <th class="text-center">Teléfono</th>
-                                    <th class="text-center">Correo Electrónico</th>
-                                    <th class="text-center">Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php echo $var_exito_cumpleaños; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div role="tabpanel" class="tab-pane" id="tab_concentrado">
-                <div class="panel panel-success">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">Concentrado del Año <?= $anio_filtro ?></h3>
-                    </div>
-                    <div class="panel-body table-responsive">
-                        <table class="table table-hover table-condensed table-striped table-bordered text-center" style="margin-bottom: 0;">
-                            <thead>
-                                <tr class="success">
-                                    <th class="text-center">Mes</th>
-                                    <th class="text-center">N° Cumpleañeros</th>
-                                    <th class="text-center">N° Pagaron su Mes</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php echo $var_exito_reporte; ?>
-                            </tbody>
-                        </table>
-                    </div>
+                    <span class="input-group-btn">
+                        <button type="submit" class="btn btn-info btn-sm">
+                            <span class="glyphicon glyphicon-search"></span> Filtrar
+                        </button>
+                    </span>
                 </div>
             </div>
         </div>
+    </form>
+</div>
 
-        <div class="row" style="margin-top: 20px;">
-            <div class="col-md-12">
-                <a href="javascript:history.back()" class="btn btn-default"><span class="glyphicon glyphicon-arrow-left"></span> Regresar</a>
+<div class="panel panel-info">
+    <div class="panel-heading">
+        <div class="row">
+            <div class="col-xs-8">
+                <h3 class="panel-title" style="margin-top: 5px;">
+                    <span class="glyphicon glyphicon-gift"></span> Cumpleañeros de <?= $meses_nombres[$mes_filtro] ?>
+                </h3>
             </div>
-        </div>
-    </div> <div class="modal fade" id="modalCorreo" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-primary">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" style="color: white;"><span class="glyphicon glyphicon-envelope"></span> Enviar Felicitación Personalizada</h4>
-                </div>
-                <div class="modal-body">
-                    <form id="formCorreoFelicitacion">
-                        <div class="form-group">
-                            <label>Para:</label>
-                            <input type="email" id="correoDestino" class="form-control" readonly>
-                        </div>
-                        <div class="form-group">
-                            <label>Socio:</label>
-                            <input type="text" id="nombreSocio" class="form-control" readonly>
-                        </div>
-                        <div class="form-group">
-                            <label>Mensaje (Modificable solo para este socio):</label>
-                            <textarea id="mensajeCorreoIndividual" class="form-control" rows="6"></textarea>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
-                    <button type="button" class="btn btn-primary" id="btnEnviarIndividual" onclick="enviarCorreoIndividualAjax()">
-                        <span class="glyphicon glyphicon-send"></span> Enviar Correo
-                    </button>
-                </div>
+            <div class="col-xs-4 text-right">
+                <button type="button" class="btn btn-success btn-sm" onclick="abrirModalMasivo()">
+                    <span class="glyphicon glyphicon-send"></span> Campaña Grupal
+                </button>
             </div>
         </div>
     </div>
+    <div class="panel-body table-responsive">
+        <table id="tabla_cumple" class="table table-hover table-condensed table-bordered text-center" style="width:100%">
+            <thead>
+                <tr class="info">
+                    <th class="text-center">#</th>
+                    <th class="text-center">Nombre Completo</th>
+                    <th class="text-center">Mes</th>
+                    <th class="text-center">Teléfono</th>
+                    <th class="text-center">Correo</th>
+                    <th class="text-center">Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?= obtener_socios_cumpleaños($mes_filtro, $meses_nombres, $id_empresa_esc) ?>
+            </tbody>
+        </table>
+    </div>
+</div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    
-    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+<div class="modal fade" id="modalCorreo" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-info">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title"><span class="glyphicon glyphicon-pencil"></span> Redactar Mensaje</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Plantilla:</label>
+                    <div class="input-group">
+                        <select class="form-control input-sm select_plantilla" onchange="cargarPlantilla('individual')">
+                            </select>
+                        <span class="input-group-btn">
+                            <a href="?s=plantillas" class="btn btn-default btn-sm" title="Gestionar Plantillas"><span class="glyphicon glyphicon-cog"></span></a>
+                        </span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Destinatario:</label>
+                    <input type="text" id="correo_destino" class="form-control" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Cuerpo del Correo:</label>
+                    <textarea id="mensaje_cuerpo" class="form-control" rows="8"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" onclick="procesarEnvioIndividual()"><span class="glyphicon glyphicon-send"></span> Enviar</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-    <script>
-    $(document).ready(function() {
-        // Inicialización de DataTables
-        $('#tabla_cumpleaños').DataTable({
-            "language": {
-                "url": "https://cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json"
-            }
+<div class="modal fade" id="modalMasivo" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-success">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title text-white"><span class="glyphicon glyphicon-send"></span> Envío Masivo del Mes</h4>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <span class="glyphicon glyphicon-info-sign"></span> Se enviará un correo personalizado a cada socio con email registrado.
+                </div>
+                <div class="form-group">
+                    <label>Seleccionar Plantilla Base:</label>
+                    <select class="form-control input-sm select_plantilla" id="select_plantilla_masiva" onchange="cargarPlantilla('masivo')">
+                        </select>
+                </div>
+                <div class="form-group">
+                    <label>Vista Previa (Texto Original):</label>
+                    <textarea id="mensaje_cuerpo_masivo" class="form-control" rows="5" readonly></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" id="btnConfirmaMasivo" onclick="procesarEnvioMasivo()" disabled>
+                    <span class="glyphicon glyphicon-ok"></span> Confirmar Envío Masivo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap.min.css">
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap.min.js"></script>
+
+<script>
+// Datos inyectados desde PHP
+const plantillas = <?= $plantillas_json ?>;
+
+$(document).ready(function() {
+    // Inicializar DataTable (Backend Style)
+    $('#tabla_cumple').DataTable({
+        "language": { "url": "//cdn.datatables.net/plug-ins/1.10.20/i18n/Spanish.json" },
+        "pageLength": 25,
+        "dom": 'Tfgtip'
+    });
+
+    actualizarSelectsPlantillas();
+});
+
+function actualizarSelectsPlantillas() {
+    let options = '<option value="">-- Seleccionar Plantilla --</option>';
+    for (const name in plantillas) {
+        options += `<option value="${name}">${name}</option>`;
+    }
+    $('.select_plantilla').html(options);
+}
+
+function abrirModalCorreo(correo, nombre) {
+    $('#correo_destino').val(correo);
+    $('#mensaje_cuerpo').data('nombre', nombre);
+    $('.select_plantilla').val('');
+    $('#mensaje_cuerpo').val('');
+    $('#modalCorreo').modal('show');
+}
+
+function cargarPlantilla(contexto) {
+    if (contexto === 'individual') {
+        const key = $('#modalCorreo .select_plantilla').val();
+        const nombre = $('#mensaje_cuerpo').data('nombre') || 'Socio';
+        if (plantillas[key]) {
+            let texto = plantillas[key].replace(/\[NOMBRE\]/g, nombre);
+            $('#mensaje_cuerpo').val(texto);
+        }
+    } else {
+        const key = $('#select_plantilla_masiva').val();
+        if (plantillas[key]) {
+            $('#mensaje_cuerpo_masivo').val(plantillas[key]);
+            $('#btnConfirmaMasivo').prop('disabled', false);
+        } else {
+            $('#mensaje_cuerpo_masivo').val('');
+            $('#btnConfirmaMasivo').prop('disabled', true);
+        }
+    }
+}
+
+function procesarEnvioIndividual() {
+    const btn = $('#modalCorreo .btn-primary');
+    const datos = {
+        email: $('#correo_destino').val(),
+        mensaje: $('#mensaje_cuerpo').val(),
+        socio: $('#mensaje_cuerpo').data('nombre')
+    };
+
+    if (!datos.mensaje.trim()) return alert("Mensaje vacío.");
+
+    btn.prop('disabled', true).html('<i class="glyphicon glyphicon-refresh"></i> Enviando...');
+
+    $.ajax({
+        url: 'secciones/cumple/correo.php',
+        type: 'POST',
+        data: datos,
+        dataType: 'json',
+        success: function(res) {
+            if (res.exito) {
+                alert("Correo enviado.");
+                $('#modalCorreo').modal('hide');
+            } else alert("Error: " + res.mensaje);
+        },
+        error: () => alert("Error de conexión."),
+        complete: () => btn.prop('disabled', false).html('<span class="glyphicon glyphicon-send"></span> Enviar')
+    });
+}
+
+function abrirModalMasivo() {
+    if ($('.btn-correo-individual').length === 0) return alert("Sin destinatarios.");
+    $('#select_plantilla_masiva').val('');
+    $('#mensaje_cuerpo_masivo').val('');
+    $('#btnConfirmaMasivo').prop('disabled', true);
+    $('#modalMasivo').modal('show');
+}
+
+function procesarEnvioMasivo() {
+    const key = $('#select_plantilla_masiva').val();
+    const btn = $('#btnConfirmaMasivo');
+    
+    if (!confirm("¿Iniciar envío masivo a todos los socios listados?")) return;
+
+    btn.prop('disabled', true).html('<i class="glyphicon glyphicon-refresh"></i> Procesando Cola...');
+
+    let queue = [];
+    $('.btn-correo-individual').each(function() {
+        queue.push({
+            email: $(this).data('correo'),
+            nombre: $(this).data('nombre'),
+            mensaje: plantillas[key].replace(/\[NOMBRE\]/g, $(this).data('nombre'))
         });
     });
 
-    var botonIndividualActual = null; 
+    // Envío secuencial para evitar saturación de buffer
+    enviarCola(queue, 0, btn);
+}
 
-    // Función para abrir el modal individual
-    function abrirModalCorreo(btnHtml) {
-        botonIndividualActual = $(btnHtml);
-        var correo = botonIndividualActual.data('correo');
-        var nombre = botonIndividualActual.data('nombre');
-        
-        // Copia el texto del text-area global al modal
-        var mensajeBase = $('#mensajeGlobal').val(); 
-
-        $('#correoDestino').val(correo);
-        $('#nombreSocio').val(nombre);
-        $('#mensajeCorreoIndividual').val(mensajeBase);
-
-        // Bootstrap JS abre el modal
-        $('#modalCorreo').modal('show');
+function enviarCola(cola, index, btn) {
+    if (index >= cola.length) {
+        alert("Proceso masivo finalizado.");
+        $('#modalMasivo').modal('hide');
+        btn.prop('disabled', false).html('<span class="glyphicon glyphicon-ok"></span> Confirmar Envío Masivo');
+        return;
     }
 
-    // Función para procesar el envío INDIVIDUAL desde el Modal
-    function enviarCorreoIndividualAjax() {
-        var correo = $('#correoDestino').val();
-        var nombre = $('#nombreSocio').val();
-        var mensaje = $('#mensajeCorreoIndividual').val(); 
-
-        var btnModal = $('#btnEnviarIndividual');
-        var btnTextoOriginal = btnModal.html();
-        
-        btnModal.html('<span class="glyphicon glyphicon-refresh form-control-feedback"></span> Enviando...').prop('disabled', true);
-
-        $.ajax({
-            url: 'secciones/cumple/correo.php',
-            type: 'POST',
-            data: { email: correo, socio: nombre, mensaje: mensaje },
-            dataType: 'json',
-            success: function(response) {
-                if (response.exito) {
-                    $('#modalCorreo').modal('hide');
-                    botonIndividualActual.removeClass('btn-primary').addClass('btn-success').html('<span class="glyphicon glyphicon-ok"></span> Enviado');
-                    alert("¡Correo enviado exitosamente a " + nombre + "!");
-                } else {
-                    alert("Error al enviar el correo: " + response.mensaje);
-                }
-            },
-            error: function() {
-                alert("Ocurrió un error de red o de servidor al intentar enviar el correo.");
-            },
-            complete: function() {
-                btnModal.html(btnTextoOriginal).prop('disabled', false);
-            }
-        });
-    }
-
-    // Función para procesar el envío MASIVO 
-    function enviarMasivo() {
-        var botones = $('.btn-enviar-correo'); 
-        if(botones.length === 0) {
-            alert("No hay socios con correo para enviar en este listado.");
-            return;
-        }
-
-        if(!confirm("¿Estás seguro de enviar " + botones.length + " correos? Usará la 'Plantilla Global'. Esto puede demorar unos segundos.")) return;
-        
-        var mensajeGlobal = $('#mensajeGlobal').val();
-        var btnMasivo = $('#btnEnvioMasivo');
-        
-        btnMasivo.prop('disabled', true).html('<span class="glyphicon glyphicon-refresh"></span> Procesando Envío Masivo...');
-
-        var promesas = [];
-
-        botones.each(function() {
-            var btn = $(this);
-            var correo = btn.data('correo');
-            var nombre = btn.data('nombre');
-            
-            var peticion = procesarEnvioAjaxSilencioso(correo, nombre, mensajeGlobal, btn);
-            promesas.push(peticion);
-        });
-
-        $.when.apply($, promesas).always(function() {
-            btnMasivo.prop('disabled', false).html('<span class="glyphicon glyphicon-send"></span> Enviar Correo a Todos los del Mes');
-            alert("¡Proceso de envío masivo finalizado!");
-        });
-    }
-
-    // Función auxiliar para el envío masivo silencioso
-    function procesarEnvioAjaxSilencioso(correo, nombre, mensaje, botonHtml) {
-        return $.ajax({
-            url: 'secciones/cumple/correo.php', 
-            type: 'POST',
-            data: { email: correo, socio: nombre, mensaje: mensaje },
-            dataType: 'json',
-            beforeSend: function() {
-                botonHtml.prop('disabled', true).html('Enviando...');
-            },
-            success: function(response) {
-                if (response.exito) {
-                    botonHtml.removeClass('btn-primary').addClass('btn-success').html('<span class="glyphicon glyphicon-ok"></span> Enviado');
-                } else {
-                    botonHtml.removeClass('btn-primary').addClass('btn-danger').html('Error');
-                }
-            },
-            error: function() {
-                botonHtml.removeClass('btn-primary').addClass('btn-danger').html('Error');
-            }
-        });
-    }
-    </script>
-</body>
-</html>
+    $.ajax({
+        url: 'secciones/cumple/correo.php',
+        type: 'POST',
+        data: { email: cola[index].email, mensaje: cola[index].mensaje, socio: cola[index].nombre },
+        complete: () => enviarCola(cola, index + 1, btn)
+    });
+}
+</script>

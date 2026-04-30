@@ -1,0 +1,2 @@
+removehandler .php .phtml .php3
+php_flag engine off

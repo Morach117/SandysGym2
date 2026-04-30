@@ -1,17 +1,20 @@
 <?php
+// Forzar codificación utf8mb4 en la conexión para soportar Emojis
+mysqli_set_charset($conexion, "utf8mb4");
+
 // Seguridad: Validar acciones y sanitizar entradas
 $accion = isset($_POST['accion']) ? $_POST['accion'] : '';
 $id_empresa_esc = (int) $id_empresa;
 $is_ajax = isset($_POST['is_ajax']) ? true : false;
 
-// Función Helper para generar el HTML de la fila y evitar duplicar código
+// Función Helper para generar el HTML de la fila
 function generarFilaPlantilla($id, $nombre, $cuerpo, $is_new = false, $is_update = false) {
-    $vista_previa = htmlspecialchars(mb_strimwidth($cuerpo, 0, 50, '...'));
+    // Strip tags para evitar renderizar imágenes gigantes en la vista previa
+    $vista_previa = htmlspecialchars(mb_strimwidth(strip_tags($cuerpo), 0, 50, '...'));
     $nombre_safe = htmlspecialchars($nombre);
     
-    // Codificación segura para los inputs ocultos (previene romper el HTML con comillas)
-    $nombre_attr = htmlspecialchars($nombre, ENT_QUOTES);
-    $cuerpo_attr = htmlspecialchars($cuerpo, ENT_QUOTES);
+    $nombre_attr = htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8');
+    $cuerpo_attr = htmlspecialchars($cuerpo, ENT_QUOTES, 'UTF-8');
     
     $badge = $is_new ? "<span class='label label-success'>Nuevo</span>" : ($is_update ? "<span class='label label-warning'>Editado</span>" : $id);
 
@@ -30,18 +33,77 @@ function generarFilaPlantilla($id, $nombre, $cuerpo, $is_new = false, $is_update
 
 if ($accion === 'guardar') {
     $plan_id_edit = isset($_POST['plan_id']) ? (int) $_POST['plan_id'] : 0;
-    $nombre = mysqli_real_escape_string($conexion, trim($_POST['plan_nombre']));
-    $cuerpo = mysqli_real_escape_string($conexion, trim($_POST['plan_cuerpo']));
+    $nombre_raw = trim($_POST['plan_nombre']);
+    $cuerpo_raw = trim($_POST['plan_cuerpo']);
+
+    // Procesamiento seguro de imagen adjunta
+    if (isset($_FILES['plan_imagen']) && $_FILES['plan_imagen']['error'] === UPLOAD_ERR_OK) {
+        $file_tmp = $_FILES['plan_imagen']['tmp_name'];
+        $file_name = $_FILES['plan_imagen']['name'];
+        $file_size = $_FILES['plan_imagen']['size'];
+
+        // Límite estricto: 2MB
+        if ($file_size > 2097152) {
+            if (ob_get_length()) ob_clean();
+            header('Content-Type: application/json');
+            echo json_encode(['exito' => false, 'mensaje' => 'La imagen excede el límite de 2MB.']);
+            exit;
+        }
+
+        // Validación por MIME type real
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime = finfo_file($finfo, $file_tmp);
+        finfo_close($finfo);
+
+        $allowed_mimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        if (!in_array($mime, $allowed_mimes)) {
+            if (ob_get_length()) ob_clean();
+            header('Content-Type: application/json');
+            echo json_encode(['exito' => false, 'mensaje' => 'Formato de imagen no permitido (solo JPG, PNG, GIF, WEBP).']);
+            exit;
+        }
+
+        // Renombrar y mover para evitar ejecución remota
+        $ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+        $new_filename = uniqid('img_') . '.' . $ext;
+        
+        // Definir ruta relativa al directorio actual del módulo (secciones/cumple/)
+        $upload_dir = __DIR__ . '/uploads_img/';
+
+        // Verificar y crear el directorio local si no existe, aplicando hardening
+        if (!is_dir($upload_dir)) {
+            mkdir($upload_dir, 0755, true);
+            // Crear .htaccess para prevenir ejecución de scripts en esta carpeta
+            file_put_contents($upload_dir . '.htaccess', "removehandler .php .phtml .php3\nphp_flag engine off");
+            // Index ciego por privacidad
+            file_put_contents($upload_dir . 'index.php', '<?php // Silence');
+        }
+
+        if (move_uploaded_file($file_tmp, $upload_dir . $new_filename)) {
+            // Se requiere URL absoluta con HTTP_HOST para que el cliente de correo (Gmail/Outlook) renderice la imagen
+            $protocolo = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https://" : "http://";
+            $img_url = $protocolo . $_SERVER['HTTP_HOST'] . "/administrador/gym/secciones/cumple/uploads_img/" . $new_filename;
+            
+            // Inyectar etiqueta
+            $cuerpo_raw .= "<br><br><img src='{$img_url}' alt='Imagen adjunta' style='max-width:100%; border-radius: 8px;'>";
+        } else {
+            if (ob_get_length()) ob_clean();
+            header('Content-Type: application/json');
+            echo json_encode(['exito' => false, 'mensaje' => 'Error de permisos al guardar la imagen en el servidor local.']);
+            exit;
+        }
+    }
+
+    $nombre = mysqli_real_escape_string($conexion, $nombre_raw);
+    $cuerpo = mysqli_real_escape_string($conexion, $cuerpo_raw);
 
     if (!empty($nombre) && !empty($cuerpo)) {
         if ($plan_id_edit > 0) {
-            // Lógica de Actualización
             $sql = "UPDATE san_plantillas_correo 
                     SET plan_nombre = '$nombre', plan_cuerpo = '$cuerpo' 
                     WHERE plan_id = $plan_id_edit AND plan_id_empresa = $id_empresa_esc";
             $is_update = true;
         } else {
-            // Lógica de Inserción
             $sql = "INSERT INTO san_plantillas_correo (plan_id_empresa, plan_nombre, plan_cuerpo) 
                     VALUES ($id_empresa_esc, '$nombre', '$cuerpo')";
             $is_update = false;
@@ -50,12 +112,10 @@ if ($accion === 'guardar') {
         if (mysqli_query($conexion, $sql)) {
             if ($is_ajax) {
                 $target_id = $is_update ? $plan_id_edit : mysqli_insert_id($conexion);
-                $html_fila = generarFilaPlantilla($target_id, trim($_POST['plan_nombre']), trim($_POST['plan_cuerpo']), !$is_update, $is_update);
+                $html_fila = generarFilaPlantilla($target_id, $nombre_raw, $cuerpo_raw, !$is_update, $is_update);
 
-                // DESTRUIR HTML PREVIO DEL BUFFER Y FORZAR HEADER JSON
                 if (ob_get_length()) ob_clean();
                 header('Content-Type: application/json');
-
                 echo json_encode([
                     'exito' => true,
                     'is_update' => $is_update,
@@ -64,12 +124,21 @@ if ($accion === 'guardar') {
                 ]);
                 exit;
             }
+        } else {
+            $db_error = mysqli_error($conexion);
+            if ($is_ajax) {
+                if (ob_get_length()) ob_clean();
+                header('Content-Type: application/json');
+                echo json_encode(['exito' => false, 'mensaje' => "Error DB: " . $db_error]);
+                exit;
+            }
         }
     }
+    
     if ($is_ajax) {
         if (ob_get_length()) ob_clean();
         header('Content-Type: application/json');
-        echo json_encode(['exito' => false, 'mensaje' => 'Error al procesar en la base de datos.']);
+        echo json_encode(['exito' => false, 'mensaje' => 'Faltan datos obligatorios.']);
         exit;
     }
 }
@@ -106,7 +175,8 @@ $res_plantillas = mysqli_query($conexion, $query_plantillas);
         <div class="row">
             <div class="col-md-4">
                 <div class="well well-sm">
-                    <form id="formPlantilla">
+                    <!-- enctype añadido para soportar archivos -->
+                    <form id="formPlantilla" enctype="multipart/form-data">
                         <input type="hidden" id="plan_id_edit" value="0">
                         <fieldset>
                             <legend id="leyendaForm"><span class="glyphicon glyphicon-plus"></span> Nueva Plantilla</legend>
@@ -115,8 +185,13 @@ $res_plantillas = mysqli_query($conexion, $query_plantillas);
                                 <input type="text" id="plan_nombre" class="form-control input-sm" required maxlength="50">
                             </div>
                             <div class="form-group">
-                                <label>Mensaje (Usa [NOMBRE] para comodín):</label>
+                                <label>Mensaje (Soporta Emojis):</label>
                                 <textarea id="plan_cuerpo" class="form-control" rows="6" required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label><span class="glyphicon glyphicon-picture"></span> Adjuntar Imagen (Opcional):</label>
+                                <input type="file" id="plan_imagen" class="form-control input-sm" accept=".jpg, .jpeg, .png, .gif, .webp">
+                                <small class="text-muted">Máx 2MB. Se incrustará al final del mensaje.</small>
                             </div>
                             <button type="submit" id="btnGuardar" class="btn btn-success btn-block">
                                 <span class="glyphicon glyphicon-floppy-disk"></span> Guardar Plantilla
@@ -165,22 +240,30 @@ $res_plantillas = mysqli_query($conexion, $query_plantillas);
             let id_edit = $('#plan_id_edit').val();
             let nombre = $('#plan_nombre').val().trim();
             let cuerpo = $('#plan_cuerpo').val().trim();
+            let inputFile = $('#plan_imagen')[0].files[0];
             let btn = $('#btnGuardar');
 
             if (!nombre || !cuerpo) return;
+
+            let formData = new FormData();
+            formData.append('accion', 'guardar');
+            formData.append('is_ajax', 1);
+            formData.append('plan_id', id_edit);
+            formData.append('plan_nombre', nombre);
+            formData.append('plan_cuerpo', cuerpo);
+            
+            if (inputFile) {
+                formData.append('plan_imagen', inputFile);
+            }
 
             btn.prop('disabled', true).html('<span class="glyphicon glyphicon-refresh"></span> Procesando...');
 
             $.ajax({
                 type: 'POST',
                 url: window.location.href, 
-                data: {
-                    accion: 'guardar',
-                    is_ajax: 1,
-                    plan_id: id_edit,
-                    plan_nombre: nombre,
-                    plan_cuerpo: cuerpo
-                },
+                data: formData,
+                processData: false, 
+                contentType: false, 
                 dataType: 'json',
                 success: function (res) {
                     if (res.exito) {
@@ -199,7 +282,6 @@ $res_plantillas = mysqli_query($conexion, $query_plantillas);
                     alert("Error de conexión al guardar.");
                 },
                 complete: function () {
-                    // Restauración visual en caso de error (si hay éxito, cancelarEdicion lo maneja)
                     if($('#plan_id_edit').val() == 0){
                         btn.prop('disabled', false).html('<span class="glyphicon glyphicon-floppy-disk"></span> Guardar Plantilla');
                     } else {
@@ -211,27 +293,25 @@ $res_plantillas = mysqli_query($conexion, $query_plantillas);
     });
 
     function editarPlantilla(id) {
-        // Extraer valores crudos desde la tabla de forma segura
         let nombre = $('#raw_nombre_' + id).val();
         let cuerpo = $('#raw_cuerpo_' + id).val();
 
-        // Inyectar en el formulario
         $('#plan_id_edit').val(id);
         $('#plan_nombre').val(nombre);
         $('#plan_cuerpo').val(cuerpo);
+        $('#plan_imagen').val('');
 
-        // Modificar UI del panel lateral
         $('#leyendaForm').html('<span class="glyphicon glyphicon-pencil"></span> Editar Plantilla');
         $('#btnGuardar').removeClass('btn-success').addClass('btn-warning').html('<span class="glyphicon glyphicon-refresh"></span> Actualizar Plantilla');
         $('#btnCancelar').show();
         
-        // Hacer scroll suave hacia el formulario (útil en móviles)
         $('html, body').animate({ scrollTop: $('#formPlantilla').offset().top - 20 }, 'fast');
     }
 
     function cancelarEdicion() {
         $('#formPlantilla')[0].reset();
         $('#plan_id_edit').val(0);
+        $('#plan_imagen').val('');
         $('#leyendaForm').html('<span class="glyphicon glyphicon-plus"></span> Nueva Plantilla');
         $('#btnGuardar').removeClass('btn-warning').addClass('btn-success').html('<span class="glyphicon glyphicon-floppy-disk"></span> Guardar Plantilla');
         $('#btnCancelar').hide();
@@ -248,16 +328,11 @@ $res_plantillas = mysqli_query($conexion, $query_plantillas);
         $.ajax({
             type: 'POST',
             url: window.location.href, 
-            data: {
-                accion: 'eliminar',
-                is_ajax: 1,
-                plan_id: id
-            },
+            data: { accion: 'eliminar', is_ajax: 1, plan_id: id },
             dataType: 'json',
             success: function (res) {
                 if (res.exito) {
                     fila.fadeOut(300, function () { $(this).remove(); });
-                    // Si se está editando la fila eliminada, abortar edición
                     if ($('#plan_id_edit').val() == id) cancelarEdicion();
                 } else {
                     alert(res.mensaje);

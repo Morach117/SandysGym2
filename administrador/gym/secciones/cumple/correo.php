@@ -24,6 +24,8 @@ if (!class_exists('PHPMailer\PHPMailer\PHPMailer')) {
 // 2. Recepción y validación de datos POST
 $email_destino = isset($_POST['email']) ? trim($_POST['email']) : '';
 $nombre_socio = isset($_POST['socio']) ? trim($_POST['socio']) : '';
+
+// [!] SEGURIDAD: Se remueve htmlspecialchars para no romper el tag <img> generado por el gestor de plantillas
 $mensaje_personalizado = isset($_POST['mensaje']) ? trim($_POST['mensaje']) : '';
 
 if(empty($email_destino) || empty($nombre_socio)) {
@@ -33,8 +35,9 @@ if(empty($email_destino) || empty($nombre_socio)) {
 
 // 3. Carga de Plantilla HTML usando ob_start()
 // Definimos variables que usará la plantilla
-$data_nombre = $nombre_socio;
-$data_mensaje = nl2br(htmlspecialchars($mensaje_personalizado));
+$data_nombre = htmlspecialchars($nombre_socio, ENT_QUOTES, 'UTF-8');
+// Solo aplicamos saltos de línea. El HTML de la imagen pasará crudo.
+$data_mensaje = nl2br($mensaje_personalizado);
 
 ob_start();
 include 'plantilla_cumple.php';
@@ -47,21 +50,24 @@ try {
     $mail->Host = 'smtp.ionos.mx';
     $mail->SMTPAuth = true;
     $mail->Username = 'prueba@sandysgym.com';
-    $mail->Password = 'Mor@ch117@'; // [!] Precaución: Contraseña en código fuente. Idealmente usa variables de entorno en producción.
+    $mail->Password = 'Mor@ch117@'; // [!] Precaución: Contraseña en código fuente.
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
     $mail->Port = 587;
     
+    // [!] SOPORTE ESTRICTO PARA EMOJIS
     $mail->CharSet = 'UTF-8';
+    $mail->Encoding = 'base64'; 
+    
     $mail->setFrom('prueba@sandysgym.com', 'Sandys Gym');
     $mail->addAddress($email_destino);
     $mail->isHTML(true);
     
-    $mail->Subject = '¡Feliz Cumpleaños de parte de Sandys Gym!';
+    $mail->Subject = '¡Feliz Cumpleaños de parte de Sandys Gym! 🎂'; // Soporte Emoji en Asunto
     $mail->Body    = $cuerpo_correo_html;
 
     $mail->send();
     
-    // Log de éxito (Opcional, guardado en la misma carpeta)
+    // Log de éxito
     file_put_contents(__DIR__ . '/mail.log', "[" . date("Y-m-d H:i:s") . "] ÉXITO: Correo a '$email_destino'\n", FILE_APPEND);
 
     echo json_encode(["exito" => true, "mensaje" => "Correo enviado correctamente."]);

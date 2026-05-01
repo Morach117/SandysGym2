@@ -67,22 +67,22 @@ if ($accion === 'guardar') {
         $ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
         $new_filename = uniqid('img_') . '.' . $ext;
         
-        // CORRECCIÓN: Definir ruta absoluta física a la carpeta 'imagenes' en la raíz del proyecto
-        $upload_dir = $_SERVER['DOCUMENT_ROOT'] . '/imagenes/';
+        // ESTRUCTURA ESTÁTICA: Subcarpeta única dentro de imagenes/
+        $subcarpeta_relativa = 'imagenes_correo/';
+        $upload_dir = $_SERVER['DOCUMENT_ROOT'] . '/imagenes/' . $subcarpeta_relativa;
 
-        // Verificar y crear el directorio local si no existe, aplicando hardening
+        // Verificar y crear el directorio estático si no existe
         if (!is_dir($upload_dir)) {
             mkdir($upload_dir, 0755, true);
-            // Crear .htaccess para prevenir ejecución de scripts en esta carpeta
+            // Aplicar hardening al directorio
             file_put_contents($upload_dir . '.htaccess', "removehandler .php .phtml .php3\nphp_flag engine off");
-            // Index ciego por privacidad
             file_put_contents($upload_dir . 'index.php', '<?php // Silence');
         }
 
         if (move_uploaded_file($file_tmp, $upload_dir . $new_filename)) {
-            // CORRECCIÓN: Generar URL pública apuntando al directorio raíz '/imagenes/'
+            // Generar URL pública apuntando a la ruta unificada
             $protocolo = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https://" : "http://";
-            $img_url = $protocolo . $_SERVER['HTTP_HOST'] . "/imagenes/" . $new_filename;
+            $img_url = $protocolo . $_SERVER['HTTP_HOST'] . "/imagenes/" . $subcarpeta_relativa . $new_filename;
             
             // Inyectar etiqueta
             $cuerpo_raw .= "<br><br><img src='{$img_url}' alt='Imagen adjunta' style='max-width:100%; border-radius: 8px;'>";

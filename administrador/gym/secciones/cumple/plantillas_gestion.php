@@ -67,8 +67,8 @@ if ($accion === 'guardar') {
         $ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
         $new_filename = uniqid('img_') . '.' . $ext;
         
-        // Definir ruta relativa al directorio actual del módulo (secciones/cumple/)
-        $upload_dir = __DIR__ . '/uploads_img/';
+        // CORRECCIÓN: Definir ruta absoluta física a la carpeta 'imagenes' en la raíz del proyecto
+        $upload_dir = $_SERVER['DOCUMENT_ROOT'] . '/imagenes/';
 
         // Verificar y crear el directorio local si no existe, aplicando hardening
         if (!is_dir($upload_dir)) {
@@ -80,9 +80,9 @@ if ($accion === 'guardar') {
         }
 
         if (move_uploaded_file($file_tmp, $upload_dir . $new_filename)) {
-            // Se requiere URL absoluta con HTTP_HOST para que el cliente de correo (Gmail/Outlook) renderice la imagen
+            // CORRECCIÓN: Generar URL pública apuntando al directorio raíz '/imagenes/'
             $protocolo = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https://" : "http://";
-            $img_url = $protocolo . $_SERVER['HTTP_HOST'] . "/administrador/gym/secciones/cumple/uploads_img/" . $new_filename;
+            $img_url = $protocolo . $_SERVER['HTTP_HOST'] . "/imagenes/" . $new_filename;
             
             // Inyectar etiqueta
             $cuerpo_raw .= "<br><br><img src='{$img_url}' alt='Imagen adjunta' style='max-width:100%; border-radius: 8px;'>";
@@ -142,7 +142,6 @@ if ($accion === 'guardar') {
         exit;
     }
 }
-
 if ($accion === 'eliminar') {
     $plan_id = (int) $_POST['plan_id'];
     $sql_delete = "DELETE FROM san_plantillas_correo WHERE plan_id = $plan_id AND plan_id_empresa = $id_empresa_esc";

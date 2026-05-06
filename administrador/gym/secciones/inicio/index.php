@@ -39,7 +39,7 @@
                 <span class="touch-class">Ver promociones disponibles</span>
             </li>
         </a>
-        
+
         <a href=".?s=videos">
             <li>
                 <span class="glyphicon glyphicon-play-circle"></span>
@@ -53,6 +53,23 @@
                 <span class="glyphicon glyphicon-comment"></span>
                 <h5><strong>Comentarios</strong></h5>
                 <span class="touch-class">Bandeja de contacto web</span>
+            </li>
+        </a>
+        <!-- Diffs para la lista bs-touch-list en el panel de administración -->
+
+        <a href=".?s=preguntas">
+            <li>
+                <span class="glyphicon glyphicon-question-sign"></span>
+                <h5><strong>Preguntas Frecuentes</strong></h5>
+                <span class="touch-class">Gestionar módulo FAQ</span>
+            </li>
+        </a>
+
+        <a href=".?s=exito">
+            <li>
+                <span class="glyphicon glyphicon-star"></span>
+                <h5><strong>Casos de Éxito</strong></h5>
+                <span class="touch-class">Historias de transformación</span>
             </li>
         </a>
     </ul>

@@ -1,183 +1,159 @@
 <?php
-// api_socios.php
+// funciones_socios_eliminar.php
 
-require_once '../../funciones_globales/funciones_conexion.php';
-require_once '../../funciones_globales/funciones_comunes.php';
-
-// Establecer zona horaria de PHP
-date_default_timezone_set('America/Mexico_City');
-
-// Establecer conexión a la BD
-$conexion = obtener_conexion();
-if (!$conexion) {
-    header('Content-Type: application/json');
-    http_response_code(500);
-    echo json_encode(['error' => 'No se pudo establecer la conexión con la base de datos.']);
-    exit;
-}
-// Establecer zona horaria de la conexión MYSQL
-mysqli_query($conexion, "SET time_zone = '-06:00'");
-
-session_start();
-$id_empresa = isset($_SESSION['id_empresa']) ? intval($_SESSION['id_empresa']) : 1; 
-
-$draw = isset($_POST['draw']) ? intval($_POST['draw']) : 0;
-
-if (empty($id_empresa)) {
-    header('Content-Type: application/json');
-    echo json_encode(["draw" => $draw, "recordsTotal" => 0, "recordsFiltered" => 0, "data" => [], "error" => "Sesión no válida o ID de empresa no encontrado."]);
-    exit;
+// 1. INICIO DE SESIÓN SEGURO PARA PREVENIR NOTICES Y HABILITAR CSRF
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
 }
 
-// Parámetros de DataTables
-$start = isset($_POST['start']) ? intval($_POST['start']) : 0;
-$length = isset($_POST['length']) ? intval($_POST['length']) : 10;
-$orderColumnIndex = isset($_POST['order'][0]['column']) ? intval($_POST['order'][0]['column']) : 3; 
-$orderColumnName = isset($_POST['columns'][$orderColumnIndex]['data']) ? mysqli_real_escape_string($conexion, $_POST['columns'][$orderColumnIndex]['data']) : 'nombres';
-$orderDir = isset($_POST['order'][0]['dir']) && strtolower($_POST['order'][0]['dir']) == 'desc' ? 'DESC' : 'ASC';
+// 2. DECLARACIÓN DE LA FUNCIÓN DE ELIMINACIÓN (Con control de transacciones)
 
-$searchValue = isset($_POST['search']['value']) ? mysqli_real_escape_string($conexion, $_POST['search']['value']) : '';
-$pag_opciones = isset($_POST['pag_opciones']) ? intval($_POST['pag_opciones']) : 0;
-
-$fecha_mov = date('Y-m-d');
-$condicion = "";
-
-if (!empty($searchValue)) {
-    $condicion .= " AND (LOWER(CONCAT(s.soc_apepat, ' ', s.soc_apemat, ' ', s.soc_nombres)) LIKE LOWER('%$searchValue%') 
-                       OR LOWER(s.soc_correo) LIKE LOWER('%$searchValue%') 
-                       OR s.soc_tel_cel LIKE '%$searchValue%')";
-}
-
-// =========== APLICAR FILTRO DE OPCIONES ===========
-if ( $pag_opciones > 0 ) {
-    switch( $pag_opciones ) {
-        case 1: // Socios agregados hoy
-            $condicion .= " AND DATE(s.soc_fecha_captura) = '$fecha_mov'";
-            break;
+if (!function_exists('eliminar_socio')) {
+    function eliminar_socio($id_socio) {
+        global $conexion;
         
-        case 2: // Socios que pagaron hoy
-            $condicion .= " AND s.soc_id_socio IN (SELECT pag_id_socio FROM san_pagos WHERE DATE(pag_fecha_pago) = '$fecha_mov')";
-            break;
-        
-        case 3: // Los que se vencen hoy (Excluyendo status E)
-            $condicion .= " AND p.pag_fecha_fin = '$fecha_mov' AND (p.pag_status IS NULL OR p.pag_status != 'E')";
-            break;
-
-        case 4: // Socios vencidos (Incluyendo status E)
-            $condicion .= " AND (p.pag_fecha_fin < '$fecha_mov' OR p.pag_id_pago IS NULL OR p.pag_status = 'E')";
-            break;
-    }
-}
-
-$from_clause = "
-    FROM san_socios s
-    LEFT JOIN san_pagos p ON p.pag_id_pago = (
-        SELECT pag_id_pago 
-        FROM san_pagos
-        WHERE pag_id_socio = s.soc_id_socio
-        ORDER BY pag_fecha_fin DESC, pag_id_pago DESC
-        LIMIT 1
-    )
-    WHERE s.soc_id_empresa = $id_empresa
-";
-
-// CONTEOS
-$queryTotal = "SELECT COUNT(soc_id_socio) AS total FROM san_socios WHERE soc_id_empresa = $id_empresa";
-$resTotal = mysqli_query($conexion, $queryTotal);
-$recordsTotal = $resTotal ? intval(mysqli_fetch_assoc($resTotal)['total']) : 0;
-
-$queryFiltered = "SELECT COUNT(s.soc_id_socio) AS total " . $from_clause . $condicion;
-$resFiltered = mysqli_query($conexion, $queryFiltered);
-$recordsFiltered = $resFiltered ? intval(mysqli_fetch_assoc($resFiltered)['total']) : 0;
-
-
-// LÓGICA DE ORDENAMIENTO (Ignora estatus E como activo)
-$active_condition = "(p.pag_status IS NULL OR p.pag_status != 'E') AND p.pag_fecha_ini <= '$fecha_mov' AND p.pag_fecha_fin >= '$fecha_mov'";
-$secondary_order = "$orderColumnName $orderDir";
-
-$orderByClause = "ORDER BY
-    CASE WHEN $active_condition THEN 0 ELSE 1 END ASC,
-    p.pag_fecha_ini DESC,
-    CASE
-        WHEN (s.soc_tel_cel IS NOT NULL AND s.soc_tel_cel <> '') AND (s.soc_correo IS NOT NULL AND s.soc_correo <> '') THEN 1
-        WHEN (s.soc_tel_cel IS NOT NULL AND s.soc_tel_cel <> '') OR (s.soc_correo IS NOT NULL AND s.soc_correo <> '') THEN 2
-        ELSE 3
-    END ASC,
-    $secondary_order";
-
-
-// CONSULTA DE DATOS PARA LA PÁGINA ACTUAL
-$queryData = "
-    SELECT
-        s.soc_id_socio AS id_socio,
-        p.pag_id_pago AS id_pago,
-        p.pag_fecha_ini,
-        p.pag_fecha_fin,
-        p.pag_fecha_pago, 
-        s.soc_fecha_captura, 
-        CONCAT(s.soc_apepat, ' ', s.soc_apemat, ' ', s.soc_nombres) AS nombres,
-        s.soc_correo,
-        s.soc_tel_cel,
-        s.soc_correo_status,
-        CASE 
-            WHEN p.pag_id_pago IS NULL THEN 'Sin Pago'
-            WHEN p.pag_status = 'E' THEN 'Pago Vencido'
-            WHEN p.pag_fecha_fin >= '$fecha_mov' THEN CONCAT(DATE_FORMAT(p.pag_fecha_ini, '%d-%m-%Y'), ' al ', DATE_FORMAT(p.pag_fecha_fin, '%d-%m-%Y'))
-            ELSE 'Pago Vencido'
-        END AS status_pago
-    " . $from_clause . $condicion . "
-    " . $orderByClause . "
-    LIMIT $start, $length";
-
-$resultado = mysqli_query($conexion, $queryData);
-
-// FORMATEO DE DATOS
-$data = [];
-$contador = $start + 1;
-if ($resultado) {
-    while ($fila = mysqli_fetch_assoc($resultado)) {
-        
-        if (file_exists("../../imagenes/avatar/$fila[id_socio].jpg")) {
-            $fotografia = "<button type='button' class='btn btn-xs btn-info btn-ver-foto' data-src='../imagenes/avatar/$fila[id_socio].jpg' style='color:#fff; font-weight:bold;'>Ver Foto</button>";
-        } else {
-            $fotografia = "<span class='label label-danger' style='font-size: 11px; font-weight: bold;'>SIN FOTO</span>";
+        if ($id_socio <= 0) {
+            return ['num' => 0, 'msj' => 'ID de socio inválido o no proporcionado.'];
         }
 
-        $acciones = "<div class='btn-group'>
-                        <a class='pointer' data-toggle='dropdown'><span class='glyphicon glyphicon-chevron-down'></span></a>
-                        <ul class='dropdown-menu'>
-                            <li><a href='.?s=socios&i=datosg&id_socio=$fila[id_socio]'><span class='glyphicon glyphicon-edit'></span> Actualizar</a></li>
-                            <li><a href='.?s=socios&i=pagos&id_socio=$fila[id_socio]'><span class='glyphicon glyphicon-usd'></span> Pagos</a></li>
-                            <li><a href='?s=prepagos&i=editar&id_socio=$fila[id_socio]'><span class='glyphicon glyphicon-credit-card'></span> Monedero</a></li>
-                            <li><a href='.?s=socios&i=fotografia&id_socio=$fila[id_socio]'><span class='glyphicon glyphicon-picture'></span> Fotografía</a></li>
-                            <li><a href='.?s=socios&i=fechas&id_socio=$fila[id_socio]&id_pago=$fila[id_pago]'><span class='glyphicon glyphicon-calendar'></span> Fechas</a></li>
-                            <li><a href='.?s=socios&i=eliminar&id_socio=$fila[id_socio]'><span class='glyphicon glyphicon-remove'></span> Eliminar</a></li>
-                        </ul>
-                    </div>";
-        
-        $data[] = [
-            "contador"          => $contador, 
-            "acciones"          => $acciones, 
-            "id_socio"          => $fila['id_socio'],
-            "nombres"           => $fila['nombres'], 
-            "soc_correo"        => $fila['soc_correo'], 
-            "soc_correo_status" => $fila['soc_correo_status'],
-            "soc_tel_cel"       => $fila['soc_tel_cel'],
-            "status_pago"       => $fila['status_pago'], 
-            "foto"              => $fotografia
-        ];
-        $contador++;
+        mysqli_autocommit($conexion, FALSE);
+
+        try {
+            // Eliminar fotografía
+            $ruta_foto = "../imagenes/avatar/{$id_socio}.jpg";
+            if (file_exists($ruta_foto)) {
+                unlink($ruta_foto);
+            }
+
+            // CORRECCIÓN: Nombres de columnas ajustados a la nomenclatura de llaves foráneas
+            $tablas_dependientes = [
+                "DELETE FROM san_pagos WHERE pag_id_socio = $id_socio",
+                "DELETE FROM san_prepago_detalle WHERE pred_id_socio = $id_socio", // <- CAMBIAR PREFIJO SI ES NECESARIO
+                "DELETE FROM san_venta WHERE ven_id_socio = $id_socio"
+            ];
+
+            foreach ($tablas_dependientes as $sql) {
+                if (!mysqli_query($conexion, $sql)) {
+                    throw new Exception("Error SQL en dependencias: " . mysqli_error($conexion));
+                }
+            }
+
+            // Eliminar registro principal
+            $query_socio = "DELETE FROM san_socios WHERE soc_id_socio = $id_socio";
+            if (!mysqli_query($conexion, $query_socio)) {
+                throw new Exception("Error SQL en registro principal: " . mysqli_error($conexion));
+            }
+
+            mysqli_commit($conexion);
+            return ['num' => 1, 'msj' => 'Socio eliminado con éxito.'];
+
+        } catch (Exception $e) {
+            mysqli_rollback($conexion);
+            return ['num' => 0, 'msj' => 'Error crítico: ' . $e->getMessage()];
+        } finally {
+            mysqli_autocommit($conexion, TRUE);
+        }
     }
 }
 
-// RESPUESTA FINAL JSON
-$response = [
-    "draw"            => $draw,
-    "recordsTotal"    => $recordsTotal,
-    "recordsFiltered" => $recordsFiltered,
-    "data"            => $data
-];
 
-header('Content-Type: application/json');
-echo json_encode($response);
+// 3. LÓGICA DEL CONTROLADOR DE LA VISTA
+// Priorizamos POST (formulario) pero admitimos GET (URL) de forma segura
+$id_socio = isset($_POST['id_socio']) ? (int)$_POST['id_socio'] : (isset($_GET['id_socio']) ? (int)$_GET['id_socio'] : 0);
+$enviar   = isset($_POST['enviar']) ? (int)$_POST['enviar'] : 0;
+$seccion  = isset($_GET['s']) ? $_GET['s'] : 'socios'; 
+$item     = isset($_GET['i']) ? $_GET['i'] : 'eliminar';
+
+// Se valida que el ID exista antes de consultar
+if ($id_socio === 0) {
+    header("Location: .?s=socios");
+    exit;
+}
+
+$datos = obtener_datos_socio(); // Se asume que esta función usa $_GET['id_socio'] o globals internamente
+
+if (!$datos) {
+    header("Location: .?s=socios");
+    exit;
+}
+
+// GENERACIÓN DE TOKEN CSRF
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
+if ($enviar) {
+    // VALIDACIÓN DE TOKEN CSRF
+    if (!isset($_POST['csrf_token']) || hash_equals($_SESSION['csrf_token'], $_POST['csrf_token']) === false) {
+        die('Error 403: Validación CSRF fallida. Petición rechazada.');
+    }
+
+    // Se inyecta el ID capturado como parámetro
+    $exito = eliminar_socio($id_socio);
+    
+    if ($exito['num'] == 1) {
+        header("Location: .?s=socios");
+        exit;
+    } else {
+        mostrar_mensaje_div($exito['msj'], 'danger');
+    }
+}
+
+$nombre = $datos['soc_nombres'] . " " . $datos['soc_apepat'] . " " . $datos['soc_apemat'];
+$ruta_foto_vista = "../imagenes/avatar/$id_socio.jpg";
+
+if (file_exists($ruta_foto_vista)) {
+    $fotografia = "<img src='$ruta_foto_vista' class='img-thumbnail' style='width:100%' />";
+} else {
+    $fotografia = "<img src='../imagenes/avatar/noavatar.jpg' class='img-thumbnail' style='width:100%' />";
+}
 ?>
+
+<!-- 4. RENDERIZADO DE LA VISTA HTML -->
+<div class="row">
+    <div class="col-md-12">
+        <h4 class="text-info">
+            <span class="glyphicon glyphicon-folder-open"></span> Datos Generales
+        </h4>
+    </div>
+</div>
+
+<hr/>
+
+<div class="row">
+    <label class="col-md-1">Socio</label>
+    <!-- SANITIZACIÓN XSS -->
+    <div class="col-md-5"><?= htmlspecialchars(strtoupper($nombre), ENT_QUOTES, 'UTF-8') ?></div>
+    
+    <label class="col-md-6">¿Estás seguro de Eliminar este Socio?</label>
+</div>
+
+<div class="row">
+    <div class="col-md-6">  
+        <?= $fotografia ?>
+    </div>
+    
+    <div class="col-md-6">
+        <p class="text-danger">Si se elimina, también serán eliminados los pagos que haya efectuado, así como prepagos y todo el histórico de venta y ya no aparecerá en ninguna de las estadísticas de cortes.</p>
+    </div>
+</div>
+
+<!-- SANITIZACIÓN EN ACTION DEL FORMULARIO -->
+<form method="post" action=".?s=<?= htmlspecialchars($seccion, ENT_QUOTES, 'UTF-8') ?>&i=<?= htmlspecialchars($item, ENT_QUOTES, 'UTF-8') ?>">
+    <div class="row">
+        <div class="col-md-12">
+            <!-- CASTING A ENTERO PARA SEGURIDAD -->
+            <input type="hidden" name="id_socio" value="<?= $id_socio ?>" />
+            
+            <!-- CAMPO OCULTO CSRF -->
+            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>" />
+            
+            <button type="submit" name="enviar" value="1" class="btn btn-danger">
+                <span class="glyphicon glyphicon-trash"></span> Si, Eliminar todo
+            </button>
+            <button type="button" name="cancel" class="btn btn-default" onclick="location.href='.?s=socios'">
+                <span class="glyphicon glyphicon-remove"></span> No, Cancelar
+            </button>
+        </div>
+    </div>
+</form>

@@ -3,31 +3,23 @@
 |--------------------------------------------------------------------------
 | Instalador Independiente de Base de Datos - Sandys Gym
 |--------------------------------------------------------------------------
-|
-| Este script detecta el entorno, se conecta mediante PDO, crea las
-| tablas de contactos y plantillas, y actualiza la tabla de pagos.
-|
 */
 
-// 1. --- DEFINIR CREDENCIALES Y ENTORNO ---
 $local_hosts = ['localhost', '127.0.0.1', 'gym.test', '192.168.0.181'];
 $current_host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 
 if (in_array($current_host, $local_hosts)) {
-    // Estamos en LOCAL
     $host = "localhost";
     $user = "root";
     $pass = "";
     $db   = "dbs1756575";
 } else {
-    // Estamos en PRODUCCIÓN
     $host = "db5002171142.hosting-data.io";
     $user = "dbu577361";
     $pass = "Sandys_empresas_2";
     $db   = "dbs1756575";
 }
 
-// 2. --- ESTABLECER CONEXIÓN PDO ---
 $conn = null;
 $options = [
     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
@@ -37,74 +29,64 @@ $options = [
 
 $dsn = "mysql:host=$host;dbname=$db;charset=utf8mb4";
 
-// Estilos básicos tipo "Dark Mode" para la visualización del instalador
 echo "<body style='background-color: #050505; color: #ffffff; font-family: sans-serif; padding: 40px;'>";
-echo "<h2 style='color: #ef4444;'>⚙️ Instalador de BD - Sandys Gym</h2>";
+echo "<h2 style='color: #ef4444;'>⚙️ Instalador de Módulos (FAQ & Historias) - Sandys Gym</h2>";
 echo "<hr style='border-color: #333;'>";
 
 try {
     $conn = new PDO($dsn, $user, $pass, $options);
-    echo "<p style='color: #10b981;'>✅ Conexión a la base de datos establecida con éxito (Entorno: <b>{$current_host}</b>).</p>";
+    echo "<p style='color: #10b981;'>✅ Conexión establecida.</p>";
 
-    // 3. --- CREACIÓN DE TABLAS NUEVAS ---
-
-    // Tabla: san_contactos
-    $sql_contactos = "
-        CREATE TABLE IF NOT EXISTS `san_contactos` (
-            `id_contacto` int(11) NOT NULL AUTO_INCREMENT,
-            `nombre` varchar(100) NOT NULL,
-            `correo` varchar(100) NOT NULL,
-            `telefono` varchar(20) DEFAULT NULL,
-            `mensaje` text NOT NULL,
-            `fecha_registro` datetime DEFAULT CURRENT_TIMESTAMP,
-            `leido` tinyint(1) DEFAULT 0,
-            PRIMARY KEY (`id_contacto`)
+    // Tabla: san_faq
+    $sql_faq = "
+        CREATE TABLE IF NOT EXISTS `san_faq` (
+            `id_faq` INT(11) NOT NULL AUTO_INCREMENT,
+            `pregunta` TEXT NOT NULL,
+            `respuesta` TEXT NOT NULL,
+            `orden` INT(11) DEFAULT 0,
+            PRIMARY KEY (`id_faq`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     ";
-    $conn->exec($sql_contactos);
-    echo "<p style='color: #10b981;'>✅ Tabla <b>'san_contactos'</b> verificada/creada con éxito.</p>";
+    $conn->exec($sql_faq);
+    echo "<p style='color: #10b981;'>✅ Tabla <b>'san_faq'</b> verificada/creada.</p>";
 
-    // Tabla: san_plantillas_correo (NUEVA)
-    $sql_plantillas = "
-        CREATE TABLE IF NOT EXISTS `san_plantillas_correo` (
-            `plan_id` int(11) NOT NULL AUTO_INCREMENT,
-            `plan_id_empresa` int(11) NOT NULL,
-            `plan_nombre` varchar(50) NOT NULL,
-            `plan_cuerpo` text NOT NULL,
-            PRIMARY KEY (`plan_id`)
+    // Tabla: san_historias
+    $sql_historias = "
+        CREATE TABLE IF NOT EXISTS `san_historias` (
+            `id_historia` INT(11) NOT NULL AUTO_INCREMENT,
+            `cliente_nombre` VARCHAR(255) NOT NULL,
+            `foto_antes` VARCHAR(255) NOT NULL,
+            `foto_despues` VARCHAR(255) NOT NULL,
+            `video_url` VARCHAR(255) DEFAULT NULL,
+            `testimonio` TEXT,
+            `estado` TINYINT(1) DEFAULT 1,
+            `fecha_registro` DATETIME DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id_historia`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     ";
-    $conn->exec($sql_plantillas);
-    echo "<p style='color: #10b981;'>✅ Tabla <b>'san_plantillas_correo'</b> verificada/creada con éxito.</p>";
+    $conn->exec($sql_historias);
+    echo "<p style='color: #10b981;'>✅ Tabla <b>'san_historias'</b> verificada/creada con estructura actualizada.</p>";
 
-
-    // 4. --- ACTUALIZACIÓN DE TABLAS EXISTENTES (ALTER) ---
+    // Parche para agregar la columna 'estado' si la tabla ya existía de una ejecución anterior
     try {
-        $sql_alter_pagos = "
-            ALTER TABLE san_pagos 
-            ADD COLUMN pag_id_prepago_abono INT(11) NOT NULL DEFAULT 0 
-            COMMENT 'ID del registro en san_prepago_detalle correspondiente al abono de cashback/consorcio'
-        ";
-        $conn->exec($sql_alter_pagos);
-        echo "<p style='color: #10b981;'>✅ Columna <b>'pag_id_prepago_abono'</b> añadida a 'san_pagos'.</p>";
+        $sql_alter_historias = "ALTER TABLE san_historias ADD COLUMN estado TINYINT(1) DEFAULT 1";
+        $conn->exec($sql_alter_historias);
+        echo "<p style='color: #10b981;'>✅ Columna <b>'estado'</b> añadida a 'san_historias' exitosamente.</p>";
     } catch (PDOException $e) {
-        // Código 42S21 o mensaje de columna duplicada
         if ($e->getCode() == '42S21' || strpos($e->getMessage(), 'Duplicate column name') !== false) {
-            echo "<p style='color: #F28123;'>⚠️ La columna <b>'pag_id_prepago_abono'</b> ya existe en 'san_pagos'. Se omitió su creación.</p>";
+            echo "<p style='color: #F28123;'>⚠️ La columna <b>'estado'</b> ya existe en 'san_historias'.</p>";
         } else {
             throw $e;
         }
     }
 
-    // 5. --- AVISO DE SEGURIDAD ---
     echo "<br><div style='background-color: #1a1a1a; padding: 20px; border-left: 5px solid #F28123; border-radius: 5px;'>";
-    echo "<h3 style='color: #F28123; margin-top: 0;'>⚠️ ALERTA DE SEGURIDAD CRÍTICA</h3>";
-    echo "<p>La base de datos está actualizada y lista. <b>Por favor, elimina este archivo del servidor inmediatamente.</b> Dejarlo público expone la estructura de tu base de datos y tus credenciales.</p>";
+    echo "<h3 style='color: #F28123; margin-top: 0;'>⚠️ ALERTA DE SEGURIDAD</h3>";
+    echo "<p>Elimina este archivo tras la ejecución.</p>";
     echo "</div>";
 
 } catch (PDOException $e) {
-    echo "<p style='color: #ef4444;'>❌ <b>Error crítico:</b> " . $e->getMessage() . "</p>";
+    echo "<p style='color: #ef4444;'>❌ <b>Error:</b> " . $e->getMessage() . "</p>";
 }
-
 echo "</body>";
 ?>

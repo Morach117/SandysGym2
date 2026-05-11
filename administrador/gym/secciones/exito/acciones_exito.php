@@ -22,15 +22,18 @@ if (!is_dir($base_dir)) {
 }
 
 // Helper para generar el HTML de la fila (DOM dinámico)
-function generarFilaExito($id, $cliente, $foto_a, $foto_d, $video) {
+function generarFilaExito($id, $cliente, $foto_a, $foto_d, $video, $testimonio = '') {
     $fecha = date('d/m/Y');
     $video_html = !empty($video) ? "<span class='label label-info'><span class='glyphicon glyphicon-play-circle'></span> Video</span>" : "<span class='text-muted'>N/A</span>";
     
+    $cliente_js = htmlspecialchars($cliente, ENT_QUOTES);
+    $testimonio_js = htmlspecialchars($testimonio, ENT_QUOTES);
+    
     return "<tr id='fila_exito_{$id}'>
-                <td><span class='label label-success'>Nuevo</span></td>
+                <td><span class='label label-success'>Nuevo/Editado</span></td>
                 <td><strong>" . htmlspecialchars($cliente) . "</strong></td>
                 <td>
-                    <img src='imagenes/exito/" . htmlspecialchars($foto_a) . "' style='width:50px; height:50px; object-fit:cover;' class='img-thumbnail'>
+                    <img src='../imagenes/exito/" . htmlspecialchars($foto_a) . "' style='width:50px; height:50px; object-fit:cover;' class='img-thumbnail'>
                     <span class='glyphicon glyphicon-arrow-right text-muted'></span>
                     <img src='../imagenes/exito/" . htmlspecialchars($foto_d) . "' style='width:50px; height:50px; object-fit:cover;' class='img-thumbnail'>
                 </td>
@@ -39,6 +42,8 @@ function generarFilaExito($id, $cliente, $foto_a, $foto_d, $video) {
                 <td id='td_estado_{$id}'><span class='label label-success'>Activo</span></td>
                 <td>
                     <div class='btn-group'>
+                        <button class='btn btn-xs btn-info' onclick='abrirPreview(\"../imagenes/exito/{$foto_a}\", \"../imagenes/exito/{$foto_d}\", \"../imagenes/exito/{$video}\")' title='Vista Previa'><span class='glyphicon glyphicon-eye-open'></span></button>
+                        <button class='btn btn-xs btn-primary' onclick='abrirModalEditar({$id}, \"{$cliente_js}\", \"{$testimonio_js}\")' title='Editar'><span class='glyphicon glyphicon-pencil'></span></button>
                         <button class='btn btn-xs btn-warning' id='btn_estado_{$id}' onclick='cambiarEstado({$id}, 1)' title='Cambiar Estado'><span class='glyphicon glyphicon-refresh'></span></button>
                         <button class='btn btn-xs btn-danger' onclick='eliminarCaso({$id})' title='Eliminar'><span class='glyphicon glyphicon-trash'></span></button>
                     </div>
@@ -94,7 +99,7 @@ if ($accion === 'nuevo_caso') {
                 
         if(mysqli_query($conexion, $sql)){
             $id_insertado = mysqli_insert_id($conexion);
-            $html_nueva_fila = generarFilaExito($id_insertado, $cliente, $foto_antes, $foto_despues, $video_nom);
+            $html_nueva_fila = generarFilaExito($id_insertado, $cliente, $foto_antes, $foto_despues, $video_nom, $testimonio);
             
             if (ob_get_length()) ob_clean();
             echo json_encode(['exito' => true, 'mensaje' => 'Caso registrado exitosamente.', 'html' => $html_nueva_fila]);
@@ -105,6 +110,84 @@ if ($accion === 'nuevo_caso') {
     } else {
         if (ob_get_length()) ob_clean();
         echo json_encode(['exito' => false, 'mensaje' => 'Las fotos (Antes y Después) son obligatorias y formato válido.']);
+    }
+    exit;
+}
+
+if ($accion === 'editar_caso') {
+    $id = (int)$_POST['id_historia_edit'];
+    $cliente = mysqli_real_escape_string($conexion, trim($_POST['cliente_nombre_edit']));
+    $testimonio = mysqli_real_escape_string($conexion, trim($_POST['testimonio_edit']));
+    $time_stamp = time();
+    
+    $allowed_image_mimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    $allowed_video_mimes = ['video/mp4', 'video/webm'];
+
+    $res = mysqli_query($conexion, "SELECT foto_antes, foto_despues, video_url FROM san_historias WHERE id_historia = $id");
+    $row = mysqli_fetch_assoc($res);
+    
+    $upd_antes = ""; $upd_despues = ""; $upd_video = "";
+    $foto_a_final = $row['foto_antes'];
+    $foto_d_final = $row['foto_despues'];
+    $video_final = $row['video_url'];
+
+    if (isset($_FILES['foto_antes_edit']) && $_FILES['foto_antes_edit']['error'] === UPLOAD_ERR_OK) {
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime = finfo_file($finfo, $_FILES['foto_antes_edit']['tmp_name']);
+        finfo_close($finfo);
+        if (in_array($mime, $allowed_image_mimes)) {
+            $ext = strtolower(pathinfo($_FILES['foto_antes_edit']['name'], PATHINFO_EXTENSION));
+            $foto_antes_nueva = uniqid($time_stamp . "_a_") . "." . $ext;
+            if (move_uploaded_file($_FILES['foto_antes_edit']['tmp_name'], $base_dir . $foto_antes_nueva)) {
+                if(!empty($row['foto_antes']) && file_exists($base_dir . $row['foto_antes'])) unlink($base_dir . $row['foto_antes']);
+                $upd_antes = ", foto_antes = '$foto_antes_nueva'";
+                $foto_a_final = $foto_antes_nueva;
+            }
+        }
+    }
+
+    if (isset($_FILES['foto_despues_edit']) && $_FILES['foto_despues_edit']['error'] === UPLOAD_ERR_OK) {
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime = finfo_file($finfo, $_FILES['foto_despues_edit']['tmp_name']);
+        finfo_close($finfo);
+        if (in_array($mime, $allowed_image_mimes)) {
+            $ext = strtolower(pathinfo($_FILES['foto_despues_edit']['name'], PATHINFO_EXTENSION));
+            $foto_despues_nueva = uniqid($time_stamp . "_d_") . "." . $ext;
+            if (move_uploaded_file($_FILES['foto_despues_edit']['tmp_name'], $base_dir . $foto_despues_nueva)) {
+                if(!empty($row['foto_despues']) && file_exists($base_dir . $row['foto_despues'])) unlink($base_dir . $row['foto_despues']);
+                $upd_despues = ", foto_despues = '$foto_despues_nueva'";
+                $foto_d_final = $foto_despues_nueva;
+            }
+        }
+    }
+
+    if (isset($_FILES['video_archivo_edit']) && $_FILES['video_archivo_edit']['error'] === UPLOAD_ERR_OK) {
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime = finfo_file($finfo, $_FILES['video_archivo_edit']['tmp_name']);
+        finfo_close($finfo);
+        if (in_array($mime, $allowed_video_mimes)) {
+            $ext = strtolower(pathinfo($_FILES['video_archivo_edit']['name'], PATHINFO_EXTENSION));
+            $video_nuevo = uniqid($time_stamp . "_v_") . "." . $ext;
+            if (move_uploaded_file($_FILES['video_archivo_edit']['tmp_name'], $base_dir . $video_nuevo)) {
+                if(!empty($row['video_url']) && file_exists($base_dir . $row['video_url'])) unlink($base_dir . $row['video_url']);
+                $upd_video = ", video_url = '$video_nuevo'";
+                $video_final = $video_nuevo;
+            }
+        }
+    }
+
+    $sql = "UPDATE san_historias 
+            SET cliente_nombre = '$cliente', testimonio = '$testimonio' 
+            $upd_antes $upd_despues $upd_video 
+            WHERE id_historia = $id";
+            
+    if (mysqli_query($conexion, $sql)) {
+        $html_actualizada = generarFilaExito($id, $cliente, $foto_a_final, $foto_d_final, $video_final, $testimonio);
+        if (ob_get_length()) ob_clean();
+        echo json_encode(['exito' => true, 'mensaje' => 'Caso actualizado correctamente.', 'html' => $html_actualizada, 'id' => $id]);
+    } else {
+        if (ob_get_length()) ob_clean();
+        echo json_encode(['exito' => false, 'mensaje' => 'Error DB al actualizar: ' . mysqli_error($conexion)]);
     }
     exit;
 }
@@ -131,7 +214,7 @@ if ($accion === 'eliminar') {
 if ($accion === 'cambiar_estado') {
     $id = (int)$_POST['id_historia'];
     $estado = (int)$_POST['estado'];
-    $nuevo_estado = $estado == 1 ? 0 : 1; // Invertir estado actual
+    $nuevo_estado = $estado == 1 ? 0 : 1; 
     
     if(mysqli_query($conexion, "UPDATE san_historias SET estado = $nuevo_estado WHERE id_historia = $id")){
         if (ob_get_length()) ob_clean();

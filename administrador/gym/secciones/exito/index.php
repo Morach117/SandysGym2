@@ -28,7 +28,11 @@ function obtener_casos_exito() {
                 $url_d = $ruta_base . htmlspecialchars($fila['foto_despues']);
                 $url_v = !empty($fila['video_url']) ? $ruta_base . htmlspecialchars($fila['video_url']) : "";
 
+                $cliente_js = htmlspecialchars($fila['cliente_nombre'], ENT_QUOTES);
+                $testimonio_js = htmlspecialchars($fila['testimonio'], ENT_QUOTES);
+
                 $btn_ver = "<button class='btn btn-xs btn-info' onclick='abrirPreview(\"{$url_a}\", \"{$url_d}\", \"{$url_v}\")' title='Vista Previa'><span class='glyphicon glyphicon-eye-open'></span></button>";
+                $btn_editar = "<button class='btn btn-xs btn-primary' onclick='abrirModalEditar({$fila['id_historia']}, \"{$cliente_js}\", \"{$testimonio_js}\")' title='Editar'><span class='glyphicon glyphicon-pencil'></span></button>";
                 $btn_estado = "<button class='btn btn-xs btn-warning' id='btn_estado_{$fila['id_historia']}' onclick='cambiarEstado({$fila['id_historia']}, {$fila['estado']})' title='Cambiar Estado'><span class='glyphicon glyphicon-refresh'></span></button>";
                 $btn_eliminar = "<button class='btn btn-xs btn-danger' onclick='eliminarCaso({$fila['id_historia']})' title='Eliminar'><span class='glyphicon glyphicon-trash'></span></button>";
 
@@ -48,6 +52,7 @@ function obtener_casos_exito() {
                             <td>
                                 <div class='btn-group'>
                                     {$btn_ver}
+                                    {$btn_editar}
                                     {$btn_estado}
                                     {$btn_eliminar}
                                 </div>
@@ -67,23 +72,18 @@ function obtener_casos_exito() {
 $var_lista_exito = obtener_casos_exito();
 ?>
 
-<!-- DataTables CSS nativo para Bootstrap 3 -->
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap.min.css">
-
-<!-- Asegurar que jQuery esté cargado ANTES de estos scripts (Bootstrap 3 ya lo requiere) -->
-<!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
-
-<!-- DataTables Core JS -->
 <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
-<!-- DataTables Bootstrap 3 Integration JS -->
 <script src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap.min.js"></script>
+
 <div class="row">
     <div class="col-md-12">
         <h4 class="text-info" style="display: flex; justify-content: space-between; align-items: center;">
             <span><span class="glyphicon glyphicon-star"></span> Gestión de Casos de Éxito</span>
-            <button class="btn btn-sm btn-primary" onclick="abrirModalExito()"><span class="glyphicon glyphicon-plus"></span> Nuevo Caso</button>
+            <button class="btn btn-sm btn-primary" onclick="abrirModalExito()"><span
+                    class="glyphicon glyphicon-plus"></span> Nuevo Caso</button>
         </h4>
-        <hr/>
+        <hr />
         <div class="table-responsive">
             <table id="tabla_exito" class="table table-hover table-condensed table-striped" style="width:100%">
                 <thead>
@@ -105,13 +105,14 @@ $var_lista_exito = obtener_casos_exito();
     </div>
 </div>
 
-<!-- Modal Ingreso (Bootstrap 3) -->
 <div class="modal fade" id="modalExito" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header bg-primary">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color:#fff; opacity:1;"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" style="color:#fff;"><span class="glyphicon glyphicon-upload"></span> Subir Caso de Éxito</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+                    style="color:#fff; opacity:1;"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" style="color:#fff;"><span class="glyphicon glyphicon-upload"></span> Subir Caso
+                    de Éxito</h4>
             </div>
             <form id="formExito" enctype="multipart/form-data">
                 <div class="modal-body">
@@ -119,7 +120,8 @@ $var_lista_exito = obtener_casos_exito();
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label>Nombre del Cliente:</label>
-                                <input type="text" name="cliente_nombre" id="cliente_nombre" class="form-control" required>
+                                <input type="text" name="cliente_nombre" id="cliente_nombre" class="form-control"
+                                    required>
                             </div>
                         </div>
                     </div>
@@ -127,18 +129,22 @@ $var_lista_exito = obtener_casos_exito();
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Foto ANTES (Requerido):</label>
-                                <input type="file" name="foto_antes" id="foto_antes" class="form-control" accept="image/*" required onchange="previewMedia(this, 'preview_antes')">
+                                <input type="file" name="foto_antes" id="foto_antes" class="form-control"
+                                    accept="image/*" required onchange="previewMedia(this, 'preview_antes')">
                                 <div class="text-center" style="margin-top:10px;">
-                                    <img id="preview_antes" src="" style="max-width:100%; height:150px; display:none; object-fit:cover; border:1px solid #ddd; border-radius:4px;">
+                                    <img id="preview_antes" src=""
+                                        style="max-width:100%; height:150px; display:none; object-fit:cover; border:1px solid #ddd; border-radius:4px;">
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Foto DESPUÉS (Requerido):</label>
-                                <input type="file" name="foto_despues" id="foto_despues" class="form-control" accept="image/*" required onchange="previewMedia(this, 'preview_despues')">
+                                <input type="file" name="foto_despues" id="foto_despues" class="form-control"
+                                    accept="image/*" required onchange="previewMedia(this, 'preview_despues')">
                                 <div class="text-center" style="margin-top:10px;">
-                                    <img id="preview_despues" src="" style="max-width:100%; height:150px; display:none; object-fit:cover; border:1px solid #ddd; border-radius:4px;">
+                                    <img id="preview_despues" src=""
+                                        style="max-width:100%; height:150px; display:none; object-fit:cover; border:1px solid #ddd; border-radius:4px;">
                                 </div>
                             </div>
                         </div>
@@ -148,9 +154,11 @@ $var_lista_exito = obtener_casos_exito();
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label>Video del Proceso (Opcional, Max 20MB):</label>
-                                <input type="file" name="video_archivo" id="video_archivo" class="form-control" accept="video/mp4,video/webm" onchange="previewVideo(this, 'preview_video')">
+                                <input type="file" name="video_archivo" id="video_archivo" class="form-control"
+                                    accept="video/mp4,video/webm" onchange="previewVideo(this, 'preview_video')">
                                 <div class="text-center" style="margin-top:10px;">
-                                    <video id="preview_video" controls style="max-width:100%; height:150px; display:none; background:#000; border-radius:4px;"></video>
+                                    <video id="preview_video" controls
+                                        style="max-width:100%; height:150px; display:none; background:#000; border-radius:4px;"></video>
                                 </div>
                             </div>
                         </div>
@@ -171,30 +179,115 @@ $var_lista_exito = obtener_casos_exito();
     </div>
 </div>
 
-<!-- Modal Vista Previa (Bootstrap 3) -->
+<div class="modal fade" id="modalEditarExito" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+                    style="color:#fff; opacity:1;"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" style="color:#fff;"><span class="glyphicon glyphicon-pencil"></span> Editar Caso
+                    de Éxito</h4>
+            </div>
+            <form id="formEditarExito" enctype="multipart/form-data">
+                <input type="hidden" name="id_historia_edit" id="id_historia_edit">
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <span class="glyphicon glyphicon-info-sign"></span> <strong>Nota:</strong> Solo sube archivos si
+                        deseas reemplazar los actuales.
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label>Nombre del Cliente:</label>
+                                <input type="text" name="cliente_nombre_edit" id="cliente_nombre_edit"
+                                    class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Reemplazar Foto ANTES:</label>
+                                <input type="file" name="foto_antes_edit" id="foto_antes_edit" class="form-control"
+                                    accept="image/*" onchange="previewMedia(this, 'preview_antes_edit')">
+                                <div class="text-center" style="margin-top:10px;">
+                                    <img id="preview_antes_edit" src=""
+                                        style="max-width:100%; height:150px; display:none; object-fit:cover; border:1px solid #ddd; border-radius:4px;">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Reemplazar Foto DESPUÉS:</label>
+                                <input type="file" name="foto_despues_edit" id="foto_despues_edit" class="form-control"
+                                    accept="image/*" onchange="previewMedia(this, 'preview_despues_edit')">
+                                <div class="text-center" style="margin-top:10px;">
+                                    <img id="preview_despues_edit" src=""
+                                        style="max-width:100%; height:150px; display:none; object-fit:cover; border:1px solid #ddd; border-radius:4px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label>Reemplazar Video (Max 20MB):</label>
+                                <input type="file" name="video_archivo_edit" id="video_archivo_edit"
+                                    class="form-control" accept="video/mp4,video/webm"
+                                    onchange="previewVideo(this, 'preview_video_edit')">
+                                <div class="text-center" style="margin-top:10px;">
+                                    <video id="preview_video_edit" controls
+                                        style="max-width:100%; height:150px; display:none; background:#000; border-radius:4px;"></video>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label>Testimonio Escrito:</label>
+                                <textarea name="testimonio_edit" id="testimonio_edit" class="form-control"
+                                    rows="3"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="btnGuardarEdicion">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="modalPreview" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header bg-info">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title"><span class="glyphicon glyphicon-eye-open"></span> Vista Previa de Evidencia</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title"><span class="glyphicon glyphicon-eye-open"></span> Vista Previa de Evidencia
+                </h4>
             </div>
             <div class="modal-body">
                 <div class="row text-center">
                     <div class="col-md-6">
                         <h5 class="text-info"><strong>ANTES</strong></h5>
-                        <img id="vista_img_a" src="" class="img-responsive img-thumbnail" style="margin: 0 auto; max-height: 300px;">
+                        <img id="vista_img_a" src="" class="img-responsive img-thumbnail"
+                            style="margin: 0 auto; max-height: 300px;">
                     </div>
                     <div class="col-md-6">
                         <h5 class="text-success"><strong>DESPUÉS</strong></h5>
-                        <img id="vista_img_d" src="" class="img-responsive img-thumbnail" style="margin: 0 auto; max-height: 300px;">
+                        <img id="vista_img_d" src="" class="img-responsive img-thumbnail"
+                            style="margin: 0 auto; max-height: 300px;">
                     </div>
                 </div>
                 <hr id="vista_hr_video" style="display:none;">
                 <div class="row text-center" id="vista_contenedor_video" style="display:none;">
                     <div class="col-md-12">
                         <h5><strong>VIDEO DEL PROCESO</strong></h5>
-                        <video id="vista_vid" controls style="max-width:100%; max-height:400px; background:#000; border-radius:4px; margin: 0 auto;"></video>
+                        <video id="vista_vid" controls
+                            style="max-width:100%; max-height:400px; background:#000; border-radius:4px; margin: 0 auto;"></video>
                     </div>
                 </div>
             </div>
@@ -209,19 +302,24 @@ $var_lista_exito = obtener_casos_exito();
 let tablaExitoDT;
 
 $(document).ready(function() {
-    // Inicialización y guardado de instancia DataTables
     try {
         if (typeof $.fn.DataTable !== 'undefined' && !$.fn.DataTable.isDataTable('#tabla_exito')) {
             tablaExitoDT = $('#tabla_exito').DataTable({
                 "order": [],
-                "language": { "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json" },
-                "columnDefs": [ { "orderable": false, "targets": [2, 6] } ]
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json"
+                },
+                "columnDefs": [{
+                    "orderable": false,
+                    "targets": [2, 6]
+                }]
             });
         }
-    } catch (error) { console.error("DataTables Warning: ", error); }
+    } catch (error) {
+        console.error("DataTables Warning: ", error);
+    }
 
-    // Detener video al cerrar el modal de vista previa
-    $('#modalPreview').on('hidden.bs.modal', function () {
+    $('#modalPreview').on('hidden.bs.modal', function() {
         let vid = document.getElementById("vista_vid");
         if (vid) {
             vid.pause();
@@ -243,7 +341,6 @@ function abrirPreview(url_a, url_d, url_v) {
         $('#vista_contenedor_video').hide();
         $('#vista_hr_video').hide();
     }
-
     $('#modalPreview').modal('show');
 }
 
@@ -251,6 +348,17 @@ function abrirModalExito() {
     $('#formExito')[0].reset();
     $('#preview_antes, #preview_despues, #preview_video').hide().attr('src', '');
     $('#modalExito').modal('show');
+}
+
+function abrirModalEditar(id, cliente, testimonio) {
+    $('#formEditarExito')[0].reset();
+    $('#preview_antes_edit, #preview_despues_edit, #preview_video_edit').hide().attr('src', '');
+
+    $('#id_historia_edit').val(id);
+    $('#cliente_nombre_edit').val(cliente);
+    $('#testimonio_edit').val(testimonio);
+
+    $('#modalEditarExito').modal('show');
 }
 
 function previewMedia(input, imgId) {
@@ -266,7 +374,7 @@ function previewMedia(input, imgId) {
 function previewVideo(input, videoId) {
     if (input.files && input.files[0]) {
         let file = input.files[0];
-        if(file.size > 20971520) {
+        if (file.size > 20971520) {
             alert("El video supera los 20MB permitidos.");
             input.value = "";
             $('#' + videoId).hide().attr('src', '');
@@ -277,7 +385,7 @@ function previewVideo(input, videoId) {
     }
 }
 
-$('#formExito').on('submit', function(e){
+$('#formExito').on('submit', function(e) {
     e.preventDefault();
     const btn = $('#btnGuardarExito');
     btn.prop('disabled', true).html('<i class="glyphicon glyphicon-refresh"></i> Subiendo Archivos...');
@@ -293,13 +401,11 @@ $('#formExito').on('submit', function(e){
         processData: false,
         dataType: 'json',
         success: function(r) {
-            if(r.exito) {
+            if (r.exito) {
                 if (tablaExitoDT) {
-                    // Integración nativa a DataTables usando API
                     let nodoHTML = $(r.html);
                     tablaExitoDT.row.add(nodoHTML).draw(false);
                 } else {
-                    // Fallback si no carga DT
                     $('#fila_vacia').remove();
                     $('#tabla_exito tbody').prepend(r.html);
                 }
@@ -314,15 +420,54 @@ $('#formExito').on('submit', function(e){
     });
 });
 
-function eliminarCaso(id) {
-    if(confirm('¿Eliminar permanentemente este caso y sus archivos?')) {
-        $.post('secciones/exito/acciones_exito.php', { accion: 'eliminar', id_historia: id }, function(r) {
-            if(r.exito) {
+$('#formEditarExito').on('submit', function(e) {
+    e.preventDefault();
+    const btn = $('#btnGuardarEdicion');
+    btn.prop('disabled', true).html('<i class="glyphicon glyphicon-refresh"></i> Actualizando...');
+
+    let formData = new FormData(this);
+    formData.append('accion', 'editar_caso');
+
+    $.ajax({
+        url: 'secciones/exito/acciones_exito.php',
+        type: 'POST',
+        data: formData,
+        contentType: false,
+        processData: false,
+        dataType: 'json',
+        success: function(r) {
+            if (r.exito) {
                 if (tablaExitoDT) {
-                    // Eliminación vía API DataTables
+                    tablaExitoDT.row($('#fila_exito_' + r.id)).remove().draw(false);
+                    let nodoHTML = $(r.html);
+                    tablaExitoDT.row.add(nodoHTML).draw(false);
+                } else {
+                    $('#fila_exito_' + r.id).replaceWith(r.html);
+                }
+                $('#modalEditarExito').modal('hide');
+                alert(r.mensaje);
+            } else {
+                alert(r.mensaje);
+            }
+        },
+        error: () => alert("Error de conexión al servidor."),
+        complete: () => btn.prop('disabled', false).html('Guardar Cambios')
+    });
+});
+
+function eliminarCaso(id) {
+    if (confirm('¿Eliminar permanentemente este caso y sus archivos?')) {
+        $.post('secciones/exito/acciones_exito.php', {
+            accion: 'eliminar',
+            id_historia: id
+        }, function(r) {
+            if (r.exito) {
+                if (tablaExitoDT) {
                     tablaExitoDT.row($('#fila_exito_' + r.id)).remove().draw(false);
                 } else {
-                    $('#fila_exito_' + r.id).fadeOut(400, function() { $(this).remove(); });
+                    $('#fila_exito_' + r.id).fadeOut(400, function() {
+                        $(this).remove();
+                    });
                 }
             } else {
                 alert(r.mensaje);
@@ -333,10 +478,14 @@ function eliminarCaso(id) {
 
 function cambiarEstado(id, estadoActual) {
     $('#btn_estado_' + id).prop('disabled', true);
-    
-    $.post('secciones/exito/acciones_exito.php', { accion: 'cambiar_estado', id_historia: id, estado: estadoActual }, function(r) {
-        if(r.exito) {
-            if(r.nuevo_estado === 1) {
+
+    $.post('secciones/exito/acciones_exito.php', {
+        accion: 'cambiar_estado',
+        id_historia: id,
+        estado: estadoActual
+    }, function(r) {
+        if (r.exito) {
+            if (r.nuevo_estado === 1) {
                 $('#td_estado_' + r.id).html("<span class='label label-success'>Activo</span>");
                 $('#btn_estado_' + r.id).attr('onclick', 'cambiarEstado(' + r.id + ', 1)');
             } else {

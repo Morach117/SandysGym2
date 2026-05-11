@@ -10,4 +10,5 @@
     <a class="list-group-item" href=".?s=promociones"><span class="glyphicon glyphicon-tags"></span> Promociones</a>
     <a class="list-group-item" href=".?s=preguntas"><span class="glyphicon glyphicon-question-sign"></span> Preguntas Frecuentes <?= $focus ?></a>
     <a class="list-group-item" href=".?s=exito"><span class="glyphicon glyphicon-star"></span> Casos de Éxito <?= $focus ?></a>
+    <a class="list-group-item" href=".?s=landing"><span class="glyphicon glyphicon-blackboard"></span> Landing Page <?= $focus ?></a>
 </div>

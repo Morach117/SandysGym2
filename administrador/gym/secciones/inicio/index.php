@@ -72,5 +72,12 @@
                 <span class="touch-class">Historias de transformación</span>
             </li>
         </a>
+        <a href=".?s=landing">
+            <li>
+                <span class="glyphicon glyphicon-blackboard"></span>
+                <h5><strong>Landing Page</strong></h5>
+                <span class="touch-class">Hero, Planes y Galería</span>
+            </li>
+        </a>
     </ul>
 </div>

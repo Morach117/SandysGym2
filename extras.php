@@ -30,7 +30,7 @@ $options = [
 $dsn = "mysql:host=$host;dbname=$db;charset=utf8mb4";
 
 echo "<body style='background-color: #050505; color: #ffffff; font-family: sans-serif; padding: 40px;'>";
-echo "<h2 style='color: #ef4444;'>⚙️ Instalador de Módulos (FAQ & Historias) - Sandys Gym</h2>";
+echo "<h2 style='color: #ef4444;'>⚙️ Instalador de Módulos (FAQ, Historias & Landing) - Sandys Gym</h2>";
 echo "<hr style='border-color: #333;'>";
 
 try {
@@ -79,6 +79,53 @@ try {
             throw $e;
         }
     }
+
+    // --- MÓDULOS DE LANDING PAGE ---
+    
+    // Tabla: san_landing_hero
+    $sql_hero = "
+        CREATE TABLE IF NOT EXISTS `san_landing_hero` (
+            `id_hero` INT(11) NOT NULL AUTO_INCREMENT,
+            `subtitulo` VARCHAR(100) NOT NULL,
+            `titulo_html` VARCHAR(255) NOT NULL,
+            `imagen_bg` VARCHAR(255) NOT NULL,
+            `estado` TINYINT(1) DEFAULT 1,
+            PRIMARY KEY (`id_hero`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    ";
+    $conn->exec($sql_hero);
+    echo "<p style='color: #10b981;'>✅ Tabla <b>'san_landing_hero'</b> verificada/creada.</p>";
+
+    // Tabla: san_landing_planes
+    $sql_planes = "
+        CREATE TABLE IF NOT EXISTS `san_landing_planes` (
+            `id_plan` INT(11) NOT NULL AUTO_INCREMENT,
+            `nombre` VARCHAR(100) NOT NULL,
+            `precio` DECIMAL(10,2) NOT NULL,
+            `frecuencia` VARCHAR(100) NOT NULL,
+            `beneficios_json` JSON NOT NULL, 
+            `url_boton` VARCHAR(255) DEFAULT 'index.php?page=inscribite',
+            `estado` TINYINT(1) DEFAULT 1,
+            `orden` INT(11) DEFAULT 0,
+            PRIMARY KEY (`id_plan`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    ";
+    $conn->exec($sql_planes);
+    echo "<p style='color: #10b981;'>✅ Tabla <b>'san_landing_planes'</b> verificada/creada.</p>";
+
+    // Tabla: san_landing_galeria
+    $sql_galeria = "
+        CREATE TABLE IF NOT EXISTS `san_landing_galeria` (
+            `id_galeria` INT(11) NOT NULL AUTO_INCREMENT,
+            `imagen_url` VARCHAR(255) NOT NULL,
+            `es_wide` TINYINT(1) DEFAULT 0,
+            `estado` TINYINT(1) DEFAULT 1,
+            `orden` INT(11) DEFAULT 0,
+            PRIMARY KEY (`id_galeria`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    ";
+    $conn->exec($sql_galeria);
+    echo "<p style='color: #10b981;'>✅ Tabla <b>'san_landing_galeria'</b> verificada/creada.</p>";
 
     echo "<br><div style='background-color: #1a1a1a; padding: 20px; border-left: 5px solid #F28123; border-radius: 5px;'>";
     echo "<h3 style='color: #F28123; margin-top: 0;'>⚠️ ALERTA DE SEGURIDAD</h3>";

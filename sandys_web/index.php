@@ -4,7 +4,7 @@ session_start();
 // --- Lógica de enrutamiento y seguridad ---
 $publicPages = [
     'home', 'team', 'services', 'contact', 'classes', 'about_us',
-    'login', 'registration', 'validate', 'reset_password', 'inscribite','success_stories'
+    'login', 'registration', 'validate', 'reset_password', 'inscribite','success_stories','faq'
     // 'gracias' y 'pago_fallido' movidas de aquí
 ];
 $privatePages = [

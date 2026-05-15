@@ -58,12 +58,12 @@ function eliminar_pago_socio($id_socio, $id_pago)
 
                     $query_resta = "UPDATE san_socios SET soc_mon_saldo = soc_mon_saldo - $monto_a_restar WHERE soc_id_socio = $id_socio";
                     if (!mysqli_query($conexion, $query_resta)) {
-                        throw new Exception("Error al restar el saldo del monedero.");
+                        throw new Exception("Error al restar el saldo del monedero: " . mysqli_error($conexion));
                     }
 
                     $query_eliminar_abono = "DELETE FROM san_prepago_detalle WHERE pred_id_pdetalle = $id_abono";
                     if (!mysqli_query($conexion, $query_eliminar_abono)) {
-                        throw new Exception("Error al eliminar el historial del abono.");
+                        throw new Exception("Error al eliminar el historial del abono: " . mysqli_error($conexion));
                     }
                 }
             }
@@ -84,32 +84,11 @@ function eliminar_pago_socio($id_socio, $id_pago)
 
         if ($resultado && mysqli_affected_rows($conexion) > 0) {
             
-            // --- 3. NUEVA LÓGICA: Recalcular y revertir vigencia del socio ---
-            $query_vigencia = "SELECT MAX(pag_fecha_fin) AS fecha_valida 
-                               FROM san_pagos 
-                               WHERE pag_id_socio = $id_socio 
-                               AND pag_id_empresa = $id_emp 
-                               AND pag_status = 'A'"; // Solo los activos
-            
-            $res_vigencia = mysqli_query($conexion, $query_vigencia);
-            $fila_vigencia = mysqli_fetch_assoc($res_vigencia);
-            
-            // Determinar la nueva fecha límite. Si no hay pagos, se vuelve NULL.
-            // NOTA: Ajustar 'soc_fecha_vencimiento' al nombre real de la columna en san_socios.
-            $nueva_fecha = $fila_vigencia['fecha_valida'] ? "'" . $fila_vigencia['fecha_valida'] . "'" : "NULL";
-            
-            $query_actualiza_socio = "UPDATE san_socios 
-                                      SET soc_fecha_vencimiento = $nueva_fecha 
-                                      WHERE soc_id_socio = $id_socio";
-            
-            if (!mysqli_query($conexion, $query_actualiza_socio)) {
-                throw new Exception("Error al recalcular la vigencia del socio.");
-            }
-
-            // Confirmamos todo
+            // Confirmamos todo. La tabla san_pagos ya tiene el status 'E'. 
+            // El cálculo de vigencia del frontend/backend deberá consultar los pagos con status 'A'.
             mysqli_commit($conexion);
             $exito['num'] = 1;
-            $exito['msj'] = "Pago cancelado, saldos y vigencia actualizados correctamente.";
+            $exito['msj'] = "Pago cancelado y saldos actualizados correctamente.";
         } else {
             throw new Exception("No se modificó el registro. Es posible que el pago ya estuviera eliminado.");
         }

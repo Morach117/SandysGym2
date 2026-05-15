@@ -127,7 +127,7 @@ function lista_pagos_socio()
 
 /**
  * Procesa el guardado de un nuevo pago de membresía para un socio principal y sus integrantes.
- * Incluye validaciones, manejo de códigos promocionales, descuento de socio, monedero, y envío de email.
+ * Incluye validaciones, manejo de códigos promocionales, descuento de socio, monedero mixto, y envío de email.
  */
 function guardar_pago_socio()
 {
@@ -201,7 +201,6 @@ function guardar_pago_socio()
                 $fila_promocion = mysqli_fetch_assoc($resultado_validar_codigo);
                 $descuento_total_porcentaje += floatval($fila_promocion['porcentaje_descuento']);
 
-                // Si es cupón de un solo uso (Individual), lo desactivamos
                 if ($fila_promocion['tipo_promocion'] == 'Individual') {
                     $query_actualizar_codigo = "UPDATE san_codigos SET status = '0' WHERE codigo_generado = ?";
                     $stmt_update = mysqli_prepare($conexion, $query_actualizar_codigo);
@@ -209,7 +208,6 @@ function guardar_pago_socio()
                     mysqli_stmt_execute($stmt_update);
                 }
                 
-                // Registro histórico de uso de cupones
                 $query_insertar_usado = "INSERT INTO san_codigos_usados (id_socio, codigo_generado, fecha_usado, id_empresa) VALUES (?, ?, ?, ?)";
                 $stmt_insert = mysqli_prepare($conexion, $query_insertar_usado);
                 mysqli_stmt_bind_param($stmt_insert, "issi", $id_socio, $codigo_promocion, $fecha_mov, $id_empresa);
@@ -232,30 +230,48 @@ function guardar_pago_socio()
         // Aplicar descuento total al importe
         $importe_final = $importe * (1 - ($descuento_total_porcentaje / 100));
 
-        // 3. Procesamiento del monedero
+        // 3. Procesamiento del monedero (AQUÍ ESTÁ LA CORRECCIÓN DE PAGO MIXTO)
         $pag_monedero = 0;
+        $pag_efectivo_calculado = 0;
+        $pag_tarjeta_calculado = 0;
+
         $incremento_monedero = 0;
         $saldo_actual = obtener_saldo_monedero($id_socio);
         $nuevo_saldo = $saldo_actual;
 
         if ($v_metodo_pago == 'M') { // Pago con monedero
-            if ($saldo_actual < $importe_final) {
-                throw new Exception("Saldo en monedero insuficiente. Saldo actual: $" . number_format($saldo_actual, 2));
+            if ($saldo_actual >= $importe_final) {
+                // El saldo cubre todo el pago
+                $pag_monedero = $importe_final;
+                $pag_efectivo_calculado = 0;
+            } else {
+                // El saldo NO cubre todo: se vacía el monedero y el resto va a efectivo
+                $pag_monedero = $saldo_actual;
+                $pag_efectivo_calculado = $importe_final - $saldo_actual;
             }
-            $pag_monedero = $importe_final;
-            $nuevo_saldo = $saldo_actual - $pag_monedero;
             
-            $query_update_saldo = "UPDATE san_socios SET soc_mon_saldo = ? WHERE soc_id_socio = ?";
-            $stmt_saldo = mysqli_prepare($conexion, $query_update_saldo);
-            mysqli_stmt_bind_param($stmt_saldo, "di", $nuevo_saldo, $id_socio);
-            if (!mysqli_stmt_execute($stmt_saldo)) {
-                throw new Exception("Error al actualizar el saldo del monedero.");
+            // Solo registramos movimiento si realmente se usó dinero del monedero
+            if ($pag_monedero > 0) {
+                $nuevo_saldo = $saldo_actual - $pag_monedero;
+                
+                $query_update_saldo = "UPDATE san_socios SET soc_mon_saldo = ? WHERE soc_id_socio = ?";
+                $stmt_saldo = mysqli_prepare($conexion, $query_update_saldo);
+                mysqli_stmt_bind_param($stmt_saldo, "di", $nuevo_saldo, $id_socio);
+                if (!mysqli_stmt_execute($stmt_saldo)) {
+                    throw new Exception("Error al actualizar el saldo del monedero.");
+                }
+
+                $detalle_retiro = ['pred_descripcion' => 'Pago de Membresía', 'pred_importe' => $pag_monedero, 'pred_saldo' => $nuevo_saldo, 'pred_movimiento' => 'R', 'pred_fecha' => $fecha_mov, 'pred_id_socio' => $id_socio, 'pred_id_usuario' => $id_usuario];
+                mysqli_query($conexion, construir_insert('san_prepago_detalle', $detalle_retiro));
             }
 
-            $detalle_retiro = ['pred_descripcion' => 'Pago de Membresía', 'pred_importe' => $pag_monedero, 'pred_saldo' => $nuevo_saldo, 'pred_movimiento' => 'R', 'pred_fecha' => $fecha_mov, 'pred_id_socio' => $id_socio, 'pred_id_usuario' => $id_usuario];
-            mysqli_query($conexion, construir_insert('san_prepago_detalle', $detalle_retiro));
-
+        } elseif ($v_metodo_pago == 'E') {
+            $pag_efectivo_calculado = $importe_final;
+        } elseif ($v_metodo_pago == 'T') {
+            $pag_tarjeta_calculado = $importe_final;
         }
+
+        // Lógica de abono de consorcio
         $query_consorcio = "SELECT con_mensualidad FROM san_consorcios WHERE con_id_consorcio = ?";
         $stmt_consorcio = mysqli_prepare($conexion, $query_consorcio);
         mysqli_stmt_bind_param($stmt_consorcio, "i", $id_consorcio);
@@ -263,15 +279,13 @@ function guardar_pago_socio()
         $res_consorcio = mysqli_stmt_get_result($stmt_consorcio);
         $porcentaje = ($fila = mysqli_fetch_assoc($res_consorcio)) ? floatval($fila['con_mensualidad']) : 0;
 
-        $id_prepago_abono = 0; // NUEVO: Inicializamos el identificador del incremento
+        $id_prepago_abono = 0; 
 
         if ($porcentaje > 0) {
             $incremento_monedero = round($importe_final * ($porcentaje / 100), 2);
             if ($incremento_monedero > 0) {
-                // Se suma el incremento al saldo ya actualizado (que puede haber sido deducido)
                 $nuevo_saldo += $incremento_monedero; 
 
-                // Actualiza el saldo en la BD por el ABONO
                 $query_update_bono = "UPDATE san_socios SET soc_mon_saldo = ? WHERE soc_id_socio = ?";
                 $stmt_saldo_inc = mysqli_prepare($conexion, $query_update_bono);
                 mysqli_stmt_bind_param($stmt_saldo_inc, "di", $nuevo_saldo, $id_socio);
@@ -289,10 +303,9 @@ function guardar_pago_socio()
                     'pred_id_usuario' => $id_usuario
                 ];
                 
-                // NUEVO: Ejecutamos el insert y capturamos el ID
                 $query_abono = construir_insert('san_prepago_detalle', $detalle_abono);
                 if (mysqli_query($conexion, $query_abono)) {
-                    $id_prepago_abono = mysqli_insert_id($conexion); // Captura el ID para usarlo en san_pagos
+                    $id_prepago_abono = mysqli_insert_id($conexion); 
                 } else {
                     throw new Exception("Error al registrar el detalle del incremento.");
                 }
@@ -306,12 +319,10 @@ function guardar_pago_socio()
 
         foreach ($socios_a_procesar as $socio_actual_id) {
             if ($socio_actual_id > 0) {
-                // Determinar el servicio y fechas para el socio actual
                 $id_servicio_actual = $id_servicio_orig;
                 $pag_fecha_ini_actual = $pag_fecha_ini_orig;
                 $pag_fecha_fin_actual = $pag_fecha_fin_orig;
                 
-                // Lógica de servicios para integrantes
                 if ($socio_actual_id == $id_integrante1) {
                     $id_servicio_actual = 125;
                     $pag_fecha_ini_actual = $pag_fecha_ini1;
@@ -326,21 +337,21 @@ function guardar_pago_socio()
                     $pag_fecha_fin_actual = $pag_fecha_fin_pareja;
                 }
 
-                // Configurar importes. Solo el socio principal tiene montos de pago.
+                // CORRECCIÓN AQUÍ: Se asignan los valores calculados dinámicamente arriba
                 if ($socio_actual_id == $id_socio) {
-                    $pago_efectivo = ($v_metodo_pago == 'E') ? $importe_final : 0;
-                    $pago_tarjeta = ($v_metodo_pago == 'T') ? $importe_final : 0;
+                    $pago_efectivo = $pag_efectivo_calculado; 
+                    $pago_tarjeta = $pag_tarjeta_calculado;
                     $pago_monedero_actual = $pag_monedero;
                     $importe_pago = round($importe_final, 2);
                     $codigo_a_guardar = $codigo_promocion; 
-                    $id_abono_a_guardar = $id_prepago_abono; // NUEVO: Vinculamos el ID del incremento
+                    $id_abono_a_guardar = $id_prepago_abono; 
                 } else {
                     $pago_efectivo = 0;
                     $pago_tarjeta = 0;
                     $pago_monedero_actual = 0;
                     $importe_pago = 0;
                     $codigo_a_guardar = '';
-                    $id_abono_a_guardar = 0; // NUEVO: Socios adicionales no llevan registro de abono
+                    $id_abono_a_guardar = 0; 
                 }
 
                 $datos_sql = [
@@ -357,7 +368,7 @@ function guardar_pago_socio()
                     'pag_id_usuario' => $id_usuario,
                     'pag_id_empresa' => $id_empresa,
                     'pag_codigo_promocion' => $codigo_a_guardar,
-                    'pag_id_prepago_abono' => $id_abono_a_guardar // NUEVO: Se guarda en la BD
+                    'pag_id_prepago_abono' => $id_abono_a_guardar 
                 ];
 
                 $query_pago = construir_insert('san_pagos', $datos_sql);
@@ -365,7 +376,6 @@ function guardar_pago_socio()
                     throw new Exception("No se pudo guardar el pago para el socio ID $socio_actual_id. Error: " . mysqli_error($conexion));
                 }
 
-                // Guardar el ID del pago principal para el ticket y el correo
                 if ($socio_actual_id == $id_socio) {
                     $id_pago_principal = mysqli_insert_id($conexion);
                     $token = hash_hmac('md5', $id_pago_principal, $gbl_key);
@@ -377,7 +387,7 @@ function guardar_pago_socio()
         mysqli_commit($conexion);
         $exito = ['num' => 1, 'msj' => 'Pago registrado correctamente.', 'IDS' => $id_socio, 'IDP' => $id_pago_principal, 'tkn' => $token];
         
-        // 6. Enviar correo (fuera de la transacción)
+        // 6. Enviar correo (Se mantiene exactamente igual...)
         if ($id_socio > 0 && ($correo_socio = obtener_correo_socio($id_socio))) {
             $nombre_socio = obtener_nombre_socio($id_socio);
             $asunto = "Confirmación de tu pago en Sandys Gym - Recibo No. " . $id_pago_principal;
@@ -444,12 +454,18 @@ function guardar_pago_socio()
             enviar_correo($correo_socio, $asunto, $mensaje);
         }
     } catch (Exception $e) {
-        mysqli_rollback($conexion); // Revertir cambios si algo falla
+        mysqli_rollback($conexion); 
         $exito = ['num' => 0, 'msj' => $e->getMessage()];
     }
 
     return $exito;
 }
+
+/**
+ * Procesa el guardado de un nuevo pago de membresía para un socio principal y sus integrantes.
+ * Incluye validaciones, manejo de códigos promocionales, descuento de socio, monedero, y envío de email.
+ */
+
 // =================================================================================
 // FUNCIONES AUXILIARES (Monedero, Referidos, etc.)
 // =================================================================================

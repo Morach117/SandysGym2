@@ -334,7 +334,7 @@
             <div class="row align-items-center">
                 <div class="col-lg-8 text-lg-left text-center mb-3 mb-lg-0">
                     <h2 style="font-size: 32px; font-weight: 800; text-transform: uppercase; margin: 0;">¿Listo para transformar tu vida?</h2>
-                    <p style="margin: 0; font-size: 18px; font-weight: 500;">Visítanos en Ocosingo y comienza hoy mismo.</p>
+                    <p style="margin: 0; font-size: 18px; font-weight: 500;">Visítanos en Tuxtla y comienza hoy mismo.</p>
                 </div>
                 <div class="col-lg-4 text-lg-right text-center">
                     <a href="index.php?page=inscribite" class="btn rounded-pill px-5 py-3" style="background-color: var(--bg-color); color: #ffffff; font-weight: 800; text-transform: uppercase; font-size: 16px;">
@@ -353,7 +353,7 @@ const mockData = {
         {
             imagen_desktop: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1920&auto=format&fit=crop",
             imagen_mobile: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=800&auto=format&fit=crop",
-            subtitulo: "SANDYS GYM OCOSINGO",
+            subtitulo: "SANDYS GYM Tuxtla",
             titulo_html: "DESCUBRE DE QUÉ<br><span style='color: var(--accent-orange);'>ESTÁS HECHO</span>"
         }
     ],

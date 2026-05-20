@@ -25,37 +25,54 @@ if (!$error_faq && isset($conn)) {
 ?>
 
 <style>
+    /* =========================================
+       VARIABLES GLOBALES
+       ========================================= */
+    :root {
+        --bg-color: #050505; 
+        --input-bg: #1a1a1a; 
+        --accent-red: #ef4444; 
+        --accent-green: #10b981; 
+        --accent-orange: #F28123;
+        --text-muted: #888888;
+    }
+
+    /* =========================================
+       SECCIÓN PRINCIPAL
+       ========================================= */
     .gym-faq-section {
-        background-color: #050505;
-        /* Incremento de 80px a 180px para despejar el navbar fijo */
-        padding-top: 180px; 
-        padding-bottom: 100px;
+        background-color: var(--bg-color);
+        padding-top: 140px; /* Homologado con Casos de Éxito */
+        padding-bottom: 80px;
         min-height: 80vh;
     }
-    .gym-page-title {
-        text-align: center;
-        color: #ffffff;
-        font-size: 42px;
-        font-weight: 800;
-        text-transform: uppercase;
-        margin-bottom: 60px;
-        letter-spacing: 1.5px;
-    }
+
     .gym-faq-container {
         max-width: 850px;
         margin: 0 auto;
     }
+
+    /* =========================================
+       ACORDEÓN FAQ (DETALLES)
+       ========================================= */
     .gym-faq-item {
-        background-color: #1a1a1a;
+        background: var(--input-bg);
         border: 1px solid #333333;
-        border-radius: 10px;
+        border-radius: 12px;
         margin-bottom: 16px;
         transition: all 0.3s ease;
+        overflow: hidden;
     }
+    
     .gym-faq-item:hover {
-        border-color: #ef4444;
-        box-shadow: 0 0 10px rgba(239, 68, 68, 0.1);
+        border-color: var(--accent-orange);
+        box-shadow: 0 5px 15px rgba(242, 129, 35, 0.1);
     }
+
+    details[open].gym-faq-item {
+        border-color: var(--accent-orange);
+    }
+
     .gym-faq-summary {
         padding: 20px 25px;
         cursor: pointer;
@@ -67,13 +84,20 @@ if (!$error_faq && isset($conn)) {
         color: #ffffff;
         list-style: none;
         text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: background-color 0.3s ease;
     }
+
     .gym-faq-summary::-webkit-details-marker {
-        display: none;
+        display: none; /* Oculta la flecha por defecto en Safari/Chrome */
     }
+
+    /* =========================================
+       ÍCONO Y CONTENIDO
+       ========================================= */
     .gym-faq-icon {
-        background-color: #050505;
-        color: #ef4444;
+        background-color: var(--bg-color);
+        color: var(--accent-orange);
         min-width: 40px;
         height: 40px;
         border-radius: 50%;
@@ -81,44 +105,59 @@ if (!$error_faq && isset($conn)) {
         justify-content: center;
         align-items: center;
         border: 1px solid #333333;
-        transition: transform 0.3s ease;
+        transition: all 0.3s ease;
     }
+
     details[open] .gym-faq-icon {
         transform: rotate(180deg);
-        border-color: #ef4444;
+        background-color: var(--accent-orange);
+        color: var(--bg-color);
+        border-color: var(--accent-orange);
     }
+
     .gym-faq-content {
         padding: 0 25px 25px 25px;
-        color: #b3b3b3;
+        color: #cccccc;
         line-height: 1.8;
         border-top: 1px solid #333333;
         margin-top: 5px;
         padding-top: 20px;
         font-size: 15px;
     }
+
+    /* =========================================
+       ESTADOS VACÍOS O DE ERROR
+       ========================================= */
     .gym-alert-box {
-        background-color: #1a1a1a;
+        background: var(--input-bg);
         border: 1px solid #333333;
         padding: 40px 20px;
-        border-radius: 10px;
+        border-radius: 12px;
         text-align: center;
     }
     .gym-alert-error {
-        border-color: #ef4444;
-        color: #ef4444;
+        border-color: var(--accent-red);
+        color: var(--accent-red);
     }
 </style>
+
 <section class="gym-faq-section spad">
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
-                <h2 class="gym-page-title">PREGUNTAS FRECUENTES</h2>
+                
+                <div class="section-title text-center mb-5">
+                    <h2 style="font-size: 42px; text-transform: uppercase; font-weight: 800; color: #ffffff; margin-bottom: 0;">
+                        Preguntas Frecuentes
+                    </h2>
+                </div>
+
                 <div class="gym-faq-container">
                     
                     <?php if ($error_faq): ?>
                         <div class="gym-alert-box gym-alert-error">
                             <i class="fa-solid fa-triangle-exclamation" style="font-size: 32px; margin-bottom: 15px;"></i>
-                            <h4 style="color: #ef4444; font-weight: bold; margin: 0;"><?= htmlspecialchars($error_faq) ?></h4>
+                            <h4 style="color: var(--accent-red); font-weight: bold; margin: 0;"><?= htmlspecialchars($error_faq) ?></h4>
                         </div>
                     <?php elseif (count($faqs) > 0): ?>
                         <?php foreach ($faqs as $faq): ?>
@@ -135,8 +174,8 @@ if (!$error_faq && isset($conn)) {
                             </details>
                         <?php endforeach; ?>
                     <?php else: ?>
-                        <div class="gym-alert-box" style="color: #a9a9a9;">
-                            <i class="fa-solid fa-clipboard-question" style="font-size: 40px; margin-bottom: 15px;"></i>
+                        <div class="gym-alert-box" style="color: var(--text-muted);">
+                            <i class="fa-solid fa-clipboard-question" style="font-size: 40px; margin-bottom: 15px; color: var(--accent-orange);"></i>
                             <h5 style="color: #ffffff; margin: 0;">No hay preguntas frecuentes registradas por el momento.</h5>
                         </div>
                     <?php endif; ?>

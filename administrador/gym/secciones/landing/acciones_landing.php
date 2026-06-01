@@ -14,36 +14,52 @@ $dir_galeria = $root_dir . '/sandys_web/assets/img/gallery/';
 if (!is_dir($dir_hero)) mkdir($dir_hero, 0755, true);
 if (!is_dir($dir_galeria)) mkdir($dir_galeria, 0755, true);
 
-// ================= HERO =================
+// ================= HERO (SOLO IMÁGENES) =================
 if ($accion === 'nuevo_hero' || $accion === 'editar_hero') {
-    $subtitulo = mysqli_real_escape_string($conexion, trim($_POST['subtitulo']));
-    $titulo_html = mysqli_real_escape_string($conexion, trim(strip_tags($_POST['titulo_html'], '<strong>')));
-    $img_query_part = "";
+    $update_desk = "";
+    $update_mob = "";
 
-    if (isset($_FILES['imagen_bg']) && $_FILES['imagen_bg']['error'] === UPLOAD_ERR_OK) {
-        $ext = strtolower(pathinfo($_FILES['imagen_bg']['name'], PATHINFO_EXTENSION));
-        $img_name = uniqid(time() . "_") . "." . $ext;
-        move_uploaded_file($_FILES['imagen_bg']['tmp_name'], $dir_hero . $img_name);
-        
-        if ($accion === 'editar_hero') {
-            $id = (int)$_POST['id'];
-            $res = mysqli_query($conexion, "SELECT imagen_bg FROM san_landing_hero WHERE id_hero = $id");
-            if($row = mysqli_fetch_assoc($res)){ if(file_exists($dir_hero . $row['imagen_bg'])) unlink($dir_hero . $row['imagen_bg']); }
-            $img_query_part = ", imagen_bg = '$img_name'";
-        } else {
-            $img_query_part = $img_name;
-        }
+    if (isset($_FILES['img_desktop']) && $_FILES['img_desktop']['error'] === UPLOAD_ERR_OK) {
+        $ext = strtolower(pathinfo($_FILES['img_desktop']['name'], PATHINFO_EXTENSION));
+        $desk_name = uniqid(time() . "_desk_") . "." . $ext;
+        move_uploaded_file($_FILES['img_desktop']['tmp_name'], $dir_hero . $desk_name);
+        $update_desk = $desk_name;
+    }
+
+    if (isset($_FILES['img_mobile']) && $_FILES['img_mobile']['error'] === UPLOAD_ERR_OK) {
+        $ext = strtolower(pathinfo($_FILES['img_mobile']['name'], PATHINFO_EXTENSION));
+        $mob_name = uniqid(time() . "_mob_") . "." . $ext;
+        move_uploaded_file($_FILES['img_mobile']['tmp_name'], $dir_hero . $mob_name);
+        $update_mob = $mob_name;
     }
 
     if ($accion === 'nuevo_hero') {
-        $sql = "INSERT INTO san_landing_hero (subtitulo, titulo_html, imagen_bg) VALUES ('$subtitulo', '$titulo_html', '$img_query_part')";
+        $sql = "INSERT INTO san_landing_hero (img_desktop, img_mobile) VALUES ('$update_desk', '$update_mob')";
+        if(mysqli_query($conexion, $sql)) echo json_encode(['exito' => true]);
+        else echo json_encode(['exito' => false, 'mensaje' => mysqli_error($conexion)]);
     } else {
         $id = (int)$_POST['id'];
-        $sql = "UPDATE san_landing_hero SET subtitulo = '$subtitulo', titulo_html = '$titulo_html' $img_query_part WHERE id_hero = $id";
+        $res = mysqli_query($conexion, "SELECT img_desktop, img_mobile FROM san_landing_hero WHERE id_hero = $id");
+        $row = mysqli_fetch_assoc($res);
+        $sql_updates = [];
+        
+        if (!empty($update_desk)) {
+            if(file_exists($dir_hero . $row['img_desktop']) && is_file($dir_hero . $row['img_desktop'])) unlink($dir_hero . $row['img_desktop']);
+            $sql_updates[] = "img_desktop = '$update_desk'";
+        }
+        if (!empty($update_mob)) {
+            if(file_exists($dir_hero . $row['img_mobile']) && is_file($dir_hero . $row['img_mobile'])) unlink($dir_hero . $row['img_mobile']);
+            $sql_updates[] = "img_mobile = '$update_mob'";
+        }
+        
+        if (count($sql_updates) > 0) {
+            $sql = "UPDATE san_landing_hero SET " . implode(", ", $sql_updates) . " WHERE id_hero = $id";
+            if(mysqli_query($conexion, $sql)) echo json_encode(['exito' => true]);
+            else echo json_encode(['exito' => false, 'mensaje' => mysqli_error($conexion)]);
+        } else {
+            echo json_encode(['exito' => true]);
+        }
     }
-
-    if(mysqli_query($conexion, $sql)) echo json_encode(['exito' => true]);
-    else echo json_encode(['exito' => false, 'mensaje' => mysqli_error($conexion)]);
     exit;
 }
 
@@ -56,10 +72,32 @@ if ($accion === 'estado_hero') {
 
 if ($accion === 'eliminar_hero') {
     $id = (int)$_POST['id'];
-    $res = mysqli_query($conexion, "SELECT imagen_bg FROM san_landing_hero WHERE id_hero = $id");
-    if($row = mysqli_fetch_assoc($res)){ if(file_exists($dir_hero . $row['imagen_bg'])) unlink($dir_hero . $row['imagen_bg']); }
+    $res = mysqli_query($conexion, "SELECT img_desktop, img_mobile FROM san_landing_hero WHERE id_hero = $id");
+    if($row = mysqli_fetch_assoc($res)){ 
+        if(file_exists($dir_hero . $row['img_desktop'])) unlink($dir_hero . $row['img_desktop']); 
+        if(file_exists($dir_hero . $row['img_mobile'])) unlink($dir_hero . $row['img_mobile']); 
+    }
     mysqli_query($conexion, "DELETE FROM san_landing_hero WHERE id_hero = $id");
     echo json_encode(['exito' => true]); exit;
+}
+
+// ================= COLORES (WIX STYLE) =================
+if ($accion === 'guardar_colores') {
+    $stmt = mysqli_prepare($conexion, "UPDATE san_landing_config SET color_bg=?, color_input=?, color_accent_orange=?, color_accent_green=?, color_accent_red=?, color_text_muted=? WHERE id=1");
+    mysqli_stmt_bind_param($stmt, "ssssss", 
+        $_POST['color_bg'], 
+        $_POST['color_input'], 
+        $_POST['color_accent_orange'], 
+        $_POST['color_accent_green'], 
+        $_POST['color_accent_red'], 
+        $_POST['color_text_muted']
+    );
+    
+    if (mysqli_stmt_execute($stmt)) echo json_encode(['exito' => true]);
+    else echo json_encode(['exito' => false, 'mensaje' => 'Error al guardar colores.']);
+    
+    mysqli_stmt_close($stmt);
+    exit;
 }
 
 // ================= PLANES =================
@@ -68,7 +106,6 @@ if ($accion === 'nuevo_plan' || $accion === 'editar_plan') {
     $precio = (float)$_POST['precio'];
     $frecuencia = mysqli_real_escape_string($conexion, trim($_POST['frecuencia']));
     $url_boton = mysqli_real_escape_string($conexion, trim($_POST['url_boton']));
-    
     $beneficios = array_filter($_POST['beneficios'], fn($val) => trim($val) !== '');
     $json = mysqli_real_escape_string($conexion, json_encode(array_values($beneficios), JSON_UNESCAPED_UNICODE));
 

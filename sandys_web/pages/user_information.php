@@ -1,6 +1,5 @@
 <?php
 // --- INCLUDES Y LÓGICA DE LA VISTA (HTML) ---
-// (Se eliminaron los headers de caché para evitar el error "headers already sent")
 include_once('conn.php');
 include_once('./api/select_data.php');
 
@@ -9,23 +8,19 @@ if (!$selSocioData) {
     exit;
 }
 
-// LÓGICA INFALIBLE PARA EL MES DE NACIMIENTO
 $fecha_bd = trim($selSocioData['soc_fecha_nacimiento'] ?? '');
 $mes_guardado = '';
 
 if (!empty($fecha_bd) && $fecha_bd != '0000-00-00' && $fecha_bd != '0000-00-00 00:00:00') {
-    // Usamos explode para evitar errores de strtotime con años "0000"
     $porciones = explode('-', $fecha_bd);
     if (count($porciones) >= 3) {
-        $mes_int = intval($porciones[1]); // Extraemos la posición del mes
-        // Validamos que sea un mes real (1 al 12)
+        $mes_int = intval($porciones[1]);
         if ($mes_int >= 1 && $mes_int <= 12) {
             $mes_guardado = str_pad($mes_int, 2, "0", STR_PAD_LEFT);
         }
     }
 }
 
-// LÓGICA PARA LA FOTO
 $foto_bd = !empty($selSocioData['soc_imagen']) ? $selSocioData['soc_imagen'] : '';
 $nombres_url = urlencode(trim($selSocioData['soc_nombres'] ?? 'Usuario'));
 $avatar_default = "https://ui-avatars.com/api/?name={$nombres_url}&background=ef4444&color=fff&size=150";
@@ -34,19 +29,14 @@ $foto_perfil = $avatar_default;
 
 if ($foto_bd !== '') {
     $foto_perfil = trim($foto_bd);
-    
-    // CORRECCIÓN: Se ajustó la ruta quitando el "../" para que la busque correctamente desde el index
     if (strpos($foto_perfil, '/') === false) {
         $foto_perfil = '../imagenes/avatar/' . $foto_perfil;
     }
-    
-    // Agregamos el timestamp para evitar que el navegador muestre una foto vieja guardada en caché
     $foto_perfil .= '?v=' . time();
 }
 ?>
 
-<link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;700&family=Oswald:wght@400;700&display=swap"
-    rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;700&family=Oswald:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
@@ -230,7 +220,7 @@ body {
     color: #fff;
     border: none;
     padding: 16px;
-    border-radius: 12px;
+    border-radius: 50px;
     font-family: 'Oswald', sans-serif;
     font-size: 18px;
     text-transform: uppercase;
@@ -267,7 +257,6 @@ body {
         max-width: 350px;
         margin: 0 auto;
         display: block;
-        border-radius: 50px;
     }
 }
 </style>
@@ -286,21 +275,17 @@ body {
                 </div>
 
                 <form id="editarPerfilForm" method="POST" enctype="multipart/form-data">
-                    <input type="hidden" name="id_socio"
-                        value="<?= htmlspecialchars($selSocioData['soc_id_socio'] ?? '') ?>">
+                    <input type="hidden" name="id_socio" value="<?= htmlspecialchars($selSocioData['soc_id_socio'] ?? '') ?>">
 
                     <div class="text-center mb-4">
                         <div class="foto-container">
-                            <img id="previewFoto" src="<?= $foto_perfil ?>" class="foto-perfil-img" alt="Foto de perfil"
-                                onerror="this.src='<?= $avatar_default ?>'">
+                            <img id="previewFoto" src="<?= $foto_perfil ?>" class="foto-perfil-img" alt="Foto de perfil" onerror="this.src='<?= $avatar_default ?>'">
                             <label for="fotoInput" class="btn-camara">
                                 <i class="fas fa-camera"></i>
                             </label>
-                            <input type="file" id="fotoInput" name="foto_perfil" accept="image/*" capture="environment"
-                                class="d-none" onchange="previewImage(event)">
+                            <input type="file" id="fotoInput" name="foto_perfil" accept="image/jpeg, image/png, image/webp" class="d-none" onchange="previewImage(event)">
                         </div>
-                        <p class="text-muted mt-2 small" style="color: #aaa;">Toca la cámara para subir una foto o tomar
-                            una selfie</p>
+                        <p class="text-muted mt-2 small" style="color: #aaa;">Toca la cámara para subir una foto o tomar una selfie</p>
                     </div>
 
                     <div class="profile-card">
@@ -312,29 +297,21 @@ body {
                             <div class="row">
                                 <div class="col-md-6 form-group mb-4">
                                     <label>Nombres *</label>
-                                    <input type="text" name="nombres" class="form-control"
-                                        value="<?= htmlspecialchars($selSocioData['soc_nombres'] ?? '') ?>" required>
+                                    <input type="text" name="nombres" class="form-control" value="<?= htmlspecialchars($selSocioData['soc_nombres'] ?? '') ?>" required>
                                 </div>
                                 <div class="col-md-6 form-group mb-4">
                                     <label>Apellido Paterno *</label>
-                                    <input type="text" name="ap_paterno" class="form-control"
-                                        value="<?= htmlspecialchars($selSocioData['soc_apepat'] ?? '') ?>" required>
+                                    <input type="text" name="ap_paterno" class="form-control" value="<?= htmlspecialchars($selSocioData['soc_apepat'] ?? '') ?>" required>
                                 </div>
                                 <div class="col-md-6 form-group mb-4">
                                     <label>Apellido Materno</label>
-                                    <input type="text" name="ap_materno" class="form-control"
-                                        value="<?= htmlspecialchars($selSocioData['soc_apemat'] ?? '') ?>"
-                                        placeholder="Opcional">
+                                    <input type="text" name="ap_materno" class="form-control" value="<?= htmlspecialchars($selSocioData['soc_apemat'] ?? '') ?>" placeholder="Opcional">
                                 </div>
                                 <div class="col-md-6 form-group mb-4">
                                     <label>Género *</label>
                                     <select name="genero" class="form-control" required>
-                                        <option value="Masculino"
-                                            <?= (($selSocioData['soc_genero'] ?? '') == 'Masculino') ? 'selected' : '' ?>>
-                                            Masculino</option>
-                                        <option value="Femenino"
-                                            <?= (($selSocioData['soc_genero'] ?? '') == 'Femenino') ? 'selected' : '' ?>>
-                                            Femenino</option>
+                                        <option value="Masculino" <?= (($selSocioData['soc_genero'] ?? '') == 'Masculino') ? 'selected' : '' ?>>Masculino</option>
+                                        <option value="Femenino" <?= (($selSocioData['soc_genero'] ?? '') == 'Femenino') ? 'selected' : '' ?>>Femenino</option>
                                     </select>
                                 </div>
                                 <div class="col-md-12 form-group mb-0">
@@ -344,7 +321,6 @@ body {
                                     $meses = ["01"=>"Enero","02"=>"Febrero","03"=>"Marzo","04"=>"Abril","05"=>"Mayo","06"=>"Junio","07"=>"Julio","08"=>"Agosto","09"=>"Septiembre","10"=>"Octubre","11"=>"Noviembre","12"=>"Diciembre"];
                                     
                                     if ($mes_guardado !== ''): 
-                                        // SI YA TIENE MES: Mostramos un input bloqueado
                                         $nombre_mes = $meses[$mes_guardado] ?? '';
                                     ?>
                                     <input type="text" class="form-control" value="<?= $nombre_mes ?>" readonly>
@@ -358,8 +334,7 @@ body {
                                     </select>
                                     <?php endif; ?>
 
-                                    <small class="form-text"><i class="fas fa-info-circle mr-1"></i> Este dato es
-                                        permanente por seguridad de promociones.</small>
+                                    <small class="form-text"><i class="fas fa-info-circle mr-1"></i> Este dato es permanente por seguridad de promociones.</small>
                                 </div>
                             </div>
                         </div>
@@ -372,18 +347,15 @@ body {
                         </div>
                         <div class="card-body-custom">
                             <div class="row">
-                                <input type="hidden" name="direccion"
-                                    value="<?= htmlspecialchars($selSocioData['soc_direccion'] ?? '') ?>">
+                                <input type="hidden" name="direccion" value="<?= htmlspecialchars($selSocioData['soc_direccion'] ?? '') ?>">
 
                                 <div class="col-md-6 form-group mb-4">
                                     <label>WhatsApp / Celular *</label>
-                                    <input type="text" name="tel_cel" class="form-control"
-                                        value="<?= htmlspecialchars($selSocioData['soc_tel_cel'] ?? '') ?>" required>
+                                    <input type="text" name="tel_cel" class="form-control" value="<?= htmlspecialchars($selSocioData['soc_tel_cel'] ?? '') ?>" required>
                                 </div>
                                 <div class="col-md-6 form-group mb-4">
                                     <label>Correo Electrónico</label>
-                                    <input type="email" class="form-control"
-                                        value="<?= htmlspecialchars($selSocioData['soc_correo'] ?? '') ?>" readonly>
+                                    <input type="email" class="form-control" value="<?= htmlspecialchars($selSocioData['soc_correo'] ?? '') ?>" readonly>
                                 </div>
                             </div>
                         </div>
@@ -398,18 +370,15 @@ body {
                             <div class="row">
                                 <div class="col-md-12 form-group mb-4">
                                     <label>A quién llamar</label>
-                                    <input type="text" name="emer_nombres" class="form-control"
-                                        value="<?= htmlspecialchars($selSocioData['soc_emer_nombres'] ?? '') ?>">
+                                    <input type="text" name="emer_nombres" class="form-control" value="<?= htmlspecialchars($selSocioData['soc_emer_nombres'] ?? '') ?>">
                                 </div>
                                 <div class="col-md-6 form-group mb-4">
                                     <label>Teléfono emergencia</label>
-                                    <input type="text" name="emer_tel" class="form-control"
-                                        value="<?= htmlspecialchars($selSocioData['soc_emer_tel'] ?? '') ?>">
+                                    <input type="text" name="emer_tel" class="form-control" value="<?= htmlspecialchars($selSocioData['soc_emer_tel'] ?? '') ?>">
                                 </div>
                                 <div class="col-md-6 form-group mb-0">
                                     <label>Parentesco</label>
-                                    <input type="text" name="emer_parentesco" class="form-control"
-                                        value="<?= htmlspecialchars($selSocioData['soc_emer_parentesco'] ?? '') ?>">
+                                    <input type="text" name="emer_parentesco" class="form-control" value="<?= htmlspecialchars($selSocioData['soc_emer_parentesco'] ?? '') ?>">
                                 </div>
                             </div>
                         </div>
@@ -420,7 +389,6 @@ body {
                             Actualizar mi Información
                         </button>
                     </div>
-
                 </form>
             </div>
         </div>
@@ -431,7 +399,6 @@ body {
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-// Mostrar vista previa de la imagen seleccionada
 function previewImage(event) {
     const reader = new FileReader();
     reader.onload = function() {
@@ -444,7 +411,6 @@ function previewImage(event) {
 }
 
 $(document).ready(function() {
-    // Escuchamos el evento 'submit' y bloqueamos otros repetidos
     $('#editarPerfilForm').off('submit').on('submit', function(e) {
         e.preventDefault();
         e.stopImmediatePropagation();
@@ -453,22 +419,8 @@ $(document).ready(function() {
         let originalText = btn.text();
         btn.text('Procesando...').prop('disabled', true);
 
-        // --- MAGIA ANTI-BASE64 ---
-        let formData = new FormData();
+        let formData = new FormData(this);
 
-        // 1. Añadimos solo los datos de texto
-        let formArray = $(this).serializeArray();
-        $.each(formArray, function(i, field) {
-            formData.append(field.name, field.value);
-        });
-
-        // 2. Extraemos el archivo físicamente y lo añadimos al paquete
-        let fotoInput = document.getElementById('fotoInput');
-        if (fotoInput && fotoInput.files.length > 0) {
-            formData.append('foto_perfil', fotoInput.files[0]);
-        }
-
-        // Realizamos la solicitud AJAX al PHP de recompensa
         $.ajax({
             url: 'api/update_profile_reward.php',
             type: 'POST',
@@ -500,9 +452,8 @@ $(document).ready(function() {
                     });
                 }
             },
-            error: function(xhr, status, error) {
+            error: function(xhr) {
                 btn.text(originalText).prop('disabled', false);
-
                 let errorMsg = 'Error de red o de servidor.';
                 try {
                     let response = JSON.parse(xhr.responseText);

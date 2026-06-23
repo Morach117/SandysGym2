@@ -1,18 +1,20 @@
 <?php
 // api/update_profile_reward.php
 
-// Evitamos que los errores nativos rompan la respuesta JSON
+ob_start();
 ini_set('display_errors', 0); 
 error_reporting(E_ALL);
 
-// Aumentamos la memoria para que soporte procesar fotos de celulares modernos (12MP - 48MP)
-ini_set('memory_limit', '256M'); 
-
-header('Content-Type: application/json');
+// Incrementar límite de memoria a 512M para decodificar fotos de celulares de gama alta (>48MP)
+ini_set('memory_limit', '512M'); 
 
 require_once __DIR__ . '/../conn.php'; 
 
+$response = ['status' => 'error', 'message' => 'Error general'];
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    ob_clean();
+    header('Content-Type: application/json');
     echo json_encode(['status' => 'error', 'message' => 'Método no permitido']);
     exit;
 }
@@ -35,16 +37,14 @@ try {
     if ($idSocio <= 0) throw new Exception("ID de socio inválido.");
 
     // ---------------------------------------------------------
-    // PROCESAR FOTO Y CONVERTIR A JPG
+    // PROCESAR FOTO Y CONVERTIR A JPG CON REDIMENSIONAMIENTO
     // ---------------------------------------------------------
     $nombreArchivoFinal = null;
 
-    // Verificamos si se envió un archivo de foto
-    if (isset($_FILES['foto_perfil']) && $_FILES['foto_perfil']['name'] !== '') {
+    if (isset($_FILES['foto_perfil']) && $_FILES['foto_perfil']['error'] !== UPLOAD_ERR_NO_FILE) {
         
         $uploadError = $_FILES['foto_perfil']['error'];
         
-        // Si hay error al subir, lanzamos la excepción en lugar de ignorarlo
         if ($uploadError !== UPLOAD_ERR_OK) {
             $erroresUpload = [
                 UPLOAD_ERR_INI_SIZE   => 'La foto es demasiado pesada y supera el límite del servidor.',
@@ -57,68 +57,97 @@ try {
             throw new Exception($mensajeError);
         }
 
-        $directorioDestino = __DIR__ . '/../../imagenes/avatar/';
-        if (!is_dir($directorioDestino)) mkdir($directorioDestino, 0777, true);
-
         $fileTmpPath = $_FILES['foto_perfil']['tmp_name'];
-        $imageInfo = getimagesize($fileTmpPath);
         
-        if ($imageInfo === false) {
-            throw new Exception("El archivo seleccionado no es una imagen válida.");
+        // Validación MIME estricta por seguridad (Anti-Webshell)
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mimeType = finfo_file($finfo, $fileTmpPath);
+        finfo_close($finfo);
+
+        $allowedMimes = ['image/jpeg', 'image/png', 'image/webp'];
+        if (!in_array($mimeType, $allowedMimes)) {
+            throw new Exception("Formato de imagen inválido o archivo corrupto.");
         }
 
-        $mimeType = $imageInfo['mime'];
-        
-        // --- NUEVO: Extraemos la orientación EXIF de la foto original ---
+        $directorioDestino = __DIR__ . '/../imagenes/avatar/';
+        if (!is_dir($directorioDestino)) {
+            mkdir($directorioDestino, 0777, true);
+        }
+
+        // Obtener dimensiones originales
+        list($origWidth, $origHeight) = getimagesize($fileTmpPath);
+        if (!$origWidth || !$origHeight) throw new Exception("La imagen está corrupta.");
+
+        // Extracción EXIF para rotación correcta (Solo JPEG soporta lectura EXIF nativa sin fallos en GD)
         $orientation = 1;
-        if (function_exists('exif_read_data')) {
+        if ($mimeType === 'image/jpeg' && function_exists('exif_read_data')) {
             $exif = @exif_read_data($fileTmpPath);
             if ($exif && isset($exif['Orientation'])) {
                 $orientation = $exif['Orientation'];
             }
         }
         
-        // Crear el recurso de imagen según el tipo original
         switch ($mimeType) {
-            case 'image/jpeg': $imgRes = imagecreatefromjpeg($fileTmpPath); break;
-            case 'image/png':  $imgRes = imagecreatefrompng($fileTmpPath);  break;
-            case 'image/webp': $imgRes = imagecreatefromwebp($fileTmpPath); break;
-            default:
-                throw new Exception("Formato no soportado. Por favor, sube una imagen en formato JPG, PNG o WEBP.");
+            case 'image/jpeg': $imgRes = @imagecreatefromjpeg($fileTmpPath); break;
+            case 'image/png':  $imgRes = @imagecreatefrompng($fileTmpPath);  break;
+            case 'image/webp': $imgRes = @imagecreatefromwebp($fileTmpPath); break;
+            default: $imgRes = false;
         }
 
-        if ($imgRes) {
-            // --- NUEVO: Corregir rotación basada en EXIF ---
-            if ($orientation != 1) {
-                $deg = 0;
-                switch ($orientation) {
-                    case 3: $deg = 180; break;
-                    case 6: $deg = 270; break; // El celular la giró 90 grados a la derecha
-                    case 8: $deg = 90; break;  // El celular la giró 90 grados a la izquierda
-                }
-                if ($deg) {
-                    $rotatedImg = imagerotate($imgRes, $deg, 0);
-                    if ($rotatedImg !== false) {
-                        imagedestroy($imgRes); // Destruir la original acostada
-                        $imgRes = $rotatedImg; // Quedarnos con la rotada
-                    }
+        if (!$imgRes) throw new Exception("Error al procesar la imagen nativa.");
+
+        // Aplicar rotación antes de redimensionar
+        if ($orientation != 1) {
+            $deg = 0;
+            switch ($orientation) {
+                case 3: $deg = 180; break;
+                case 6: $deg = 270; list($origWidth, $origHeight) = [$origHeight, $origWidth]; break; 
+                case 8: $deg = 90;  list($origWidth, $origHeight) = [$origHeight, $origWidth]; break;  
+            }
+            if ($deg) {
+                $rotatedImg = imagerotate($imgRes, $deg, 0);
+                if ($rotatedImg !== false) {
+                    imagedestroy($imgRes); 
+                    $imgRes = $rotatedImg; 
                 }
             }
-
-            // Nombre final siempre con extensión .jpg
-            $nombreArchivoFinal = $idSocio . ".jpg";
-            $rutaCompleta = $directorioDestino . $nombreArchivoFinal;
-
-            // CONVERSIÓN: Guardar como JPG con calidad del 80% (Comprime el tamaño físico)
-            imagejpeg($imgRes, $rutaCompleta, 80);
-            imagedestroy($imgRes); // Liberar memoria
-        } else {
-            throw new Exception("Error al intentar procesar los colores de la imagen.");
         }
+
+        // Redimensionar para optimizar peso (Máx 800px)
+        $maxWidth = 800;
+        $maxHeight = 800;
+        
+        $ratio = min($maxWidth / $origWidth, $maxHeight / $origHeight);
+        
+        if ($ratio < 1) {
+            $newWidth = round($origWidth * $ratio);
+            $newHeight = round($origHeight * $ratio);
+        } else {
+            $newWidth = $origWidth;
+            $newHeight = $origHeight;
+        }
+
+        $resizedImg = imagecreatetruecolor($newWidth, $newHeight);
+        
+        // Preservar transparencia para PNG/WEBP si no se guarda como JPG (Aquí forzamos JPG, rellenamos con blanco)
+        $white = imagecolorallocate($resizedImg, 255, 255, 255);
+        imagefill($resizedImg, 0, 0, $white);
+        
+        imagecopyresampled($resizedImg, $imgRes, 0, 0, 0, 0, $newWidth, $newHeight, $origWidth, $origHeight);
+
+        $nombreArchivoFinal = $idSocio . "_" . time() . ".jpg"; // Time agregado para invalidar caché
+        $rutaCompleta = $directorioDestino . $nombreArchivoFinal;
+
+        if (!imagejpeg($resizedImg, $rutaCompleta, 85)) {
+            throw new Exception("Error de permisos al escribir la foto finalizada.");
+        }
+
+        imagedestroy($imgRes);
+        imagedestroy($resizedImg);
     }
 
     // ---------------------------------------------------------
-    // LÓGICA DE RECOMPENSA
+    // LÓGICA DE RECOMPENSA Y ACTUALIZACIÓN
     // ---------------------------------------------------------
     $estanTodosLosDatos = (
         !empty($nombres) && !empty($apPaterno) && !empty($genero) &&
@@ -178,14 +207,19 @@ try {
 
     $conn->commit();
 
-    echo json_encode([
+    $response = [
         'status' => 'success', 
         'rewardGiven' => $darRecompensa,
         'message' => $darRecompensa ? '¡Felicidades! Ganaste $35 MXN.' : 'Datos actualizados con éxito.'
-    ]);
+    ];
 
 } catch (Exception $e) {
     if (isset($conn) && $conn->inTransaction()) $conn->rollBack();
-    echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    $response = ['status' => 'error', 'message' => $e->getMessage()];
 }
+
+ob_clean();
+header('Content-Type: application/json');
+echo json_encode($response);
+exit;
 ?>

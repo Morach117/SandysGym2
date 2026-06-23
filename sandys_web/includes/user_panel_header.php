@@ -1,12 +1,22 @@
 <?php
-// --- Lógica para obtener datos y estado de la membresía (sin cambios) ---
+// --- Lógica para obtener datos y estado de la membresía ---
 include_once(__DIR__ . '/../conn.php');
-include_once(__DIR__ . '/../api/select_data.php');
-
+include_once(__DIR__ . '/../api/select_data.php'); // Restaurado para garantizar la inyección de $selSocioData
 
 date_default_timezone_set('America/Mexico_City');
 $currentDate = new DateTime();
 $socioId = $selSocioData['soc_id_socio'];
+
+// Procesamiento simplificado y robusto de URL de imagen
+$fotoPerfil = null;
+if (!empty($selSocioData['soc_imagen'])) {
+    // Aislar exclusivamente el nombre del archivo (Ej: "5857.jpg") 
+    $nombreArchivo = basename($selSocioData['soc_imagen']);
+    
+    // Construir ruta relativa estándar desde /sandys_web/ hacia /imagenes/avatar/
+    $fotoPerfil = '../imagenes/avatar/' . $nombreArchivo;
+}
+
 $query = "SELECT pag_fecha_fin FROM san_pagos WHERE pag_id_socio = :socioId AND pag_status = 'A' ORDER BY pag_fecha_fin DESC LIMIT 1";
 $stmt = $conn->prepare($query);
 $stmt->bindParam(':socioId', $socioId, PDO::PARAM_INT);
@@ -22,7 +32,6 @@ if ($fechaFin) {
     $miembroActivo = false;
 }
 
-// Obtenemos la página actual para la clase 'active'
 $page = $_GET['page'] ?? 'user_home'; 
 ?>
 <!DOCTYPE html>
@@ -39,61 +48,75 @@ $page = $_GET['page'] ?? 'user_home';
     <link rel="stylesheet" href="./assets/css/style.css">
 
 <style>
-    /* Hacemos que el header siempre sea oscuro en el panel de usuario */
     .header-section { background: #000000; padding: 15px 0; border-bottom: 1px solid #1a1a1a; }
 
-    /* --- 1. MENÚ ESCRITORIO (Alineación y Centrado) --- */
+    /* --- 1. MENÚ ESCRITORIO --- */
     .nav-menu { display: flex; justify-content: flex-end; align-items: center; } 
     .nav-menu ul { display: flex; align-items: center; margin: 0; padding: 0; }
     .nav-menu ul li { list-style: none; display: flex; align-items: center; margin-left: 20px; }
     .nav-menu ul li a { 
         display: flex; align-items: center; gap: 8px;
         color: #ffffff; font-family: 'Oswald', sans-serif; font-size: 15px; 
-        text-transform: uppercase; letter-spacing: 0.5px; transition: 0.3s;
+        text-transform: uppercase; letter-spacing: 0.5px; transition: 0.3s; text-decoration: none;
     }
-    .nav-menu ul li.active a { color: #F28123; }
+    .nav-menu ul li.active > a { color: #F28123; }
     .nav-menu ul li a:hover { color: #F28123; }
     .nav-menu ul li a i { font-size: 16px; margin-top: -2px; }
-
     .nav-menu ul li a.disabled { color: #555 !important; pointer-events: none; cursor: not-allowed; }
     
-    .nav-menu ul li a.logout-btn {
-        background-color: #F28123; color: white !important;
-        padding: 8px 24px !important; border-radius: 6px;
-        font-weight: 600; margin-left: 15px; box-shadow: 0 4px 10px rgba(242, 129, 35, 0.2);
+    /* --- DROPDOWN DE USUARIO --- */
+    .user-dropdown { position: relative; display: flex; align-items: center; cursor: pointer; padding: 10px 0; }
+    .user-dropdown-toggle { display: flex; align-items: center; gap: 8px; color: #fff; transition: 0.3s; }
+    .user-dropdown-toggle img { 
+        width: 42px; height: 42px; border-radius: 50%; 
+        object-fit: cover; border: 2px solid #F28123; 
+        background-color: #1a1a1a; 
     }
-    .nav-menu ul li a.logout-btn:hover { background-color: #d46c1a; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(242, 129, 35, 0.4); }
+    .user-dropdown-toggle .fa-user-circle { font-size: 42px; color: #F28123; }
+    .user-dropdown:hover .user-dropdown-toggle { opacity: 0.8; }
+    
+    .user-dropdown-menu { 
+        position: absolute; top: 100%; right: 0; background: #1a1a1a; 
+        min-width: 200px; border-radius: 8px; padding: 10px 0; 
+        box-shadow: 0 4px 15px rgba(0,0,0,0.6); opacity: 0; visibility: hidden; 
+        transform: translateY(10px); transition: 0.3s ease; z-index: 1000; border: 1px solid #333;
+    }
+    .user-dropdown:hover .user-dropdown-menu { opacity: 1; visibility: visible; transform: translateY(0); }
+    
+    .user-dropdown-menu a { 
+        display: flex; padding: 12px 20px; color: #fff; font-family: 'Oswald', sans-serif; 
+        font-size: 14px; text-decoration: none; transition: 0.2s; gap: 10px; width: 100%;
+    }
+    .user-dropdown-menu a i { width: 20px; text-align: center; color: #888; }
+    .user-dropdown-menu a:hover { background: #050505; color: #F28123; padding-left: 25px; }
+    .user-dropdown-menu a:hover i { color: #F28123; }
+    
+    .user-dropdown-menu hr { border-color: #333; margin: 5px 0; }
+    
+    .user-dropdown-menu a.logout-link { color: #ef4444; }
+    .user-dropdown-menu a.logout-link i { color: #ef4444; }
+    .user-dropdown-menu a.logout-link:hover { background: #ef4444; color: #fff; }
+    .user-dropdown-menu a.logout-link:hover i { color: #fff; }
 
-
-    /* --- 2. MENÚ LATERAL MÓVIL (DARK MODE COMPLETO) --- */
+    /* --- 2. MENÚ LATERAL MÓVIL --- */
     .slicknav_menu { display: none !important; }
 
-    /* 🔥 CORRECCIÓN: Ocultar forzosamente el menú móvil en PC 🔥 */
     @media (min-width: 992px) {
         .offcanvas-menu-wrapper,
-        .offcanvas-menu-overlay {
-            display: none !important;
-        }
+        .offcanvas-menu-overlay { display: none !important; }
     }
 
     .offcanvas-menu-wrapper {
-        background-color: #121212 !important; 
-        border-left: 1px solid #222;
-        padding: 40px 30px; 
-        overflow-y: auto;
+        background-color: #121212 !important; border-left: 1px solid #222;
+        padding: 40px 30px; overflow-y: auto;
     }
     
-    /* Solo aplicamos Flex cuando el menú está abierto en el celular */
     .offcanvas-menu-wrapper.show-offcanvas-menu-wrapper,
-    .offcanvas-menu-wrapper.active {
-        display: flex !important; 
-        flex-direction: column;
-    }
+    .offcanvas-menu-wrapper.active { display: flex !important; flex-direction: column; }
     
     .canvas-header {
         display: flex; flex-direction: column; align-items: center;
-        margin-bottom: 30px; padding-bottom: 20px;
-        border-bottom: 1px solid #222; 
+        margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #222; 
     }
 
     .canvas-close { align-self: flex-end; cursor: pointer; margin-bottom: 15px; }
@@ -119,7 +142,7 @@ $page = $_GET['page'] ?? 'user_home';
         font-size: 17px; padding: 18px 10px; text-transform: uppercase;
         text-decoration: none; transition: 0.3s;
     }
-    .custom-mobile-menu ul li.active a { color: #F28123 !important; }
+    .custom-mobile-menu ul li.active > a { color: #F28123 !important; }
     .custom-mobile-menu ul li a:hover { color: #F28123 !important; padding-left: 15px; background: rgba(255,255,255,0.02); }
     .custom-mobile-menu ul li a i { font-size: 18px; width: 25px; text-align: center; color: #777; transition: 0.3s; }
     .custom-mobile-menu ul li.active a i, .custom-mobile-menu ul li a:hover i { color: #F28123; }
@@ -130,13 +153,13 @@ $page = $_GET['page'] ?? 'user_home';
     .logout-mobile-container { margin-top: auto; padding-top: 10px; }
     .logout-mobile-btn {
         display: flex; justify-content: center; align-items: center; gap: 10px;
-        background-color: rgba(242, 129, 35, 0.1); color: #F28123 !important;
+        background-color: rgba(239, 68, 68, 0.1); color: #ef4444 !important;
         padding: 15px !important; border-radius: 8px;
-        border: 1px solid rgba(242, 129, 35, 0.3); font-weight: bold;
+        border: 1px solid rgba(239, 68, 68, 0.3); font-weight: bold;
         font-family: 'Oswald', sans-serif; text-transform: uppercase; font-size: 17px;
         text-decoration: none; transition: 0.3s; width: 100%;
     }
-    .logout-mobile-btn:hover { background-color: #F28123; color: #fff !important; text-decoration: none; }
+    .logout-mobile-btn:hover { background-color: #ef4444; color: #fff !important; text-decoration: none; }
 
     .canvas-open { color: #fff; font-size: 26px; cursor: pointer; }
 </style>
@@ -146,14 +169,26 @@ $page = $_GET['page'] ?? 'user_home';
 
     <div class="offcanvas-menu-overlay"></div>
     <div class="offcanvas-menu-wrapper">
-        
         <div class="canvas-header">
             <div class="canvas-close">
                 <i class="fa-solid fa-xmark"></i> 
             </div>
+            
+            <div class="mobile-user-profile" style="text-align: center; margin-bottom: 25px; width: 100%;">
+                <?php if ($fotoPerfil): ?>
+                    <img src="<?php echo htmlspecialchars($fotoPerfil, ENT_QUOTES, 'UTF-8'); ?>" alt="" 
+                         style="width: 75px; height: 75px; border-radius: 50%; border: 2px solid #F28123; object-fit: cover;"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                    <i class="fas fa-user-circle" style="display:none; font-size: 75px; color: #F28123;"></i>
+                <?php else: ?>
+                    <i class="fas fa-user-circle" style="font-size: 75px; color: #F28123;"></i>
+                <?php endif; ?>
+                <div style="color: #fff; font-family: 'Oswald', sans-serif; font-size: 16px; margin-top: 10px; letter-spacing: 1px;">MI CUENTA</div>
+            </div>
+
             <div class="canvas-social">
                 <a href="https://www.facebook.com/gymsandy" target="_blank" class="social-icon"><i class="fa-brands fa-facebook-f"></i></a>
-                <a href="https://www.instagram.com/sandysgym?igsh=MXU0c3NrNWZjZzMzYw==" target="_blank" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
+                <a href="https://www.instagram.com/sandysgym" target="_blank" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
                 <a href="https://www.tiktok.com/@sandysgym" target="_blank" class="social-icon"><i class="fa-brands fa-tiktok"></i></a>
             </div>
         </div>
@@ -173,9 +208,6 @@ $page = $_GET['page'] ?? 'user_home';
                     <a href="index.php?page=user_rutina" class="<?php echo !$miembroActivo ? 'disabled' : ''; ?>">
                         <i class="fas fa-dumbbell"></i> Rutinas
                     </a>
-                </li>
-                <li class="<?php echo ($page == 'user_information') ? 'active' : ''; ?>">
-                    <a href="index.php?page=user_information"><i class="fas fa-user-edit"></i> Mi Perfil</a>
                 </li>
                 <li class="<?php echo ($page == 'user_calculator') ? 'active' : ''; ?>">
                     <a href="index.php?page=user_calculator"><i class="fas fa-calculator"></i> IMC</a>
@@ -218,16 +250,27 @@ $page = $_GET['page'] ?? 'user_home';
                                     <i class="fas fa-dumbbell"></i> Rutinas
                                 </a>
                             </li>
-                            <li class="<?php echo ($page == 'user_information') ? 'active' : ''; ?>">
-                                <a href="index.php?page=user_information"><i class="fas fa-user-edit"></i> Mi Perfil</a>
-                            </li>
                             <li class="<?php echo ($page == 'user_calculator') ? 'active' : ''; ?>">
                                 <a href="index.php?page=user_calculator"><i class="fas fa-calculator"></i> IMC</a>
                             </li>
-                            <li>
-                                <a href="./api/logout.php" class="logout-btn">
-                                    <i class="fas fa-sign-out-alt"></i> Salir
-                                </a>
+                            
+                            <li class="user-dropdown">
+                                <div class="user-dropdown-toggle">
+                                    <?php if ($fotoPerfil): ?>
+                                        <img src="<?php echo htmlspecialchars($fotoPerfil, ENT_QUOTES, 'UTF-8'); ?>" alt="" 
+                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                                        <i class="fas fa-user-circle" style="display:none;"></i>
+                                    <?php else: ?>
+                                        <i class="fas fa-user-circle"></i>
+                                    <?php endif; ?>
+                                    <i class="fas fa-chevron-down" style="font-size: 11px;"></i>
+                                </div>
+                                <div class="user-dropdown-menu">
+                                    <a href="index.php?page=user_information"><i class="fas fa-user-edit"></i> Mi Perfil</a>
+                                    <a href="index.php?page=user_monedero"><i class="fas fa-wallet"></i> Monedero</a>
+                                    <hr>
+                                    <a href="./api/logout.php" class="logout-link"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+                                </div>
                             </li>
                         </ul>
                     </nav>

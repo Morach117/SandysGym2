@@ -57,10 +57,11 @@ $nombresGeneros = [1 => 'Hombre', 2 => 'Mujer'];
 $rutinaPorGrupo = [];
 
 try {
+    // 🔥 CORRECCIÓN: Se agregó e.id_ejercicio a la selección
     $sql = "SELECT
                 gm.id_grupo, gm.nombre_grupo,
                 re.orden_ejercicio, re.series, re.repeticiones, re.descanso_seg,
-                e.nombre_ejercicio, e.descripcion, e.video_url, e.poster_url, e.recomendaciones
+                e.id_ejercicio, e.nombre_ejercicio, e.descripcion, e.video_url, e.poster_url, e.recomendaciones
             FROM rutina_ejercicios re
             INNER JOIN ejercicios e ON re.id_ejercicio = e.id_ejercicio
             INNER JOIN grupos_musculares gm ON re.id_grupo_muscular = gm.id_grupo
@@ -83,6 +84,7 @@ try {
             ];
         }
         $rutinaPorGrupo[$idGrupo]['ejercicios'][] = [
+            'id_ejercicio' => $fila['id_ejercicio'], // 🔥 CORRECCIÓN: Ahora pasamos el ID al JSON
             'nombre' => $fila['nombre_ejercicio'],
             'descripcion' => $fila['descripcion'],
             'video_url' => $fila['video_url'],

@@ -6,6 +6,7 @@
 //  - Pausa (no dispose) al cambiar de pestaña
 //  - Dispose solo al re-render completo (cambio de nivel/género)
 //  - Cola con concurrencia limitada para inicializaciones simultáneas
+//  - Gamificación: Inyección de botones "Registrar Serie" y "1RM"
 // -----------------------------------------
 
 /* ================== Config ================== */
@@ -38,7 +39,7 @@ function spinnerHTML() {
       <div class="spinner-border text-warning" role="status" style="width:3rem;height:3rem;">
         <span class="sr-only">Cargando...</span>
       </div>
-      <p class="mt-3 text-muted">Obteniendo tus ejercicios...</p>
+      <p class="mt-3 text-muted">Preparando interfaz...</p>
     </div>`;
 }
 
@@ -206,6 +207,23 @@ function renderExercises(grupo) {
         ${ejercicio.recomendaciones ? `<h5><i class="fas fa-check-circle"></i> Recomendaciones</h5><p>${escapeHtml(ejercicio.recomendaciones)}</p>` : ''}
       </div>`;
 
+        // =====================================
+        // 🔥 MAGIA AQUÍ: Atrapa el ID sin importar cómo se llame en la BD
+        // =====================================
+        const idCorrecto = ejercicio.id_ejercicio || ejercicio.id || '';
+
+        const actionBar = `
+        <div class="action-bar" style="margin-top: 25px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+            <button type="button" class="btn-action-pill btn-orange log-progress-btn" 
+                    data-ejercicio-id="${escapeHtml(idCorrecto)}" 
+                    data-ejercicio-nombre="${escapeHtml(ejercicio.nombre)}">
+                <i class="fa-solid fa-fire"></i> Registrar Serie
+            </button>
+            <button type="button" class="btn-action-pill btn-dark calc-rm-btn">
+                <i class="fa-solid fa-calculator"></i> 1RM
+            </button>
+        </div>`;
+
         return `
       <div class="exercise-card">
         <div class="row">
@@ -214,7 +232,7 @@ function renderExercises(grupo) {
             <h4>${escapeHtml(ejercicio.nombre)}</h4>
             ${stats}
             ${guide}
-          </div>
+            ${actionBar} </div>
         </div>
       </div>`;
     }).join('');
@@ -312,6 +330,10 @@ function loadRoutine(level, gender) {
             return data;
         })
         .then((data) => {
+            // 🔥 Ocultar el spinner estático del HTML
+            const loaderState = document.getElementById('loaderState');
+            if (loaderState) loaderState.style.display = 'none';
+
             if (data && data.success && Array.isArray(data.rutinaPorGrupo)) {
                 routineTitle.textContent = `${data.nivel} - ${data.genero}`;
                 renderRoutineTabs(data.rutinaPorGrupo, routineContainer);

@@ -14,18 +14,14 @@ $dir_galeria = $root_dir . '/sandys_web/assets/img/gallery/';
 if (!is_dir($dir_hero)) mkdir($dir_hero, 0755, true);
 if (!is_dir($dir_galeria)) mkdir($dir_galeria, 0755, true);
 
-// ================= HERO (SOLO IMÁGENES) =================
 if ($accion === 'nuevo_hero' || $accion === 'editar_hero') {
-    $update_desk = "";
-    $update_mob = "";
-
+    $update_desk = ""; $update_mob = "";
     if (isset($_FILES['img_desktop']) && $_FILES['img_desktop']['error'] === UPLOAD_ERR_OK) {
         $ext = strtolower(pathinfo($_FILES['img_desktop']['name'], PATHINFO_EXTENSION));
         $desk_name = uniqid(time() . "_desk_") . "." . $ext;
         move_uploaded_file($_FILES['img_desktop']['tmp_name'], $dir_hero . $desk_name);
         $update_desk = $desk_name;
     }
-
     if (isset($_FILES['img_mobile']) && $_FILES['img_mobile']['error'] === UPLOAD_ERR_OK) {
         $ext = strtolower(pathinfo($_FILES['img_mobile']['name'], PATHINFO_EXTENSION));
         $mob_name = uniqid(time() . "_mob_") . "." . $ext;
@@ -44,11 +40,11 @@ if ($accion === 'nuevo_hero' || $accion === 'editar_hero') {
         $sql_updates = [];
         
         if (!empty($update_desk)) {
-            if(file_exists($dir_hero . $row['img_desktop']) && is_file($dir_hero . $row['img_desktop'])) unlink($dir_hero . $row['img_desktop']);
+            if(file_exists($dir_hero . $row['img_desktop'])) unlink($dir_hero . $row['img_desktop']);
             $sql_updates[] = "img_desktop = '$update_desk'";
         }
         if (!empty($update_mob)) {
-            if(file_exists($dir_hero . $row['img_mobile']) && is_file($dir_hero . $row['img_mobile'])) unlink($dir_hero . $row['img_mobile']);
+            if(file_exists($dir_hero . $row['img_mobile'])) unlink($dir_hero . $row['img_mobile']);
             $sql_updates[] = "img_mobile = '$update_mob'";
         }
         
@@ -81,26 +77,14 @@ if ($accion === 'eliminar_hero') {
     echo json_encode(['exito' => true]); exit;
 }
 
-// ================= COLORES (WIX STYLE) =================
 if ($accion === 'guardar_colores') {
     $stmt = mysqli_prepare($conexion, "UPDATE san_landing_config SET color_bg=?, color_input=?, color_accent_orange=?, color_accent_green=?, color_accent_red=?, color_text_muted=? WHERE id=1");
-    mysqli_stmt_bind_param($stmt, "ssssss", 
-        $_POST['color_bg'], 
-        $_POST['color_input'], 
-        $_POST['color_accent_orange'], 
-        $_POST['color_accent_green'], 
-        $_POST['color_accent_red'], 
-        $_POST['color_text_muted']
-    );
-    
+    mysqli_stmt_bind_param($stmt, "ssssss", $_POST['color_bg'], $_POST['color_input'], $_POST['color_accent_orange'], $_POST['color_accent_green'], $_POST['color_accent_red'], $_POST['color_text_muted']);
     if (mysqli_stmt_execute($stmt)) echo json_encode(['exito' => true]);
     else echo json_encode(['exito' => false, 'mensaje' => 'Error al guardar colores.']);
-    
-    mysqli_stmt_close($stmt);
-    exit;
+    mysqli_stmt_close($stmt); exit;
 }
 
-// ================= PLANES =================
 if ($accion === 'nuevo_plan' || $accion === 'editar_plan') {
     $nombre = mysqli_real_escape_string($conexion, trim($_POST['nombre']));
     $precio = (float)$_POST['precio'];
@@ -134,7 +118,6 @@ if ($accion === 'eliminar_plan') {
     echo json_encode(['exito' => true]); exit;
 }
 
-// ================= GALERÍA =================
 if ($accion === 'nueva_galeria' || $accion === 'editar_galeria') {
     $es_wide = isset($_POST['es_wide']) ? 1 : 0;
     $img_query_part = "";
@@ -179,6 +162,61 @@ if ($accion === 'eliminar_galeria') {
     if($row = mysqli_fetch_assoc($res)){ if(file_exists($dir_galeria . $row['imagen_url'])) unlink($dir_galeria . $row['imagen_url']); }
     mysqli_query($conexion, "DELETE FROM san_landing_galeria WHERE id_galeria = $id");
     echo json_encode(['exito' => true]); exit;
+}
+
+if ($accion === 'nueva_amenidad' || $accion === 'editar_amenidad') {
+    $icono = $_POST['icono']; $titulo = $_POST['titulo']; $descripcion = $_POST['descripcion'];
+    if ($accion === 'nueva_amenidad') {
+        $stmt = mysqli_prepare($conexion, "INSERT INTO san_landing_amenidades (icono, titulo, descripcion) VALUES (?, ?, ?)");
+        mysqli_stmt_bind_param($stmt, "sss", $icono, $titulo, $descripcion);
+    } else {
+        $id = (int)$_POST['id'];
+        $stmt = mysqli_prepare($conexion, "UPDATE san_landing_amenidades SET icono=?, titulo=?, descripcion=? WHERE id_amenidad=?");
+        mysqli_stmt_bind_param($stmt, "sssi", $icono, $titulo, $descripcion, $id);
+    }
+    if(mysqli_stmt_execute($stmt)) echo json_encode(['exito' => true]); else echo json_encode(['exito' => false, 'mensaje' => mysqli_stmt_error($stmt)]);
+    mysqli_stmt_close($stmt); exit;
+}
+
+if ($accion === 'estado_amenidad') {
+    $id = (int)$_POST['id'];
+    $nuevo = $_POST['estado'] == 1 ? 0 : 1;
+    mysqli_query($conexion, "UPDATE san_landing_amenidades SET estado = $nuevo WHERE id_amenidad = $id");
+    echo json_encode(['exito' => true]); exit;
+}
+
+if ($accion === 'eliminar_amenidad') {
+    $id = (int)$_POST['id'];
+    mysqli_query($conexion, "DELETE FROM san_landing_amenidades WHERE id_amenidad = $id");
+    echo json_encode(['exito' => true]); exit;
+}
+
+if ($accion === 'guardar_app_section') {
+    $app_titulo = $_POST['app_titulo']; $app_subtitulo = $_POST['app_subtitulo'];
+    $app_desc = $_POST['app_desc']; $app_btn_url = $_POST['app_btn_url'];
+    
+    $update_img = "";
+    if (isset($_FILES['app_imagen']) && $_FILES['app_imagen']['error'] === UPLOAD_ERR_OK) {
+        $ext = strtolower(pathinfo($_FILES['app_imagen']['name'], PATHINFO_EXTENSION));
+        $img_name = uniqid(time() . "_app_") . "." . $ext;
+        move_uploaded_file($_FILES['app_imagen']['tmp_name'], $dir_hero . $img_name);
+        
+        $res = mysqli_query($conexion, "SELECT app_imagen FROM san_landing_config WHERE id = 1");
+        if($row = mysqli_fetch_assoc($res)){ if(!empty($row['app_imagen']) && file_exists($dir_hero . $row['app_imagen'])) unlink($dir_hero . $row['app_imagen']); }
+        $update_img = ", app_imagen = '$img_name'";
+    }
+
+    $stmt = mysqli_prepare($conexion, "UPDATE san_landing_config SET app_titulo=?, app_subtitulo=?, app_desc=?, app_btn_url=? $update_img WHERE id=1");
+    mysqli_stmt_bind_param($stmt, "ssss", $app_titulo, $app_subtitulo, $app_desc, $app_btn_url);
+    if(mysqli_stmt_execute($stmt)) echo json_encode(['exito' => true]); else echo json_encode(['exito' => false, 'mensaje' => mysqli_stmt_error($stmt)]);
+    mysqli_stmt_close($stmt); exit;
+}
+
+if ($accion === 'guardar_cta_section') {
+    $stmt = mysqli_prepare($conexion, "UPDATE san_landing_config SET cta_titulo=?, cta_desc=?, cta_btn_url=? WHERE id=1");
+    mysqli_stmt_bind_param($stmt, "sss", $_POST['cta_titulo'], $_POST['cta_desc'], $_POST['cta_btn_url']);
+    if(mysqli_stmt_execute($stmt)) echo json_encode(['exito' => true]); else echo json_encode(['exito' => false, 'mensaje' => mysqli_stmt_error($stmt)]);
+    mysqli_stmt_close($stmt); exit;
 }
 
 echo json_encode(['exito' => false, 'mensaje' => 'Acción no válida.']);

@@ -12,7 +12,8 @@ function generar_filas($resultado, $tipo)
     $i = 1;
 
     while ($f = mysqli_fetch_assoc($resultado)) {
-        $id = (int) $f["id_{$tipo}"];
+        $id_key = "id_{$tipo}";
+        $id = (int) $f[$id_key];
         $estado = (int) $f['estado'];
         $estado_badge = ($estado === 1) ? "<span class='label label-success'>Activo</span>" : "<span class='label label-danger'>Oculto</span>";
 
@@ -22,10 +23,8 @@ function generar_filas($resultado, $tipo)
         if ($tipo === 'hero') {
             $img_desk = htmlspecialchars($f['img_desktop'], ENT_QUOTES, 'UTF-8');
             $img_mob = htmlspecialchars($f['img_mobile'], ENT_QUOTES, 'UTF-8');
-
             $src_desk = (strpos($img_desk, 'http') === 0) ? $img_desk : "/sandys_web/assets/img/hero/{$img_desk}";
             $src_mob = (strpos($img_mob, 'http') === 0) ? $img_mob : "/sandys_web/assets/img/hero/{$img_mob}";
-
             $datos .= "<td>
                            <img src='{$src_desk}' style='height:40px; width:60px; object-fit:cover;' class='img-thumbnail' title='Desktop'>
                            <img src='{$src_mob}' style='height:40px; width:30px; object-fit:cover;' class='img-thumbnail' title='Mobile'>
@@ -40,6 +39,10 @@ function generar_filas($resultado, $tipo)
             $wide_badge = ((int) $f['es_wide'] === 1) ? "<span class='label label-info'>Wide</span>" : "<span class='label label-default'>Normal</span>";
             $datos .= "<td><img src='{$src_gal}' style='height:40px; object-fit:cover;' class='img-thumbnail'></td>
                        <td>{$wide_badge}</td>";
+        } elseif ($tipo === 'amenidad') {
+            $icono = htmlspecialchars($f['icono'], ENT_QUOTES, 'UTF-8');
+            $datos .= "<td><i class='{$icono} fa-2x text-info'></i> ({$icono})</td>
+                       <td>" . htmlspecialchars($f['titulo'], ENT_QUOTES, 'UTF-8') . "</td>";
         }
 
         $datos .= "<td id='td_estado_{$tipo}_{$id}'>{$estado_badge}</td>
@@ -58,6 +61,7 @@ function generar_filas($resultado, $tipo)
 $var_hero = generar_filas(mysqli_query($conexion, "SELECT * FROM san_landing_hero ORDER BY id_hero DESC"), 'hero');
 $var_planes = generar_filas(mysqli_query($conexion, "SELECT * FROM san_landing_planes ORDER BY orden ASC, precio ASC"), 'plan');
 $var_galeria = generar_filas(mysqli_query($conexion, "SELECT * FROM san_landing_galeria ORDER BY id_galeria DESC"), 'galeria');
+$var_amenidades = generar_filas(mysqli_query($conexion, "SELECT * FROM san_landing_amenidades ORDER BY id_amenidad ASC"), 'amenidad');
 
 $res_config = mysqli_query($conexion, "SELECT * FROM san_landing_config WHERE id = 1 LIMIT 1");
 $config_ui = mysqli_fetch_assoc($res_config);
@@ -69,75 +73,112 @@ $config_ui = mysqli_fetch_assoc($res_config);
         <hr />
 
         <ul class="nav nav-tabs" role="tablist">
-            <li role="presentation" class="active"><a href="#tab_hero" aria-controls="tab_hero" role="tab"
-                    data-toggle="tab">1. Hero (Carrusel)</a></li>
-            <li role="presentation"><a href="#tab_planes" aria-controls="tab_planes" role="tab" data-toggle="tab">2.
-                    Planes</a></li>
-            <li role="presentation"><a href="#tab_galeria" aria-controls="tab_galeria" role="tab" data-toggle="tab">3.
-                    Galería</a></li>
-            <li role="presentation"><a href="#tab_colores" aria-controls="tab_colores" role="tab"
-                    data-toggle="tab"><strong><span class="glyphicon glyphicon-tint"></span> Diseño
-                        (Colores)</strong></a></li>
-            <li role="presentation"><a href="#tab_preview" aria-controls="tab_preview" role="tab" data-toggle="tab"
-                    style="color: #F28123;"><strong><span class="glyphicon glyphicon-eye-open"></span> Vista Previa
-                        Live</strong></a></li>
+            <li role="presentation" class="active"><a href="#tab_hero" aria-controls="tab_hero" role="tab" data-toggle="tab">1. Hero</a></li>
+            <li role="presentation"><a href="#tab_planes" aria-controls="tab_planes" role="tab" data-toggle="tab">2. Planes</a></li>
+            <li role="presentation"><a href="#tab_galeria" aria-controls="tab_galeria" role="tab" data-toggle="tab">3. Galería</a></li>
+            <li role="presentation"><a href="#tab_amenidades" aria-controls="tab_amenidades" role="tab" data-toggle="tab">4. Amenidades</a></li>
+            <li role="presentation"><a href="#tab_secciones" aria-controls="tab_secciones" role="tab" data-toggle="tab">5. Textos (App/CTA)</a></li>
+            <li role="presentation"><a href="#tab_colores" aria-controls="tab_colores" role="tab" data-toggle="tab"><strong><span class="glyphicon glyphicon-tint"></span> Diseño (Colores)</strong></a></li>
+            <li role="presentation"><a href="#tab_preview" aria-controls="tab_preview" role="tab" data-toggle="tab" style="color: #F28123;"><strong><span class="glyphicon glyphicon-eye-open"></span> Vista Previa Live</strong></a></li>
         </ul>
 
         <div class="tab-content" style="margin-top: 20px;">
             <div role="tabpanel" class="tab-pane active" id="tab_hero">
-                <button class="btn btn-sm btn-primary mb-3" onclick="abrirModalNuevo('hero')"><span
-                        class="glyphicon glyphicon-plus"></span> Nuevo Hero</button>
+                <button class="btn btn-sm btn-primary mb-3" onclick="abrirModalNuevo('hero')"><span class="glyphicon glyphicon-plus"></span> Nuevo Hero</button>
                 <div class="table-responsive" style="margin-top: 15px;">
-                    <table class="table table-hover table-condensed table-striped" id="tabla_hero">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Imágenes (Desk/Mob)</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
+                    <table class="table table-hover table-condensed table-striped">
+                        <thead><tr><th>#</th><th>Imágenes (Desk/Mob)</th><th>Estado</th><th>Acciones</th></tr></thead>
                         <tbody><?= $var_hero ?></tbody>
                     </table>
                 </div>
             </div>
 
             <div role="tabpanel" class="tab-pane" id="tab_planes">
-                <button class="btn btn-sm btn-primary mb-3" onclick="abrirModalNuevo('plan')"><span
-                        class="glyphicon glyphicon-plus"></span> Nuevo Plan</button>
+                <button class="btn btn-sm btn-primary mb-3" onclick="abrirModalNuevo('plan')"><span class="glyphicon glyphicon-plus"></span> Nuevo Plan</button>
                 <div class="table-responsive" style="margin-top: 15px;">
-                    <table class="table table-hover table-condensed table-striped" id="tabla_plan">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Nombre</th>
-                                <th>Precio</th>
-                                <th>Frecuencia</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
+                    <table class="table table-hover table-condensed table-striped">
+                        <thead><tr><th>#</th><th>Nombre</th><th>Precio</th><th>Frecuencia</th><th>Estado</th><th>Acciones</th></tr></thead>
                         <tbody><?= $var_planes ?></tbody>
                     </table>
                 </div>
             </div>
 
             <div role="tabpanel" class="tab-pane" id="tab_galeria">
-                <button class="btn btn-sm btn-primary mb-3" onclick="abrirModalNuevo('galeria')"><span
-                        class="glyphicon glyphicon-plus"></span> Nueva Imagen</button>
+                <button class="btn btn-sm btn-primary mb-3" onclick="abrirModalNuevo('galeria')"><span class="glyphicon glyphicon-plus"></span> Nueva Imagen</button>
                 <div class="table-responsive" style="margin-top: 15px;">
-                    <table class="table table-hover table-condensed table-striped" id="tabla_galeria">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Imagen</th>
-                                <th>Formato Wide</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
+                    <table class="table table-hover table-condensed table-striped">
+                        <thead><tr><th>#</th><th>Imagen</th><th>Formato Wide</th><th>Estado</th><th>Acciones</th></tr></thead>
                         <tbody><?= $var_galeria ?></tbody>
                     </table>
+                </div>
+            </div>
+
+            <div role="tabpanel" class="tab-pane" id="tab_amenidades">
+                <button class="btn btn-sm btn-primary mb-3" onclick="abrirModalNuevo('amenidad')"><span class="glyphicon glyphicon-plus"></span> Nueva Amenidad</button>
+                <div class="table-responsive" style="margin-top: 15px;">
+                    <table class="table table-hover table-condensed table-striped">
+                        <thead><tr><th>#</th><th>Ícono</th><th>Título</th><th>Estado</th><th>Acciones</th></tr></thead>
+                        <tbody><?= $var_amenidades ?></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div role="tabpanel" class="tab-pane" id="tab_secciones">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><strong>Sección App Móvil / Portal</strong></div>
+                    <div class="panel-body">
+                        <form id="formAppSection" enctype="multipart/form-data">
+                            <input type="hidden" name="accion" value="guardar_app_section">
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <label>Título General:</label>
+                                    <input type="text" name="app_titulo" class="form-control" value="<?= htmlspecialchars($config_ui['app_titulo']) ?>">
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label>Subtítulo (Resaltado):</label>
+                                    <input type="text" name="app_subtitulo" class="form-control" value="<?= htmlspecialchars($config_ui['app_subtitulo']) ?>">
+                                </div>
+                                <div class="col-md-12 form-group">
+                                    <label>Descripción:</label>
+                                    <textarea name="app_desc" class="form-control" rows="3"><?= htmlspecialchars($config_ui['app_desc']) ?></textarea>
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label>URL del Botón:</label>
+                                    <input type="text" name="app_btn_url" class="form-control" value="<?= htmlspecialchars($config_ui['app_btn_url']) ?>">
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label>Imagen de la App (Opcional):</label>
+                                    <input type="file" name="app_imagen" class="form-control" accept="image/*">
+                                    <small class="text-muted">Deja vacío para conservar la actual.</small>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-floppy-disk"></span> Guardar Sección App</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="panel panel-default mt-4">
+                    <div class="panel-heading"><strong>Sección CTA (Llamado a la acción)</strong></div>
+                    <div class="panel-body">
+                        <form id="formCtaSection">
+                            <input type="hidden" name="accion" value="guardar_cta_section">
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <label>Título:</label>
+                                    <input type="text" name="cta_titulo" class="form-control" value="<?= htmlspecialchars($config_ui['cta_titulo']) ?>">
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label>Descripción:</label>
+                                    <input type="text" name="cta_desc" class="form-control" value="<?= htmlspecialchars($config_ui['cta_desc']) ?>">
+                                </div>
+                                <div class="col-md-12 form-group">
+                                    <label>URL del Botón:</label>
+                                    <input type="text" name="cta_btn_url" class="form-control" value="<?= htmlspecialchars($config_ui['cta_btn_url']) ?>">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-floppy-disk"></span> Guardar CTA</button>
+                        </form>
+                    </div>
                 </div>
             </div>
 
@@ -150,40 +191,33 @@ $config_ui = mysqli_fetch_assoc($res_config);
                             <div class="row">
                                 <div class="col-md-4 form-group">
                                     <label>Fondo Principal (--bg-color)</label>
-                                    <input type="color" name="color_bg" class="form-control"
-                                        value="<?= htmlspecialchars($config_ui['color_bg']) ?>">
+                                    <input type="color" name="color_bg" class="form-control" value="<?= htmlspecialchars($config_ui['color_bg']) ?>">
                                 </div>
                                 <div class="col-md-4 form-group">
                                     <label>Fondo Elementos (--input-bg)</label>
-                                    <input type="color" name="color_input" class="form-control"
-                                        value="<?= htmlspecialchars($config_ui['color_input']) ?>">
+                                    <input type="color" name="color_input" class="form-control" value="<?= htmlspecialchars($config_ui['color_input']) ?>">
                                 </div>
                                 <div class="col-md-4 form-group">
                                     <label>Acento Naranja (--accent-orange)</label>
-                                    <input type="color" name="color_accent_orange" class="form-control"
-                                        value="<?= htmlspecialchars($config_ui['color_accent_orange']) ?>">
+                                    <input type="color" name="color_accent_orange" class="form-control" value="<?= htmlspecialchars($config_ui['color_accent_orange']) ?>">
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-4 form-group">
                                     <label>Acento Verde (--accent-green)</label>
-                                    <input type="color" name="color_accent_green" class="form-control"
-                                        value="<?= htmlspecialchars($config_ui['color_accent_green']) ?>">
+                                    <input type="color" name="color_accent_green" class="form-control" value="<?= htmlspecialchars($config_ui['color_accent_green']) ?>">
                                 </div>
                                 <div class="col-md-4 form-group">
                                     <label>Acento Rojo (--accent-red)</label>
-                                    <input type="color" name="color_accent_red" class="form-control"
-                                        value="<?= htmlspecialchars($config_ui['color_accent_red']) ?>">
+                                    <input type="color" name="color_accent_red" class="form-control" value="<?= htmlspecialchars($config_ui['color_accent_red']) ?>">
                                 </div>
                                 <div class="col-md-4 form-group">
                                     <label>Texto Secundario (--text-muted)</label>
-                                    <input type="color" name="color_text_muted" class="form-control"
-                                        value="<?= htmlspecialchars($config_ui['color_text_muted']) ?>">
+                                    <input type="color" name="color_text_muted" class="form-control" value="<?= htmlspecialchars($config_ui['color_text_muted']) ?>">
                                 </div>
                             </div>
                             <hr>
-                            <button type="submit" class="btn btn-primary"><span
-                                    class="glyphicon glyphicon-floppy-disk"></span> Guardar Colores</button>
+                            <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-floppy-disk"></span> Guardar Colores</button>
                         </form>
                     </div>
                 </div>
@@ -191,24 +225,18 @@ $config_ui = mysqli_fetch_assoc($res_config);
 
             <div role="tabpanel" class="tab-pane" id="tab_preview">
                 <div class="alert alert-info">
-                    <span class="glyphicon glyphicon-info-sign"></span> Modifica los colores en la pestaña "Diseño" para
-                    ver los cambios en tiempo real aquí.
+                    <span class="glyphicon glyphicon-info-sign"></span> <strong>Modo Edición Activo:</strong> Puedes dar doble clic sobre los elementos en la vista previa para editarlos rápidamente.
                 </div>
-<div style="border: 2px solid #ccc; border-radius: 4px; overflow: hidden; background: #050505;">
+                <div style="border: 2px solid #ccc; border-radius: 4px; overflow: hidden; background: #050505;">
                     <?php
                     $host = $_SERVER['HTTP_HOST'];
-
-                    // Validación estricta de entorno
                     if (strpos($host, 'localhost') !== false || strpos($host, '127.0.0.1') !== false) {
-                        // Entorno de desarrollo local
-                        $url_iframe = "http://localhost/SandysGym2/sandys_web/index.php";
+                        $url_iframe = "http://localhost/SandysGym2/sandys_web/index.php?edit_mode=1";
                     } else {
-                        // Entorno de producción
-                        $url_iframe = "https://sandysgym.com/";
+                        $url_iframe = "https://sandysgym.com/index.php?edit_mode=1";
                     }
                     ?>
-                    <iframe src="<?= htmlspecialchars($url_iframe, ENT_QUOTES, 'UTF-8') ?>" id="preview-iframe"
-                        style="width: 100%; height: 700px; border: none;"></iframe>
+                    <iframe src="<?= htmlspecialchars($url_iframe, ENT_QUOTES, 'UTF-8') ?>" id="preview-iframe" style="width: 100%; height: 700px; border: none;"></iframe>
                 </div>
             </div>
         </div>
@@ -220,28 +248,22 @@ $config_ui = mysqli_fetch_assoc($res_config);
         <div class="modal-content">
             <div class="modal-header bg-primary">
                 <button type="button" class="close" data-dismiss="modal" style="color:#fff;">&times;</button>
-                <h4 class="modal-title" style="color:#fff;"><span class="glyphicon glyphicon-picture"></span> <span
-                        class="titulo-modal">Añadir Hero</span></h4>
+                <h4 class="modal-title" style="color:#fff;"><span class="glyphicon glyphicon-picture"></span> <span class="titulo-modal">Añadir Hero</span></h4>
             </div>
             <form id="formHero" enctype="multipart/form-data">
                 <input type="hidden" name="accion" value="nuevo_hero">
                 <div class="modal-body">
-                    <div class="alert alert-warning"><span class="glyphicon glyphicon-info-sign"></span> La imagen debe
-                        contener los textos integrados desde diseño.</div>
+                    <div class="alert alert-warning"><span class="glyphicon glyphicon-info-sign"></span> La imagen debe contener los textos integrados desde diseño.</div>
                     <div class="row">
                         <div class="col-md-6 form-group">
                             <label>Imagen Desktop (1920x1080):</label>
-                            <input type="file" name="img_desktop" class="form-control file-input" accept="image/*"
-                                required>
-                            <small class="help-block file-help" style="display:none;">Deja vacío para mantener
-                                actual.</small>
+                            <input type="file" name="img_desktop" class="form-control file-input" accept="image/*" required>
+                            <small class="help-block file-help" style="display:none;">Deja vacío para mantener actual.</small>
                         </div>
                         <div class="col-md-6 form-group">
                             <label>Imagen Mobile (800x1200):</label>
-                            <input type="file" name="img_mobile" class="form-control file-input" accept="image/*"
-                                required>
-                            <small class="help-block file-help" style="display:none;">Deja vacío para mantener
-                                actual.</small>
+                            <input type="file" name="img_mobile" class="form-control file-input" accept="image/*" required>
+                            <small class="help-block file-help" style="display:none;">Deja vacío para mantener actual.</small>
                         </div>
                     </div>
                 </div>
@@ -256,36 +278,30 @@ $config_ui = mysqli_fetch_assoc($res_config);
         <div class="modal-content">
             <div class="modal-header bg-primary">
                 <button type="button" class="close" data-dismiss="modal" style="color:#fff;">&times;</button>
-                <h4 class="modal-title" style="color:#fff;"><span class="glyphicon glyphicon-usd"></span> <span
-                        class="titulo-modal">Añadir Plan</span></h4>
+                <h4 class="modal-title" style="color:#fff;"><span class="glyphicon glyphicon-usd"></span> <span class="titulo-modal">Añadir Plan</span></h4>
             </div>
             <form id="formPlan">
                 <input type="hidden" name="accion" value="nuevo_plan">
                 <div class="modal-body">
                     <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group"><label>Nombre del Plan:</label><input type="text" name="nombre"
-                                    class="form-control" required></div>
+                        <div class="col-md-6 form-group">
+                            <label>Nombre del Plan:</label>
+                            <input type="text" name="nombre" class="form-control" required>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group"><label>Precio:</label><input type="number" step="0.01" name="precio"
-                                    class="form-control" required></div>
+                        <div class="col-md-6 form-group">
+                            <label>Precio:</label>
+                            <input type="number" step="0.01" name="precio" class="form-control" required>
                         </div>
                     </div>
-                    <div class="form-group"><label>Frecuencia / Subtexto:</label><input type="text" name="frecuencia"
-                            class="form-control" placeholder="Ej: MENSUAL" required></div>
+                    <div class="form-group"><label>Frecuencia / Subtexto:</label><input type="text" name="frecuencia" class="form-control" placeholder="Ej: MENSUAL" required></div>
                     <div class="form-group">
                         <label>Beneficios (Lista):</label>
                         <div id="contenedor_beneficios">
-                            <input type="text" name="beneficios[]" class="form-control" style="margin-bottom:5px;"
-                                required>
+                            <input type="text" name="beneficios[]" class="form-control" style="margin-bottom:5px;" required>
                         </div>
-                        <button type="button" class="btn btn-xs btn-default"
-                            onclick="$('#contenedor_beneficios').append('<input type=\'text\' name=\'beneficios[]\' class=\'form-control\' style=\'margin-bottom:5px;\'>')"><span
-                                class="glyphicon glyphicon-plus"></span> Añadir Beneficio</button>
+                        <button type="button" class="btn btn-xs btn-default" onclick="$('#contenedor_beneficios').append('<input type=\'text\' name=\'beneficios[]\' class=\'form-control\' style=\'margin-bottom:5px;\'>')"><span class="glyphicon glyphicon-plus"></span> Añadir Beneficio</button>
                     </div>
-                    <div class="form-group"><label>URL Botón:</label><input type="text" name="url_boton"
-                            class="form-control" value="index.php?page=inscribite"></div>
+                    <div class="form-group"><label>URL Botón:</label><input type="text" name="url_boton" class="form-control" value="index.php?page=inscribite"></div>
                 </div>
                 <div class="modal-footer"><button type="submit" class="btn btn-primary">Guardar</button></div>
             </form>
@@ -298,8 +314,7 @@ $config_ui = mysqli_fetch_assoc($res_config);
         <div class="modal-content">
             <div class="modal-header bg-primary">
                 <button type="button" class="close" data-dismiss="modal" style="color:#fff;">&times;</button>
-                <h4 class="modal-title" style="color:#fff;"><span class="glyphicon glyphicon-camera"></span> <span
-                        class="titulo-modal">Añadir Galería</span></h4>
+                <h4 class="modal-title" style="color:#fff;"><span class="glyphicon glyphicon-camera"></span> <span class="titulo-modal">Añadir Galería</span></h4>
             </div>
             <form id="formGaleria" enctype="multipart/form-data">
                 <input type="hidden" name="accion" value="nueva_galeria">
@@ -307,11 +322,47 @@ $config_ui = mysqli_fetch_assoc($res_config);
                     <div class="form-group">
                         <label>Imagen:</label>
                         <input type="file" name="imagen_url" class="form-control file-input" accept="image/*" required>
-                        <small class="help-block file-help" style="display:none;">Deja vacío para mantener
-                            actual.</small>
+                        <small class="help-block file-help" style="display:none;">Deja vacío para mantener actual.</small>
                     </div>
-                    <div class="checkbox"><label><input type="checkbox" name="es_wide" value="1"> ¿Formato Panorámico
-                            (Wide)?</label></div>
+                    <div class="checkbox"><label><input type="checkbox" name="es_wide" value="1"> ¿Formato Panorámico (Wide)?</label></div>
+                </div>
+                <div class="modal-footer"><button type="submit" class="btn btn-primary">Guardar</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalAmenidad" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary">
+                <button type="button" class="close" data-dismiss="modal" style="color:#fff;">&times;</button>
+                <h4 class="modal-title" style="color:#fff;"><span class="glyphicon glyphicon-star"></span> <span class="titulo-modal">Añadir Amenidad</span></h4>
+            </div>
+            <form id="formAmenidad">
+                <input type="hidden" name="accion" value="nueva_amenidad">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Selecciona un Ícono:</label>
+                        <div class="input-group">
+                            <span class="input-group-addon" id="preview-icono"><i class="fa-solid fa-dumbbell"></i></span>
+                            
+                            <select name="icono" class="form-control" required 
+                                style="font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free', sans-serif; font-weight: 900;" 
+                                onchange="document.getElementById('preview-icono').innerHTML = '<i class=\'' + this.value + '\'></i>'">
+                                <option value="fa-solid fa-dumbbell">&#xf44b; Mancuerna</option>
+                                <option value="fa-solid fa-person-running">&#xf70c; Corriendo</option>
+                                <option value="fa-solid fa-people-group">&#xf533; Grupo</option>
+                                <option value="fa-solid fa-shower">&#xf2cc; Regadera</option>
+                                <option value="fa-solid fa-heart-pulse">&#xf21e; Pulso</option>
+                                <option value="fa-solid fa-bicycle">&#xf206; Bicicleta</option>
+                                <option value="fa-solid fa-stopwatch">&#xf2f2; Cronómetro</option>
+                                <option value="fa-solid fa-bolt">&#xf0e7; Rayo</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group"><label>Título:</label><input type="text" name="titulo" class="form-control" required></div>
+                    <div class="form-group"><label>Descripción:</label><textarea name="descripcion" class="form-control" rows="2" required></textarea></div>
                 </div>
                 <div class="modal-footer"><button type="submit" class="btn btn-primary">Guardar</button></div>
             </form>
@@ -371,6 +422,11 @@ $config_ui = mysqli_fetch_assoc($res_config);
             }
         } else if (tipo === 'galeria') {
             form.find('input[name="es_wide"]').prop('checked', data.es_wide == 1);
+} else if (tipo === 'amenidad') {
+            // Se añade .trigger('change') para actualizar el addon visual
+            form.find('select[name="icono"]').val(data.icono).trigger('change');
+            form.find('input[name="titulo"]').val(data.titulo);
+            form.find('textarea[name="descripcion"]').val(data.descripcion);
         }
 
         $('#modal' + capitalizar(tipo)).modal('show');
@@ -399,6 +455,9 @@ $config_ui = mysqli_fetch_assoc($res_config);
     procesarForm('formPlan');
     procesarForm('formGaleria');
     procesarForm('formColores');
+    procesarForm('formAmenidad');
+    procesarForm('formAppSection');
+    procesarForm('formCtaSection');
 
     function cambiarEstado(tipo, id, estadoActual) {
         $.post('secciones/landing/acciones_landing.php', { accion: 'estado_' + tipo, id: id, estado: estadoActual }, function (r) {
@@ -414,14 +473,10 @@ $config_ui = mysqli_fetch_assoc($res_config);
         }
     }
 
-    // Lógica de Live Preview (Actualización CSS Variable en iFrame)
     const cssVarMap = {
-        'color_bg': '--bg-color',
-        'color_input': '--input-bg',
-        'color_accent_orange': '--accent-orange',
-        'color_accent_green': '--accent-green',
-        'color_accent_red': '--accent-red',
-        'color_text_muted': '--text-muted'
+        'color_bg': '--bg-color', 'color_input': '--input-bg',
+        'color_accent_orange': '--accent-orange', 'color_accent_green': '--accent-green',
+        'color_accent_red': '--accent-red', 'color_text_muted': '--text-muted'
     };
 
     $('#formColores input[type="color"]').on('input', function () {
@@ -432,6 +487,37 @@ $config_ui = mysqli_fetch_assoc($res_config);
 
         if (iframe && iframe.contentDocument) {
             iframe.contentDocument.documentElement.style.setProperty(cssVar, hexValue);
+        }
+    });
+
+    // IPC Listener (Double Click desde Iframe)
+    window.addEventListener('message', function (event) {
+        let msg = event.data;
+        if (msg.accion === 'abrir_modal') {
+            
+            if (msg.tipo === 'seccion_app' || msg.tipo === 'seccion_cta') {
+                // Forzar clic nativo en lugar del método del plugin de Bootstrap
+                let tabSecciones = document.querySelector('.nav-tabs a[href="#tab_secciones"]');
+                if(tabSecciones) tabSecciones.click();
+                
+                let targetForm = msg.tipo === 'seccion_app' ? '#formAppSection' : '#formCtaSection';
+                $('html, body').animate({ scrollTop: $(targetForm).offset().top - 30 }, 500);
+                $(targetForm).closest('.panel').css({ 'box-shadow': '0 0 15px #F28123', 'transition': 'box-shadow 0.3s' });
+                setTimeout(() => $(targetForm).closest('.panel').css('box-shadow', 'none'), 1500);
+                return;
+            }
+
+            let tabMap = { 'plan': '#tab_planes', 'hero': '#tab_hero', 'galeria': '#tab_galeria', 'amenidad': '#tab_amenidades' };
+            if (tabMap[msg.tipo]) {
+                // Forzar clic nativo
+                let tabDestino = document.querySelector('.nav-tabs a[href="' + tabMap[msg.tipo] + '"]');
+                if(tabDestino) tabDestino.click();
+            }
+
+            let dataObj = typeof msg.data === 'string' ? JSON.parse(msg.data) : msg.data;
+            let btnVirtual = document.createElement('button');
+            $(btnVirtual).data('info', dataObj);
+            abrirModalEditar(msg.tipo, btnVirtual);
         }
     });
 </script>

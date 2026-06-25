@@ -36,11 +36,13 @@ try {
 
     if ($idSocio <= 0) throw new Exception("ID de socio inválido.");
 
+    // Se define fuera del IF para que esté disponible durante el unlink()
+    $directorioDestino = __DIR__ . '/../../imagenes/avatar/';
+    $nombreArchivoFinal = null;
+
     // ---------------------------------------------------------
     // PROCESAR FOTO Y CONVERTIR A JPG CON REDIMENSIONAMIENTO
     // ---------------------------------------------------------
-    $nombreArchivoFinal = null;
-
     if (isset($_FILES['foto_perfil']) && $_FILES['foto_perfil']['error'] !== UPLOAD_ERR_NO_FILE) {
         
         $uploadError = $_FILES['foto_perfil']['error'];
@@ -59,7 +61,6 @@ try {
 
         $fileTmpPath = $_FILES['foto_perfil']['tmp_name'];
         
-        // Validación MIME estricta por seguridad (Anti-Webshell)
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
         $mimeType = finfo_file($finfo, $fileTmpPath);
         finfo_close($finfo);
@@ -69,16 +70,13 @@ try {
             throw new Exception("Formato de imagen inválido o archivo corrupto.");
         }
 
-        $directorioDestino = __DIR__ . '/../imagenes/avatar/';
         if (!is_dir($directorioDestino)) {
             mkdir($directorioDestino, 0777, true);
         }
 
-        // Obtener dimensiones originales
         list($origWidth, $origHeight) = getimagesize($fileTmpPath);
         if (!$origWidth || !$origHeight) throw new Exception("La imagen está corrupta.");
 
-        // Extracción EXIF para rotación correcta (Solo JPEG soporta lectura EXIF nativa sin fallos en GD)
         $orientation = 1;
         if ($mimeType === 'image/jpeg' && function_exists('exif_read_data')) {
             $exif = @exif_read_data($fileTmpPath);
@@ -96,7 +94,6 @@ try {
 
         if (!$imgRes) throw new Exception("Error al procesar la imagen nativa.");
 
-        // Aplicar rotación antes de redimensionar
         if ($orientation != 1) {
             $deg = 0;
             switch ($orientation) {
@@ -113,10 +110,8 @@ try {
             }
         }
 
-        // Redimensionar para optimizar peso (Máx 800px)
         $maxWidth = 800;
         $maxHeight = 800;
-        
         $ratio = min($maxWidth / $origWidth, $maxHeight / $origHeight);
         
         if ($ratio < 1) {
@@ -129,13 +124,12 @@ try {
 
         $resizedImg = imagecreatetruecolor($newWidth, $newHeight);
         
-        // Preservar transparencia para PNG/WEBP si no se guarda como JPG (Aquí forzamos JPG, rellenamos con blanco)
         $white = imagecolorallocate($resizedImg, 255, 255, 255);
         imagefill($resizedImg, 0, 0, $white);
         
         imagecopyresampled($resizedImg, $imgRes, 0, 0, 0, 0, $newWidth, $newHeight, $origWidth, $origHeight);
 
-        $nombreArchivoFinal = $idSocio . "_" . time() . ".jpg"; // Time agregado para invalidar caché
+        $nombreArchivoFinal = $idSocio . "_" . time() . ".jpg"; 
         $rutaCompleta = $directorioDestino . $nombreArchivoFinal;
 
         if (!imagejpeg($resizedImg, $rutaCompleta, 85)) {
@@ -155,7 +149,8 @@ try {
         !empty($emerNombres) && !empty($emerTel) && !empty($emerParentesco)
     );
 
-    $checkQuery = "SELECT soc_mon_saldo, perfil_completado_reward, soc_tel_cel, soc_fecha_nacimiento FROM san_socios WHERE soc_id_socio = :id";
+    // Se agrega soc_imagen a la consulta para saber qué borrar
+    $checkQuery = "SELECT soc_mon_saldo, perfil_completado_reward, soc_tel_cel, soc_fecha_nacimiento, soc_imagen FROM san_socios WHERE soc_id_socio = :id";
     $stmtCheck = $conn->prepare($checkQuery);
     $stmtCheck->bindParam(':id', $idSocio);
     $stmtCheck->execute();
@@ -163,6 +158,7 @@ try {
 
     if (!$datosActuales) throw new Exception("Socio no encontrado.");
 
+    $imagenAnterior = $datosActuales['soc_imagen'] ?? 'noavatar.jpg';
     $yaRecibio = (int)($datosActuales['perfil_completado_reward'] ?? 0) === 1;
     $estabaIncompleto = empty($datosActuales['soc_tel_cel']) || $datosActuales['soc_fecha_nacimiento'] == '0000-00-00';
     $darRecompensa = (!$yaRecibio && $estabaIncompleto && $estanTodosLosDatos);
@@ -207,13 +203,24 @@ try {
 
     $conn->commit();
 
+    // ---------------------------------------------------------
+    // LIMPIEZA DE IMAGEN ANTERIOR (Ejecutar solo tras commit exitoso)
+    // ---------------------------------------------------------
+    if ($nombreArchivoFinal && $imagenAnterior !== 'noavatar.jpg' && !empty($imagenAnterior)) {
+        $rutaAnterior = $directorioDestino . $imagenAnterior;
+        if (file_exists($rutaAnterior)) {
+            @unlink($rutaAnterior); // Silenciador de errores por si hay bloqueo de IO
+        }
+    }
+
     $response = [
         'status' => 'success', 
         'rewardGiven' => $darRecompensa,
-        'message' => $darRecompensa ? '¡Felicidades! Ganaste $35 MXN.' : 'Datos actualizados con éxito.'
+        'message' => $darRecompensa ? '¡Felicidades! Ganaste $35 MXN.' : 'Datos actualizados con éxito.',
+        'newImage' => $nombreArchivoFinal 
     ];
 
-} catch (Exception $e) {
+} catch (Throwable $e) { 
     if (isset($conn) && $conn->inTransaction()) $conn->rollBack();
     $response = ['status' => 'error', 'message' => $e->getMessage()];
 }

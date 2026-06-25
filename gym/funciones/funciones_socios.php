@@ -400,76 +400,73 @@ function lista_socios()
     }
     
     function subir_fotografia()
-    {
-        global $conexion, $id_empresa;
+{
+    global $conexion, $id_empresa;
+    
+    $id_socio          = request_var('id_socio', 0);
+    $id_socio_seguro   = (int)$id_socio;
+    $id_empresa_seguro = (int)$id_empresa;
+    
+    $dir_ponencias     = "../imagenes/avatar/";
+    $extenciones       = "/^\.(jpg){1}$/i";
+    $tamaño_maximo     = 2 * 1024 * 1024;
+    $exito             = array();
+    
+    if (isset($_FILES['avatar']) && $_FILES['avatar']['name'] && $id_socio_seguro > 0) {
+        $extencion_archivo = tipo_archivo($_FILES['avatar']['type']);
         
-        $id_socio           = request_var( 'id_socio', 0 );
+        // El archivo físico y el de la base de datos deben usar EXACTAMENTE esta variable
+        $nombre_archivo    = $id_socio_seguro . $extencion_archivo;
         
-        $dir_ponencias      = "../imagenes/avatar/";
-        $extenciones        = "/^\.(jpg){1}$/i";
-        $tamaño_maximo      = 2 * 1024 * 1024;
-        $exito              = array();
-        $imagen_guardada    = "";
+        $valido            = is_uploaded_file($_FILES['avatar']['tmp_name']); 
         
-        if( isset( $_FILES['avatar'] ) && $_FILES['avatar']['name'] && $id_socio )
-        {
-            $extencion_archivo  = tipo_archivo( $_FILES['avatar']['type'] );
-            $nombre_archivo     = $id_socio.$extencion_archivo;
-            $valido             = is_uploaded_file($_FILES['avatar']['tmp_name']); 
+        if ($valido) {
+            $safe_filename = preg_replace(array("/\s+/", "/[^-\.\w]+/"), array("_", ""), trim($_FILES['avatar']['name']));
             
-            if( $valido )
-            {
-                $safe_filename = preg_replace( array( "/\s+/", "/[^-\.\w]+/" ), array( "_", "" ), trim( $_FILES['avatar']['name'] ) );
+            if ($extencion_archivo && $_FILES['avatar']['size'] <= $tamaño_maximo && preg_match($extenciones, strrchr($safe_filename, '.'))) {
                 
-                if( $extencion_archivo && $_FILES['avatar']['size'] <= $tamaño_maximo && preg_match( $extenciones, strrchr( $safe_filename, '.' ) ) )
-                {
-                    if( move_uploaded_file ( $_FILES['avatar']['tmp_name'], $dir_ponencias.$nombre_archivo ) )
-                    {
-                        $query      = "SELECT soc_id_socio FROM san_socios WHERE soc_id_socio = $id_socio AND soc_id_empresa = $id_empresa";
-                        $resultado  = mysqli_query( $conexion, $query );
+                // Mueve el archivo físico con el nombre estandarizado (Ej: 15.jpg)
+                if (move_uploaded_file($_FILES['avatar']['tmp_name'], $dir_ponencias . $nombre_archivo)) {
+                    
+                    // Verificar que el socio realmente existe en esta empresa
+                    $query = "SELECT soc_id_socio FROM san_socios WHERE soc_id_socio = $id_socio_seguro AND soc_id_empresa = $id_empresa_seguro LIMIT 1";
+                    $resultado = mysqli_query($conexion, $query);
+                    
+                    if ($resultado && mysqli_num_rows($resultado) > 0) {
+                        // ACTUALIZACIÓN CORREGIDA: Se guarda $nombre_archivo en BD, NO el nombre original de subida.
+                        $query_update = "UPDATE san_socios SET soc_imagen = '$nombre_archivo' WHERE soc_id_socio = $id_socio_seguro AND soc_id_empresa = $id_empresa_seguro";
+                        $resultado_update = mysqli_query($conexion, $query_update);
                         
-                        if( $resultado )
-                        {
-                            list( $bandera ) = mysqli_fetch_row( $resultado );
-                            $imagen_nombre  = $_FILES['avatar']['name'];
-                            
-                            if( $bandera )
-                                $query  = "UPDATE san_socios SET soc_imagen = '$imagen_nombre' WHERE soc_id_socio = $id_socio AND soc_id_empresa = $id_empresa";
-                            else
-                                $query  = "INSERT INTO san_socios ( soc_imagen ) VALUES ( '$imagen_nombre' )";
-                            
-                            $resultado  = mysqli_query( $conexion, $query );
+                        if ($resultado_update) {
+                            $exito['num'] = 1;
+                            $exito['msj'] = 'Fotografía guardada y enlazada correctamente.';
+                        } else {
+                            $exito['num'] = 6;
+                            $exito['msj'] = 'Error al actualizar el registro en la base de datos.';
                         }
-                        
-                        $exito['num'] = 1;
-                        $exito['msj'] = 'Fotografía guardada.';
+                    } else {
+                        $exito['num'] = 7;
+                        $exito['msj'] = 'El socio no existe o no pertenece a esta sucursal.';
                     }
-                    else
-                    {
-                        $exito['num'] = 5;
-                        $exito['msj'] = 'La fotografía no se ha guardado.<br/>';
-                    }
+                } else {
+                    $exito['num'] = 5;
+                    $exito['msj'] = 'La fotografía no se ha guardado físicamente en el servidor.<br/>';
                 }
-                else
-                {
-                    $exito['num'] = 4;
-                    $exito['msj'] = 'La fotografía no es del tipo solicitado o excede el tamaño permitido.';
-                }
+            } else {
+                $exito['num'] = 4;
+                $exito['msj'] = 'La fotografía no es del tipo solicitado o excede el tamaño permitido.';
             }
-            else
-            {
-                $exito['num'] = 3;
-                $exito['msj'] = 'No es archivo válido.';
-            }
+        } else {
+            $exito['num'] = 3;
+            $exito['msj'] = 'No es archivo válido.';
         }
-        else
-        {
-            $exito['num'] = 2;
-            $exito['msj'] = 'No se selecciono un archivo para la Fotografía.';
-        }
-        
-        return $exito;
+    } else {
+        $exito['num'] = 2;
+        $exito['msj'] = 'No se seleccionó un archivo para la Fotografía o ID de socio inválido.';
     }
+    
+    return $exito;
+}
     
     function eliminar_fotografia()
     {

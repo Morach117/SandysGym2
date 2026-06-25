@@ -112,6 +112,7 @@ $orderByClause = "ORDER BY
 $queryData = "
     SELECT
         s.soc_id_socio AS id_socio,
+        s.soc_imagen,
         p.pag_id_pago AS id_pago,
         p.pag_fecha_ini,
         p.pag_fecha_fin,
@@ -138,15 +139,18 @@ $data = [];
 $contador = $start + 1;
 if ($resultado) {
     while ($fila = mysqli_fetch_assoc($resultado)) {
-        
         // ---------------------------------------------------------------------
         // GENERACIÓN PROFESIONAL DE FOTOS (PETICIÓN DEL CLIENTE)
         // Eliminamos las etiquetas <img> pesadas. 
         // Usamos botones con atributos data-src para el modal.
         // ---------------------------------------------------------------------
-        if (file_exists("../../imagenes/avatar/$fila[id_socio].jpg")) {
+        $nombre_archivo = !empty($fila['soc_imagen']) ? $fila['soc_imagen'] : 'noavatar.jpg';
+        $ruta_fisica = "../../imagenes/avatar/" . $nombre_archivo;
+        $ruta_web = "../imagenes/avatar/" . $nombre_archivo;
+
+        if (file_exists($ruta_fisica) && $nombre_archivo !== 'noavatar.jpg') {
             // Ponemos un botón con clase 'btn-ver-foto' y guardamos la ruta en data-src
-            $fotografia = "<button type='button' class='btn btn-xs btn-info btn-ver-foto' data-src='../imagenes/avatar/$fila[id_socio].jpg' style='color:#fff; font-weight:bold;'>Ver Foto</button>";
+            $fotografia = "<button type='button' class='btn btn-xs btn-info btn-ver-foto' data-src='$ruta_web' style='color:#fff; font-weight:bold;'>Ver Foto</button>";
         } else {
             // Esto corrige el muñequito gris. Muestra la etiqueta roja "SIN FOTO"
             $fotografia = "<span class='label label-danger' style='font-size: 11px; font-weight: bold;'>SIN FOTO</span>";

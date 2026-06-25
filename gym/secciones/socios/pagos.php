@@ -73,11 +73,26 @@ if ($servicio) {
     if ($servicio_cve == 'MEN PARCIAL') $class_oculto = '';
 }
 
-if (file_exists("../imagenes/avatar/$id_socio.jpg"))
-    $fotografia = "<img src='../imagenes/avatar/$id_socio.jpg' class='img-thumbnail' style='width:100%' />";
-else
-    $fotografia = "<img src='../imagenes/avatar/noavatar.jpg' class='img-thumbnail' style='width:100%' />";
+$id_socio_seguro = (int)$id_socio;
+$nombre_archivo = 'noavatar.jpg';
 
+$sql_imagen = "SELECT soc_imagen FROM san_socios WHERE soc_id_socio = $id_socio_seguro LIMIT 1";
+$resultado_imagen = mysqli_query($conexion, $sql_imagen);
+
+if ($resultado_imagen && mysqli_num_rows($resultado_imagen) > 0) {
+    $fila = mysqli_fetch_assoc($resultado_imagen);
+    if (!empty($fila['soc_imagen'])) {
+        $nombre_archivo = $fila['soc_imagen'];
+    }
+}
+
+$ruta_imagen = "../imagenes/avatar/" . $nombre_archivo;
+
+if (file_exists($ruta_imagen) && $nombre_archivo !== 'noavatar.jpg') {
+    $fotografia = "<img src='$ruta_imagen' class='img-thumbnail' style='width:100%' />";
+} else {
+    $fotografia = "<img src='../imagenes/avatar/noavatar.jpg' class='img-thumbnail' style='width:100%' />";
+}
 if ($eliminar) {
     $mensaje = eliminar_pago_socio();
     if ($mensaje['num'] == 1)

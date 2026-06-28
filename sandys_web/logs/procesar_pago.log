@@ -2164,3 +2164,11 @@
 [2026-04-07 22:48:44] Fechas POST: inicio=04-08-2027, fin=03-09-2027
 [2026-04-07 22:48:44] BaseURL calculada: https://sandysgym.com
 [2026-04-07 22:48:44] Exception General: El código de promoción no es válido o ha expirado.
+[2026-06-27 19:10:59] [MEMBRESIA] Bloqueo: CSRF inválido. Socio ID 5857
+[2026-06-27 19:11:01] [MEMBRESIA] Bloqueo: CSRF inválido. Socio ID 5857
+[2026-06-27 19:11:06] [MEMBRESIA] Bloqueo: CSRF inválido. Socio ID 5857
+[2026-06-27 19:11:07] [MEMBRESIA] Bloqueo: CSRF inválido. Socio ID 5857
+[2026-06-27 19:11:19] [MEMBRESIA] Bloqueo: CSRF inválido. Socio ID 5857
+[2026-06-27 19:13:39] [MEMBRESIA] Bloqueo: CSRF inválido. Socio ID 5857
+[2026-06-27 19:13:43] [MEMBRESIA] Bloqueo: CSRF inválido. Socio ID 5857
+[2026-06-27 19:22:03] [MONEDERO] Preferencia Monedero Creada: ID 2958194482-7cbc9f28-034e-4bca-baad-695714938298 para Socio: 5857

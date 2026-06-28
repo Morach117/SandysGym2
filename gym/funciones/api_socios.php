@@ -140,19 +140,37 @@ $contador = $start + 1;
 if ($resultado) {
     while ($fila = mysqli_fetch_assoc($resultado)) {
         // ---------------------------------------------------------------------
-        // GENERACIÓN PROFESIONAL DE FOTOS (PETICIÓN DEL CLIENTE)
-        // Eliminamos las etiquetas <img> pesadas. 
-        // Usamos botones con atributos data-src para el modal.
+        // GENERACIÓN PROFESIONAL DE FOTOS (CON FALLBACK LEGACY PARA SERVIDOR)
         // ---------------------------------------------------------------------
-        $nombre_archivo = !empty($fila['soc_imagen']) ? $fila['soc_imagen'] : 'noavatar.jpg';
-        $ruta_fisica = "../../imagenes/avatar/" . $nombre_archivo;
+        $id_socio = $fila['id_socio'];
+        $nombre_archivo_db = !empty($fila['soc_imagen']) ? $fila['soc_imagen'] : '';
+        
+        $ruta_fisica_db = "../../imagenes/avatar/" . $nombre_archivo_db;
+        $ruta_fisica_legacy = "../../imagenes/avatar/" . $id_socio . ".jpg";
+        $ruta_fisica_legacy_upper = "../../imagenes/avatar/" . $id_socio . ".JPG";
+
+        // 1. Evaluar si existe usando el nombre exacto en DB
+        if (!empty($nombre_archivo_db) && file_exists($ruta_fisica_db)) {
+            $nombre_archivo = $nombre_archivo_db;
+        } 
+        // 2. Fallback: Evaluar si existe el archivo por ID (minúsculas)
+        elseif (file_exists($ruta_fisica_legacy)) {
+            $nombre_archivo = $id_socio . ".jpg";
+        } 
+        // 3. Fallback: Evaluar si existe el archivo por ID (mayúsculas, común en subidas de móviles)
+        elseif (file_exists($ruta_fisica_legacy_upper)) {
+            $nombre_archivo = $id_socio . ".JPG";
+        } 
+        // 4. Si no hay nada, marcar sin avatar
+        else {
+            $nombre_archivo = 'noavatar.jpg';
+        }
+
         $ruta_web = "../imagenes/avatar/" . $nombre_archivo;
 
-        if (file_exists($ruta_fisica) && $nombre_archivo !== 'noavatar.jpg') {
-            // Ponemos un botón con clase 'btn-ver-foto' y guardamos la ruta en data-src
+        if ($nombre_archivo !== 'noavatar.jpg') {
             $fotografia = "<button type='button' class='btn btn-xs btn-info btn-ver-foto' data-src='$ruta_web' style='color:#fff; font-weight:bold;'>Ver Foto</button>";
         } else {
-            // Esto corrige el muñequito gris. Muestra la etiqueta roja "SIN FOTO"
             $fotografia = "<span class='label label-danger' style='font-size: 11px; font-weight: bold;'>SIN FOTO</span>";
         }
 

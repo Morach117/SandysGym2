@@ -433,6 +433,7 @@ if (!$prepago) {
 
                     <form id="pagoMonederoForm">
                         <input type="hidden" id="id_socio" value="<?= $prepago['id_socio'] ?>" />
+                        <input type="hidden" id="csrf_token" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
 
                         <div class="form-group mb-3">
                             <label for="nombre_socio" class="form-label">Socio Titular</label>
@@ -518,6 +519,29 @@ if (!$prepago) {
 
 <script>
     (function () {
+        // --- Interceptar Token CSRF y Configurar Headers Globales ---
+        var csrfToken = document.getElementById('csrf_token') ? document.getElementById('csrf_token').value : '';
+        
+        if (window.jQuery) {
+            setupAjax();
+        } else {
+            // Si jQuery aún no carga, esperamos
+            var waitJq = setInterval(function() {
+                if (window.jQuery) {
+                    clearInterval(waitJq);
+                    setupAjax();
+                }
+            }, 50);
+        }
+
+        function setupAjax() {
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-Token': csrfToken
+                }
+            });
+        }
+
         // --- Lógica del Resumen visual ---
         window.actualizarResumen = function () {
             const importeInput = document.getElementById('prep_importe').value;
@@ -530,14 +554,10 @@ if (!$prepago) {
             totalElement.textContent = formatoMoneda;
         };
 
-        // --- Lógica del Botón (AHORA CON JQUERY Y PREVENT DEFAULT) ---
+        // --- Lógica del Botón (PAGO) ---
         function inicializarEventos() {
-            console.log("Activando botón de Mercado Pago..."); // Esto debe salir en tu consola (F12)
-
             $('#btn-generar-pago').on('click', function (e) {
-                e.preventDefault(); // Evita cualquier comportamiento nativo del formulario
-
-                console.log("¡Botón clickeado!"); // Confirma que el evento funciona
+                e.preventDefault(); 
 
                 const importe = $('#prep_importe').val();
                 const idSocio = $('#id_socio').val();
@@ -548,21 +568,18 @@ if (!$prepago) {
                 }
                 $('#mensajeError').hide();
 
-                // Cambiar estado del botón a cargando
                 const $btn = $(this);
                 const originalText = $btn.html();
                 $btn.html('Generando... <i class="fas fa-spinner fa-spin ml-2"></i>');
                 $btn.prop('disabled', true);
 
-                // Llamada AJAX para crear la preferencia de Mercado Pago
+                // El token viajará automáticamente en el header 'X-CSRF-Token' gracias a $.ajaxSetup
                 $.ajax({
                     type: "POST",
                     url: "api/procesar_recarga_monedero.php",
                     data: { importe: importe, id_socio: idSocio },
                     dataType: "json",
                     success: function (response) {
-                        console.log("Respuesta del servidor:", response);
-
                         if (response.status === 'success' && response.url) {
                             window.location.href = response.url;
                         } else {
@@ -572,8 +589,13 @@ if (!$prepago) {
                         }
                     },
                     error: function (xhr) {
-                        console.error("Error del servidor: ", xhr.responseText);
-                        $('#mensajeError').text('Error de conexión con el servidor.').show();
+                        var errorMsg = 'Error de conexión con el servidor.';
+                        try {
+                            var jsonError = JSON.parse(xhr.responseText);
+                            if (jsonError.message) errorMsg = jsonError.message;
+                        } catch(e) {}
+                        
+                        $('#mensajeError').text(errorMsg).show();
                         $btn.html(originalText);
                         $btn.prop('disabled', false);
                     }
@@ -595,6 +617,7 @@ if (!$prepago) {
                     "type": "POST",
                     "data": function (d) {
                         d.id_socio = $('#id_socio').val();
+                        // Nota: El header X-CSRF-Token ya se envía aquí también
                     }
                 },
                 "columns": [

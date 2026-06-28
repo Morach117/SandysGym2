@@ -2,8 +2,19 @@
 declare(strict_types=1);
 
 // api/procesar_recarga_monedero.php
-session_start();
+// --- 1. INICIAR SESIÓN (SOLO SI NO ESTÁ ACTIVA) ---
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
+// --- 1.1 GENERAR CSRF TOKEN ---
+if (empty($_SESSION['csrf_token'])) {
+    try {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    } catch (Exception $e) {
+        $_SESSION['csrf_token'] = md5(uniqid(mt_rand(), true));
+    }
+}
 date_default_timezone_set('America/Mexico_City');
 
 require_once __DIR__ . '/../vendor/autoload.php';

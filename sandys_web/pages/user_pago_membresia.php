@@ -360,6 +360,7 @@ if (!$selSocioData) {
 
                             <div class="col-12 form-group mb-4">
                                 <label for="nombre_socio" class="form-label">Titular de la cuenta</label>
+                                <input type="hidden" name="csrf_token" id="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
                                 <input type="text" id="nombre_socio" name="nombre_socio" class="form-control"
                                     value="<?php echo htmlspecialchars($selSocioData['soc_nombres'] . ' ' . $selSocioData['soc_apepat'] . ' ' . $selSocioData['soc_apemat']); ?>" readonly>
                             </div>

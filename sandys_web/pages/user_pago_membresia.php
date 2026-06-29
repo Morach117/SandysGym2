@@ -1,7 +1,20 @@
 <?php
 // =================================================================
-// INICIO DEL BLOQUE PHP (Lógica original intacta)
+// INICIO DEL BLOQUE PHP (Lógica optimizada y segura)
 // =================================================================
+
+// 1. Garantizar sesión activa y token CSRF ANTES del renderizado
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+if (empty($_SESSION['csrf_token'])) {
+    try {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    } catch (Exception $e) {
+        $_SESSION['csrf_token'] = md5(uniqid(mt_rand(), true));
+    }
+}
 
 // 2. Verificar la sesión del socio
 if (empty($_SESSION['admin']['soc_id_socio'])) {
@@ -15,10 +28,10 @@ $id_empresa = 1;
 $id_consorcio = 1;
 $id_giro = 1;
 
-// 4. Funciones de BD (adaptadas a PDO)
+// 4. Funciones de BD (adaptadas a PDO y sanitizadas)
 function obtener_datos_socio_pdo($conexion_pdo, $id_socio, $id_empresa)
 {
-    $query = "SELECT * FROM san_socios WHERE soc_id_socio = ? AND soc_id_empresa = ?";
+    $query = "SELECT * FROM san_socios WHERE soc_id_socio = ? AND soc_id_empresa = ? LIMIT 1";
     $stmt = $conexion_pdo->prepare($query);
     $stmt->execute([$id_socio, $id_empresa]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
@@ -26,6 +39,7 @@ function obtener_datos_socio_pdo($conexion_pdo, $id_socio, $id_empresa)
 
 function obtener_servicios_pdo($conexion_pdo, $id_consorcio, $id_giro)
 {
+    // Bloqueo explícito de servicios 129 y 246 mediante NOT IN
     $query = "SELECT ser_id_servicio AS id_servicio, 
                      ser_descripcion AS descripcion,
                      ROUND( ser_cuota, 2 ) AS cuota,
@@ -35,6 +49,7 @@ function obtener_servicios_pdo($conexion_pdo, $id_consorcio, $id_giro)
                     AND ser_id_consorcio = ?
                     AND ser_id_giro = ?
                     AND ser_status != 'D'
+                    AND ser_id_servicio NOT IN (129, 246)
               ORDER BY ser_descripcion ASC";
 
     $stmt = $conexion_pdo->prepare($query);

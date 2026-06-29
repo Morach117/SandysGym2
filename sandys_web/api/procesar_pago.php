@@ -38,11 +38,25 @@ function log_processor(string $message): void {
     @file_put_contents(MP_PROCESSOR_LOG_FILE, "[$ts] [MEMBRESIA] $message" . PHP_EOL, FILE_APPEND);
 }
 
+// =================================================================
+// CONFIGURACIÓN DE CABECERAS Y CORS (Requerido para Producción)
+// =================================================================
 header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
 
+$origin = $_SERVER['HTTP_ORIGIN'] ?? 'https://sandysgym.com';
+header("Access-Control-Allow-Origin: $origin");
+header('Access-Control-Allow-Credentials: true');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-CSRF-Token');
+
+// Interceptar peticiones preflight (OPTIONS) de los navegadores
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
 /* ================== HELPERS DE BD (PDO) ================== */
-// ... (Tus helpers se mantienen igual, el motor PDO ya te protege de Inyecciones SQL aquí)
 function obtener_datos_socio_pdo(PDO $conexion_pdo, int $id_socio, int $id_empresa) {
     $q = "SELECT * FROM san_socios WHERE soc_id_socio = ? AND soc_id_empresa = ? LIMIT 1";
     $st = $conexion_pdo->prepare($q);
@@ -73,6 +87,14 @@ function validar_codigo_promo_pdo(PDO $conexion_pdo, string $codigo_promocion) {
     $st = $conexion_pdo->prepare($q);
     $st->execute([$codigo_promocion]);
     return $st->fetch(PDO::FETCH_ASSOC);
+}
+
+// Interceptor para peticiones Fetch con JSON Payload
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($_POST)) {
+    $jsonPayload = json_decode(file_get_contents('php://input'), true);
+    if (is_array($jsonPayload)) {
+        $_POST = $jsonPayload;
+    }
 }
 
 /* ================== SEGURIDAD ================== */

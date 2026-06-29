@@ -4,8 +4,11 @@ $(document).ready(function() {
     // Recuperar token CSRF (Asume la existencia del input oculto en el HTML)
     var csrfToken = $('#csrf_token').val() || '';
 
-    // Configuración global de AJAX para inyectar el header de seguridad en todas las peticiones
+    // Configuración global de AJAX para inyectar credenciales y header de seguridad
     $.ajaxSetup({
+        xhrFields: {
+            withCredentials: true // Obligatorio en producción para no perder la cookie PHPSESSID
+        },
         headers: {
             'X-CSRF-Token': csrfToken
         }
@@ -34,7 +37,8 @@ $(document).ready(function() {
                 codigo_promocion: codigoPromocion,
                 fecha_inicio: fechaInicio,
                 fecha_fin: fechaFin,
-                accion: "preview" 
+                accion: "preview",
+                csrf_token: csrfToken // Redundancia directa en el payload
             },
             dataType: "json",
             success: function(response) {
@@ -86,7 +90,10 @@ $(document).ready(function() {
         $.ajax({
             type: "POST",
             url: "./api/calcular_fecha_fin.php",
-            data: { servicio: servicioSeleccionado }, 
+            data: { 
+                servicio: servicioSeleccionado,
+                csrf_token: csrfToken // Inyección del token por seguridad en este endpoint
+            }, 
             dataType: "json",
             success: function(response) {
                 if (response.status === 'success') {
@@ -154,9 +161,11 @@ $(document).ready(function() {
         $btn.prop('disabled', true);
         $loader.show();
 
-        // Serializar form y anexar token de seguridad manualmente si no está en el DOM
+        // Serializar form y anexar variables adicionales
         var formData = $(this).serialize();
         formData += '&accion=pagar'; 
+        
+        // Garantizar que el token viaja en el body si el form no lo captura
         if(formData.indexOf('csrf_token') === -1) {
             formData += '&csrf_token=' + encodeURIComponent(csrfToken);
         }

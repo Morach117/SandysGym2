@@ -118,7 +118,7 @@ if ($accion === 'eliminar_plan') {
     echo json_encode(['exito' => true]); exit;
 }
 
-if ($accion === 'nueva_galeria' || $accion === 'editar_galeria') {
+if ($accion === 'nuevo_galeria' || $accion === 'editar_galeria') {
     $es_wide = isset($_POST['es_wide']) ? 1 : 0;
     $img_query_part = "";
 
@@ -137,7 +137,7 @@ if ($accion === 'nueva_galeria' || $accion === 'editar_galeria') {
         }
     }
 
-    if ($accion === 'nueva_galeria') {
+    if ($accion === 'nuevo_galeria') {
         $sql = "INSERT INTO san_landing_galeria (imagen_url, es_wide) VALUES ('$img_query_part', $es_wide)";
     } else {
         $id = (int)$_POST['id'];
@@ -164,9 +164,9 @@ if ($accion === 'eliminar_galeria') {
     echo json_encode(['exito' => true]); exit;
 }
 
-if ($accion === 'nueva_amenidad' || $accion === 'editar_amenidad') {
+if ($accion === 'nuevo_amenidad' || $accion === 'editar_amenidad') {
     $icono = $_POST['icono']; $titulo = $_POST['titulo']; $descripcion = $_POST['descripcion'];
-    if ($accion === 'nueva_amenidad') {
+    if ($accion === 'nuevo_amenidad') {
         $stmt = mysqli_prepare($conexion, "INSERT INTO san_landing_amenidades (icono, titulo, descripcion) VALUES (?, ?, ?)");
         mysqli_stmt_bind_param($stmt, "sss", $icono, $titulo, $descripcion);
     } else {

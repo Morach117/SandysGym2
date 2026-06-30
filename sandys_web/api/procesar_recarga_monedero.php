@@ -47,9 +47,9 @@ if (empty($_SESSION['admin']['soc_id_socio'])) {
 }
 
 // 2. Validación CSRF (Requiere que el Front envíe el token en la cabecera o POST)
-$headers = getallheaders();
-$csrfToken = $headers['X-CSRF-Token'] ?? $_POST['csrf_token'] ?? '';
-if (empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $csrfToken)) {
+$csrfToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['csrf_token'] ?? '';
+
+if (empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], (string)$csrfToken)) {
     http_response_code(403);
     log_processor("Bloqueo de seguridad: Intento de CSRF detectado para el socio ID {$_SESSION['admin']['soc_id_socio']}");
     echo json_encode(['status' => 'error', 'message' => 'Token de seguridad inválido. Recarga la página.']);

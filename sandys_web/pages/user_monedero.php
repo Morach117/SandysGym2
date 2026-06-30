@@ -573,11 +573,15 @@ if (!$prepago) {
                 $btn.html('Generando... <i class="fas fa-spinner fa-spin ml-2"></i>');
                 $btn.prop('disabled', true);
 
-                // El token viajará automáticamente en el header 'X-CSRF-Token' gracias a $.ajaxSetup
+                // El token viaja en el header y explícitamente en POST como fallback
                 $.ajax({
                     type: "POST",
                     url: "api/procesar_recarga_monedero.php",
-                    data: { importe: importe, id_socio: idSocio },
+                    data: { 
+                        importe: importe, 
+                        id_socio: idSocio,
+                        csrf_token: csrfToken
+                    },
                     dataType: "json",
                     success: function (response) {
                         if (response.status === 'success' && response.url) {
@@ -617,7 +621,7 @@ if (!$prepago) {
                     "type": "POST",
                     "data": function (d) {
                         d.id_socio = $('#id_socio').val();
-                        // Nota: El header X-CSRF-Token ya se envía aquí también
+                        d.csrf_token = csrfToken; // Inyección de CSRF al backend de DT
                     }
                 },
                 "columns": [
@@ -641,7 +645,25 @@ if (!$prepago) {
                     { "data": "hora" }
                 ],
                 "language": {
-                    "url": "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-MX.json"
+                    "sProcessing":     "Procesando...",
+                    "sLengthMenu":     "Mostrar _MENU_ registros",
+                    "sZeroRecords":    "No se encontraron resultados",
+                    "sEmptyTable":     "Ningún dato disponible en esta tabla",
+                    "sInfo":           "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+                    "sInfoEmpty":      "Mostrando registros del 0 al 0 de un total de 0 registros",
+                    "sInfoFiltered":   "(filtrado de un total de _MAX_ registros)",
+                    "sSearch":         "Buscar:",
+                    "sLoadingRecords": "Cargando...",
+                    "oPaginate": {
+                        "sFirst":    "Primero",
+                        "sLast":     "Último",
+                        "sNext":     "Siguiente",
+                        "sPrevious": "Anterior"
+                    },
+                    "oAria": {
+                        "sSortAscending":  ": Activar para ordenar la columna de manera ascendente",
+                        "sSortDescending": ": Activar para ordenar la columna de manera descendente"
+                    }
                 }
             });
         }

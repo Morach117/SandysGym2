@@ -54,10 +54,36 @@ try {
     @keyframes fadeInUpdate { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
     .rounded-pill { border-radius: 50rem !important; }
 
-    .hero-item-container { position: relative; width: 100%; height: 85vh; overflow: hidden; background-color: var(--bg-color); }
-    .hero-img-desktop { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
-    .hero-img-mobile { display: none; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+    /* ==========================================
+       HERO SLIDER - OPTIMIZADO RESPONSIVE ESTRICTO
+       ========================================== */
+    .hero-item-container { 
+        position: relative; 
+        width: 100%; 
+        height: auto;
+        overflow: hidden; 
+        background-color: var(--bg-color);
+        /* Mantiene la proporción exacta 16:9 de la lona 1920x1080 */
+        aspect-ratio: 16 / 9;
+    }
+    .hero-img-desktop { 
+        display: block; 
+        width: 100%; 
+        height: 100%; 
+        object-fit: contain; 
+        object-position: center; 
+    }
+    .hero-img-mobile { 
+        display: none; 
+        width: 100%; 
+        height: 100%; 
+        object-fit: contain; 
+        object-position: center; 
+    }
 
+    /* ==========================================
+       COMPONENTES ADICIONALES DE LA LANDING
+       ========================================== */
     .amenity-card { background: var(--input-bg); border: 1px solid #333; border-radius: 16px; padding: 40px 20px; text-align: center; transition: transform 0.3s ease, border-color 0.3s ease; height: 100%; }
     .amenity-card:hover { transform: translateY(-5px); border-color: var(--accent-orange); }
     .amenity-icon { font-size: 45px; color: var(--accent-orange); margin-bottom: 20px; }
@@ -88,7 +114,26 @@ try {
 
     .cta-bottom-section { background-color: var(--accent-orange); padding: 60px 0; text-align: center; color: var(--bg-color); }
 
-    @media (max-width: 768px) { .hero-img-desktop { display: none; } .hero-img-mobile { display: block; } .app-image-wrapper { margin-top: 40px; text-align: center; } }
+    /* ==========================================
+       MEDIA QUERIES - BREAKPOINT MÓVIL
+       ========================================== */
+    @media (max-width: 768px) { 
+        .hero-img-desktop { 
+            display: none !important; 
+        } 
+        .hero-img-mobile { 
+            display: block !important; 
+        } 
+        .hero-item-container { 
+            height: auto !important;
+            /* Se redefine la proporción exacta 2:3 para la lona vertical de 800x1200 */
+            aspect-ratio: 2 / 3; 
+        }
+        .app-image-wrapper { 
+            margin-top: 40px; 
+            text-align: center; 
+        } 
+    }
 </style>
 
 <?php if(isset($_GET['edit_mode']) && $_GET['edit_mode'] == 1): ?>
@@ -224,22 +269,57 @@ function notificarParent(tipo, data) {
     }
 }
 
-    function renderizarHero(heroes) {
-        const contenedor = $('#hero-container');
-        if (contenedor.hasClass('owl-loaded')) { contenedor.trigger('destroy.owl.carousel'); contenedor.removeClass('owl-hidden'); }
-        let html = ''; const basePath = 'assets/img/hero/';
-
-        if (heroes.length === 0) html = '<div class="text-center text-muted" style="padding: 100px 0;">No hay elementos en Hero.</div>';
-
-        heroes.forEach((h, index) => {
-            let deskImg = h.img_desktop.startsWith('http') ? h.img_desktop : basePath + h.img_desktop;
-            let mobImg = h.img_mobile.startsWith('http') ? h.img_mobile : basePath + h.img_mobile;
-            let editAttr = editMode ? `class="hero-item-container fade-update editable-element" ondblclick='notificarParent("hero", dbLandingData.hero[${index}])'` : `class="hero-item-container fade-update"`;
-            html += `<div ${editAttr}><img src="${deskImg}" class="hero-img-desktop" fetchpriority="high"><img src="${mobImg}" class="hero-img-mobile" fetchpriority="high"></div>`;
-        });
-        contenedor.html(html);
-        if ($.fn.owlCarousel && heroes.length > 0) contenedor.owlCarousel({ loop: heroes.length > 1, margin: 0, nav: false, items: 1, dots: false, animateOut: 'fadeOut', animateIn: 'fadeIn', smartSpeed: 1200, autoHeight: false, autoplay: true });
+function renderizarHero(heroes) {
+    const contenedor = $('#hero-container');
+    
+    // 1. Destrucción total y limpieza de instancias previas de Owl Carousel
+    if (contenedor.hasClass('owl-loaded')) { 
+        contenedor.trigger('destroy.owl.carousel'); 
+        contenedor.removeClass('owl-loaded owl-drag owl-hidden');
+        contenedor.find('.owl-stage-outer').children().unwrap();
+        contenedor.empty();
     }
+    
+    let html = ''; 
+    const basePath = 'assets/img/hero/';
+
+    if (heroes.length === 0) {
+        html = '<div class="text-center text-muted" style="padding: 100px 0;">No hay elementos en Hero.</div>';
+        contenedor.html(html);
+        return;
+    }
+
+    heroes.forEach((h, index) => {
+        let deskImg = h.img_desktop.startsWith('http') ? h.img_desktop : basePath + h.img_desktop;
+        let mobImg = h.img_mobile.startsWith('http') ? h.img_mobile : basePath + h.img_mobile;
+        let editAttr = editMode ? `class="hero-item-container fade-update editable-element" ondblclick='notificarParent("hero", dbLandingData.hero[${index}])'` : `class="hero-item-container fade-update"`;
+        html += `<div ${editAttr}><img src="${deskImg}" class="hero-img-desktop" fetchpriority="high"><img src="${mobImg}" class="hero-img-mobile" fetchpriority="high"></div>`;
+    });
+    
+    // 2. Inyección síncrona en el DOM antes de invocar al plugin
+    contenedor.html(html);
+    
+    // 3. Inicialización controlada garantizando el recálculo de dimensiones externas
+    if ($.fn.owlCarousel && heroes.length > 0) { 
+        setTimeout(() => {
+            contenedor.owlCarousel({ 
+                loop: heroes.length > 1, 
+                margin: 0, 
+                nav: false, 
+                items: 1, 
+                dots: false, 
+                animateOut: 'fadeOut', 
+                animateIn: 'fadeIn', 
+                smartSpeed: 1200, 
+                autoHeight: false, 
+                autoplay: true,
+                responsiveRefreshRate: 10
+            });
+            // Forzar disparo del evento de resize interno para corregir el ancho colapsado
+            contenedor.trigger('refresh.owl.carousel');
+        }, 50);
+    }
+}
 
     function renderizarPlanes(planes) {
         const contenedor = document.getElementById('planes-container');

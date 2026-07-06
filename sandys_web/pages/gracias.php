@@ -14,6 +14,21 @@ $paymentId   = filter_input(INPUT_GET, 'payment_id', FILTER_SANITIZE_NUMBER_INT)
 $isApproved = ($status === 'approved');
 $isPending  = ($status === 'pending' || $status === 'in_process');
 
+$estadoTraducido = '';
+switch(strtolower($status)) {
+    case 'approved': $estadoTraducido = 'Aprobado'; break;
+    case 'pending':
+    case 'in_process': $estadoTraducido = 'Pendiente'; break;
+    case 'rejected': $estadoTraducido = 'Rechazado'; break;
+    case 'cancelled': $estadoTraducido = 'Cancelado'; break;
+    case 'null':
+    case '':
+    case 'unknown':
+        $estadoTraducido = 'No completado / Cancelado'; 
+        break;
+    default: $estadoTraducido = ucfirst($status);
+}
+
 // Variables por defecto
 $tipoOperacion = 'membresia';
 $detallesExtra = [];
@@ -59,7 +74,7 @@ $mensajePrincipal = $isApproved
     ? '¡Tu transacción se ha procesado exitosamente!'
     : ($isPending
         ? 'Tu transacción está pendiente de confirmación.'
-        : "El estado de tu transacción es: <strong>{$status}</strong>.");
+        : "El estado de tu transacción es: <strong>{$estadoTraducido}</strong>");
 
 if ($tipoOperacion === 'recarga_monedero') {
     $mensajeSecundario = $isApproved
@@ -83,17 +98,9 @@ $urlInicio   = 'index.php?page=user_home';
 $urlPagos    = 'index.php?page=mis_pagos';
 $urlRecibo   = $isApproved ? "index.php?page=recibo&payment_id={$paymentId}" : '#';
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <title><?= $titulo ?> - Sandy’s Gym</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="https://fonts.googleapis.com/css?family=Muli:300,400,500,600,700,800,900&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css?family=Oswald:300,400,500,600,700&display=swap" rel="stylesheet">
-  
-  <style>
-    :root {
+<style>
+    /* variables y reset local */
+    .gracias-container {
       --bg-base: #050505;
       --bg-panel: #1a1a1a;
       --brand-red: #ef4444;
@@ -102,18 +109,17 @@ $urlRecibo   = $isApproved ? "index.php?page=recibo&payment_id={$paymentId}" : '
       --text-main: #ffffff;
       --text-muted: #a1a1aa;
       --border-radius-pill: 50rem;
-    }
-
-    body {
+      
       background-color: var(--bg-base);
       color: var(--text-muted);
       font-family: 'Muli', sans-serif;
       margin: 0;
-      padding: 0;
+      padding: 40px 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
+      min-height: calc(100vh - 200px);
+      width: 100%;
     }
 
     .payment-wrapper {
@@ -219,11 +225,10 @@ $urlRecibo   = $isApproved ? "index.php?page=recibo&payment_id={$paymentId}" : '
       to { opacity: 1; transform: translateY(0); }
     }
   </style>
-</head>
-<body>
 
-<div class="payment-wrapper">
-  <div class="payment-card">
+<div class="gracias-container">
+  <div class="payment-wrapper">
+    <div class="payment-card">
     
     <div class="icon-wrap <?= $cardIconBg ?>">
       <i class="<?= $cardIcon ?>"></i>
@@ -235,7 +240,7 @@ $urlRecibo   = $isApproved ? "index.php?page=recibo&payment_id={$paymentId}" : '
     <div class="payment-details">
       <div class="detail-row">
         <span class="label">Estado</span>
-        <span class="value"><?= ucfirst($status) ?></span>
+        <span class="value"><?= $estadoTraducido ?></span>
       </div>
       <div class="detail-row">
         <span class="label">Referencia</span>
@@ -278,6 +283,4 @@ $urlRecibo   = $isApproved ? "index.php?page=recibo&payment_id={$paymentId}" : '
 
   </div>
 </div>
-
-</body>
-</html>
+</div>

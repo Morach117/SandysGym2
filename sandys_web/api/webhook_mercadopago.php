@@ -349,6 +349,14 @@ function registrar_recarga_monedero_pdo(PDO $conn, int $payment_id, array $metad
         $conn->commit();
         log_webhook("ÉXITO: Recarga procesada. Socio: {$id_socio} | Monto: {$importe_recarga} | Saldo final: {$saldo_final}");
         return true;
+    } catch (PDOException $e) {
+        $conn->rollBack();
+        if ($e->getCode() == 23000 && strpos($e->getMessage(), '1062') !== false) {
+            log_webhook("ADVERTENCIA: Recarga duplicada detectada por constraint de BD (Payment ID: {$payment_id}). Ignorado.");
+            return false;
+        }
+        log_webhook("ERROR MONEDERO: " . $e->getMessage());
+        throw $e;
     } catch (Exception $e) {
         $conn->rollBack();
         log_webhook("ERROR MONEDERO: " . $e->getMessage());
@@ -540,6 +548,14 @@ function registrar_pago_completo_pdo(PDO $conn, object $payment, array $metadata
         $conn->commit();
         log_webhook("ÉXITO: Pago registrado en san_pagos ID: {$id_pago_principal}");
         return $id_pago_principal;
+    } catch (PDOException $e) {
+        $conn->rollBack();
+        if ($e->getCode() == 23000 && strpos($e->getMessage(), '1062') !== false) {
+            log_webhook("ADVERTENCIA: Pago duplicado detectado por constraint de BD (Payment ID: {$payment_id}). Ignorado.");
+            return 0;
+        }
+        log_webhook("ERROR REGISTRO PAGO: " . $e->getMessage());
+        throw $e;
     } catch (Exception $e) {
         $conn->rollBack();
         log_webhook("ERROR REGISTRO PAGO: " . $e->getMessage());

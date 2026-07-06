@@ -281,9 +281,20 @@ try {
     http_response_code(400);
     echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
 } catch (MPApiException $e) {
-    log_processor("MPApiException: " . json_encode($e->getApiResponse()));
+    $apiResponse = $e->getApiResponse();
+    $statusCode = method_exists($apiResponse, 'getStatusCode') ? $apiResponse->getStatusCode() : 0;
+    $content = method_exists($apiResponse, 'getContent') ? json_encode($apiResponse->getContent()) : 'N/A';
+    log_processor("MPApiException: HTTP={$statusCode} | Body={$content}");
     http_response_code(502);
-    echo json_encode(['status' => 'error', 'message' => 'Fallo en la comunicación con Mercado Pago.']);
+    
+    $userMsg = 'Fallo en la comunicación con Mercado Pago.';
+    if ($statusCode === 401 || $statusCode === 403) {
+        $userMsg = 'Error de autorización: Verifica que el Access Token de la cuenta sea correcto y tenga permisos.';
+    } elseif ($statusCode === 400) {
+        $userMsg = 'Error en los datos de la preferencia enviados a Mercado Pago. Verifica la configuración de la cuenta.';
+    }
+    
+    echo json_encode(['status' => 'error', 'message' => $userMsg]);
 } catch (PDOException $e) {
     log_processor("PDOException: " . $e->getMessage());
     http_response_code(500);

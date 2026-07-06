@@ -32,11 +32,13 @@ define('MAIL_ERROR_LOG_FILE', LOGS_DIR . 'mail_error_' . $current_year_month . '
 // (Eliminamos la antigua constante 'MAIL_LOG_FILE')
 
 // --- Claves de Mercado Pago ---
-define('MP_ACCESS_TOKEN', 'APP_USR-420603524423499-103102-ce39a515b91362978c1fade1cfd5dee0-2958194482');
 
-// === ¡AÑADE ESTA LÍNEA! ===
-// Pega aquí la clave que copiaste de la pantalla de Mercado Pago
-define('MP_WEBHOOK_SECRET', 'e54a4b625e48131c9ceddd3ad05ff0572de04363574474e16718624e37325daf');
+// Access Token de la cuenta del cliente
+define('MP_ACCESS_TOKEN', 'APP_USR-3991974917844732-070316-615ffb2e447167c413f35e6a8850a565-3515681791');
+
+// === WEBHOOK SECRET CONFIGURADO ===
+// Clave secreta obtenida del panel de Webhooks de Mercado Pago del cliente
+define('MP_WEBHOOK_SECRET', '42a524a02d78df59524fca7d98683aa71216441d2389aeda00cee7ffd13e4740');
 
 define('MP_WEBHOOK_LOG_FILE', LOGS_DIR . 'webhook' . $current_year_month . '.log');
 

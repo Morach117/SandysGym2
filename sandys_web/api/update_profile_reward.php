@@ -20,7 +20,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
-    $idSocio = isset($_POST['id_socio']) ? intval($_POST['id_socio']) : 0;
+    session_start();
+    if (empty($_SESSION['admin']['soc_id_socio'])) {
+        throw new Exception("Acceso denegado. Inicie sesión para actualizar su perfil.");
+    }
+    // Mitigación IDOR: Se fuerza el ID del socio a partir de la sesión activa
+    $idSocio = (int)$_SESSION['admin']['soc_id_socio'];
     
     $nombres        = strtoupper(trim($_POST['nombres'] ?? ''));
     $apPaterno      = strtoupper(trim($_POST['ap_paterno'] ?? ''));

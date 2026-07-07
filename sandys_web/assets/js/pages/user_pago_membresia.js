@@ -75,8 +75,35 @@ $(document).ready(function() {
         });
     }
 
+    // --- Función para validar y controlar la sección del cupón ---
+    function validarCupon(immediate) {
+        var servicioSeleccionado = $('#servicio').val();
+        var $cuponContainer = $('#codigo_promocion').closest('.form-group');
+        var $cuponInput = $('#codigo_promocion');
+        var $cuponBtn = $('#aplicarCuponBtn');
+
+        if (servicioSeleccionado === '1-1') {
+            if (immediate) {
+                $cuponContainer.show();
+            } else {
+                $cuponContainer.slideDown();
+            }
+            $cuponInput.prop('disabled', false);
+            $cuponBtn.prop('disabled', false);
+        } else {
+            if (immediate) {
+                $cuponContainer.hide();
+            } else {
+                $cuponContainer.slideUp();
+            }
+            $cuponInput.prop('disabled', true);
+            $cuponBtn.prop('disabled', true);
+        }
+    }
+
     // --- Evento: Cambiar el servicio (Cálculo de Fechas) ---
     $('#servicio').on('change', function() {
+        validarCupon(false);
         var servicioSeleccionado = $(this).val();
         var $dateFieldsContainer = $('#dateFieldsContainer');
         var $fechaInicioInput = $('#fecha_inicio');
@@ -212,4 +239,7 @@ $(document).ready(function() {
             }
         });
     });
+
+    // Validar estado inicial al cargar la página
+    validarCupon(true);
 });

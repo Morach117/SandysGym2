@@ -4,7 +4,7 @@ session_start();
 // --- Lógica de enrutamiento y seguridad ---
 $publicPages = [
     'home', 'team', 'services', 'contact', 'classes', 'about_us',
-    'login', 'registration', 'validate', 'reset_password', 'inscribite','success_stories','faq'
+    'login', 'registration', 'validate', 'reset_password', 'inscribite','success_stories','faq', 'accept_invite'
     // 'gracias' y 'pago_fallido' movidas de aquí
 ];
 $privatePages = [
@@ -32,7 +32,13 @@ if ($loggedIn && in_array($page, $privatePages)) {
 }
 // ===============================================
 
-// 2. INCLUIR EL CONTENIDO DE LA PÁGINA
+// 2. INCLUIR EL CONTENIDO DE LA PÁGINA (Preveniendo LFI con whitelist)
+$allowedPages = array_merge($publicPages, $privatePages);
+
+if (!in_array($page, $allowedPages)) {
+    $page = 'home'; // Fallback por defecto si se provee una página no permitida
+}
+
 if (file_exists(__DIR__ . "/pages/$page.php")) {
     require(__DIR__ . "/pages/$page.php");
 } else {

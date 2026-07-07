@@ -11,8 +11,8 @@
 
 // --- Configuración de Correo (SMTP) ---
 define('SMTP_HOST', 'smtp.ionos.mx');
-define('SMTP_USER', 'prueba@sandysgym.com');
-define('SMTP_PASS', 'Mor@ch117@'); // ¡Protege este archivo!
+define('SMTP_USER', getenv('SMTP_USER') ?: 'prueba@sandysgym.com');
+define('SMTP_PASS', getenv('SMTP_PASS') ?: ''); // ¡Protege este archivo!
 define('SMTP_PORT', 587);
 define('SMTP_FROM_EMAIL', 'prueba@sandysgym.com');
 define('SMTP_FROM_NAME', 'Sandys Gym');
@@ -34,11 +34,11 @@ define('MAIL_ERROR_LOG_FILE', LOGS_DIR . 'mail_error_' . $current_year_month . '
 // --- Claves de Mercado Pago ---
 
 // Access Token de la cuenta del cliente
-define('MP_ACCESS_TOKEN', 'APP_USR-7588483348765837-070221-c9e17a44954ed02c289e0943a148b41f-3515409590');
+define('MP_ACCESS_TOKEN', getenv('MP_ACCESS_TOKEN') ?: '');
 
 // === WEBHOOK SECRET CONFIGURADO ===
 // Clave secreta obtenida del panel de Webhooks de Mercado Pago del cliente
-define('MP_WEBHOOK_SECRET', '49f1f07173056b00162adadd711b20df0d006cad9cb64862a085b71f882837e5');
+define('MP_WEBHOOK_SECRET', getenv('MP_WEBHOOK_SECRET') ?: '');
 
 define('MP_WEBHOOK_LOG_FILE', LOGS_DIR . 'webhook' . $current_year_month . '.log');
 

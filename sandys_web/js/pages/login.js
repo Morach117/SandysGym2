@@ -1,20 +1,15 @@
 $(document).ready(function() {
 
-    // =======================================================================
-    // #1: MANEJADOR DEL FORMULARIO DE LOGIN PRINCIPAL
-    // =======================================================================
     $(document).on("submit", "#adminLoginFrm", function(event) {
         event.preventDefault(); 
         
         let btnSubmit = $('#btnLoginSubmit');
         let originalText = btnSubmit.html();
         
-        // Estado de carga
         btnSubmit.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> Validando...');
 
-        $.post("query/login.php", $(this).serialize(), function(data) {
+        $.post("api/login.php", $(this).serialize(), function(data) {
             
-            // Restaurar botón
             btnSubmit.prop('disabled', false).html(originalText);
 
             if (data.res == "invalid_email") {
@@ -68,9 +63,6 @@ $(document).ready(function() {
         });
     });
 
-    // =======================================================================
-    // #2: FUNCIONALIDAD DEL "OJO" PARA MOSTRAR/OCULTAR CONTRASEÑA
-    // =======================================================================
     $('#togglePassword').on('click', function() {
         const passwordField = $('#password');
         const passwordFieldType = passwordField.attr('type');
@@ -84,9 +76,6 @@ $(document).ready(function() {
         }
     });
 
-    // =======================================================================
-    // #3: MANEJADOR DEL FORMULARIO PARA RECUPERAR CONTRASEÑA (MODAL)
-    // =======================================================================
     $('#passwordResetRequestFrm').on('submit', function(event) {
         event.preventDefault();
         
@@ -97,7 +86,7 @@ $(document).ready(function() {
         btnReset.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> Enviando...');
 
         $.ajax({
-            url: './query/password_reset_request.php',
+            url: './api/password_reset_request.php',
             method: 'POST',
             data: { email: email },
             success: function(response) {

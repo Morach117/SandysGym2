@@ -1,5 +1,5 @@
 $(document).on("submit", "#adminLoginFrm", function () {  
-    $.post("query/login.php", $(this).serialize(), function (data) { 
+    $.post("api/login.php", $(this).serialize(), function (data) { 
         if (data.res == "invalid_email") {
             Swal.fire(
                 'Correo electrónico no válido', 

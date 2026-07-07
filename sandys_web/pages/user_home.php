@@ -3,6 +3,84 @@
 require_once __DIR__ . '/../conn.php';
 include('./api/select_data.php');
 
+// =========================================================================
+// --- ENDPOINT INTERNO: GENERACIÓN DE CUPÓN DE REACTIVACIÓN ---
+// =========================================================================
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'generar_reactivacion') {
+    header('Content-Type: application/json');
+    $idSocioPost = (int)($_POST['id_socio'] ?? 0);
+    
+    if ($idSocioPost <= 0) {
+        echo json_encode(['success' => false, 'message' => 'ID de socio inválido.']);
+        exit;
+    }
+    
+    try {
+        $conn->beginTransaction();
+        
+        $tituloPromo = "REACTIVACION-" . $idSocioPost;
+        
+        $stmtVal = $conn->prepare("SELECT id_promocion FROM san_promociones WHERE titulo = ? LIMIT 1");
+        $stmtVal->execute([$tituloPromo]);
+        if ($stmtVal->fetch()) {
+            echo json_encode(['success' => false, 'message' => 'Ya has generado tu cupón de reactivación.']);
+            $conn->rollBack();
+            exit;
+        }
+        
+        $stmtPago = $conn->prepare("SELECT pag_fecha_fin FROM san_pagos WHERE pag_id_socio = ? AND pag_status = 'A' ORDER BY pag_fecha_fin DESC LIMIT 1");
+        $stmtPago->execute([$idSocioPost]);
+        $pago = $stmtPago->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$pago) {
+            echo json_encode(['success' => false, 'message' => 'No se encontró historial de membresía.']);
+            $conn->rollBack();
+            exit;
+        }
+        
+        $currentDate = new DateTime();
+        $currentDate->setTime(0, 0, 0);
+        $fechaFinDate = new DateTime($pago['pag_fecha_fin']);
+        $fechaFinDate->setTime(0, 0, 0);
+        
+        if ($currentDate <= $fechaFinDate || $fechaFinDate->diff($currentDate)->days <= 30) {
+            echo json_encode(['success' => false, 'message' => 'Aún no cumples con los 30 días de vencimiento.']);
+            $conn->rollBack();
+            exit;
+        }
+        
+        $fechaActual = date('Y-m-d');
+        $vigenciaFinal = date('Y-m-d', strtotime($fechaActual . ' + 15 days'));
+        
+        $stmtPromo = $conn->prepare("INSERT INTO san_promociones (titulo, fecha_generada, vigencia_inicial, vigencia_final, porcentaje_descuento, utilizado, tipo_promocion, fecha_creacion) VALUES (?, ?, ?, ?, 35, '0', 'Individual', ?)");
+        $stmtPromo->execute([$tituloPromo, $fechaActual, $fechaActual, $vigenciaFinal, $fechaActual]);
+        
+        $idPromocion = $conn->lastInsertId();
+        
+        $stmtDesc = $conn->prepare("INSERT INTO san_descuentos_promociones (id_promocion, id_servicio) VALUES (?, '1-1')");
+        $stmtDesc->execute([$idPromocion]);
+        
+        $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        $codigoFinal = 'VUELVE' . $idSocioPost . '-';
+        for ($i = 0; $i < 4; $i++) {
+            $codigoFinal .= $chars[rand(0, strlen($chars) - 1)];
+        }
+        
+        $stmtCodigo = $conn->prepare("INSERT INTO san_codigos (codigo_generado, id_promocion, status, id_socio) VALUES (?, ?, 1, ?)");
+        $stmtCodigo->execute([$codigoFinal, $idPromocion, $idSocioPost]);
+        
+        $conn->commit();
+        echo json_encode(['success' => true, 'codigo' => $codigoFinal, 'message' => 'Cupón generado exitosamente.']);
+    } catch (Exception $e) {
+        if ($conn->inTransaction()) {
+            $conn->rollBack();
+        }
+        echo json_encode(['success' => false, 'message' => 'Error al generar cupón: ' . $e->getMessage()]);
+    }
+    exit;
+}
+// =========================================================================
+
 // --- CONFIGURACIÓN ---
 date_default_timezone_set('America/Mexico_City');
 
@@ -30,53 +108,89 @@ $pagoData = $stmt->fetch(PDO::FETCH_ASSOC);
 $fechaFin = $pagoData['pag_fecha_fin'] ?? null;
 $idServicioActivo = $pagoData['pag_id_servicio'] ?? 0;
 
-// 3. CALCULAR ESTADO DE VIGENCIA
-if ($fechaFin) {
-    $currentDate = new DateTime();
-    $fechaFinDate = new DateTime($fechaFin);
+// 3. VALIDACIÓN ESTRICTA PARA MOSTRAR "ADMINISTRAR PLAN" Y ESTADO ACTIVO
+$serviciosPlanFamiliar = [123, 124, 125, 126, 127, 167];
+$serviciosBeneficiarios = [125, 126, 127];
 
-    $currentDate->setTime(0, 0, 0);
-    $fechaFinDate->setTime(0, 0, 0);
-
-    $fechaFinFormateada = $fechaFinDate->format('d/m/Y');
-
-    if ($currentDate > $fechaFinDate) {
-        $miembroActivo = false;
-        $mensajeAlerta = "Tu membresía ha finalizado. ¡Reactívala para no perderte de nada!";
-        $estadoMembresia = "Membresía Finalizada";
-        $fechaVencimientoTexto = "Venció el " . $fechaFinFormateada;
-        $claseEstado = "status-expired";
-        $iconoEstado = "fa-times-circle";
-    } else {
-        $miembroActivo = true;
-        $interval = $currentDate->diff($fechaFinDate);
-        $diasRestantes = $interval->days;
-        $fechaVencimientoTexto = "Vigente hasta el " . $fechaFinFormateada;
-
-        if ($diasRestantes <= 3) {
-            $mensajeAlerta = "¡Atención! A tu membresía le quedan solo $diasRestantes día(s). ¡Renuévala pronto!";
-            $estadoMembresia = "Vence en $diasRestantes día(s)";
-            $claseEstado = "status-warning";
-            $iconoEstado = "fa-exclamation-triangle";
+if (in_array($idServicioActivo, $serviciosPlanFamiliar)) {
+    $mostrarAdminPlan = true;
+    
+    // Si es beneficiario, validar que siga vinculado a un titular y que el titular esté vigente
+    if (in_array($idServicioActivo, $serviciosBeneficiarios)) {
+        $stmtTit = $conn->prepare("
+            SELECT t.pag_fecha_fin 
+            FROM san_socios s
+            JOIN san_pagos t ON t.pag_id_socio = s.soc_id_titular_grupo
+            WHERE s.soc_id_socio = ? AND t.pag_status = 'A' AND t.pag_fecha_fin >= CURDATE()
+            ORDER BY t.pag_fecha_fin DESC LIMIT 1
+        ");
+        $stmtTit->execute([$socioId]);
+        $titularActivo = $stmtTit->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$titularActivo) {
+            $mostrarAdminPlan = false;
+            $miembroActivo = false; // Ya no goza de los beneficios del plan
+            $mensajeAlerta = "El plan de tu titular ha expirado o has sido desvinculado.";
+            $estadoMembresia = "Sin membresía activa";
+            $claseEstado = "status-inactive";
+            $iconoEstado = "fa-user-times";
+            $fechaVencimientoTexto = "";
         } else {
-            $estadoMembresia = "Membresía Activa";
+            $miembroActivo = true;
             $claseEstado = "status-active";
             $iconoEstado = "fa-check-circle";
+            $estadoMembresia = "Membresía Activa";
+            $mensajeAlerta = ""; // Sincroniza la Alerta de Mensajes
+            if ($fechaFin) {
+                $fechaFinDate = new DateTime($fechaFin);
+                $fechaVencimientoTexto = "Vigente hasta el " . $fechaFinDate->format('d/m/Y');
+            }
         }
     }
-} else {
-    $miembroActivo = false;
-    $estadoMembresia = "Sin membresía activa";
-    $claseEstado = "status-inactive";
-    $iconoEstado = "fa-user-times";
-    $mensajeAlerta = "No tienes una membresía activa. ¡Adquiere una para acceder a todos los beneficios!";
 }
 
-// 4. VALIDACIÓN ESTRICTA PARA MOSTRAR "ADMINISTRAR PLAN"
-$serviciosPlanFamiliar = [123, 124, 125, 126, 127, 167];
+// 4. CALCULAR ESTADO DE VIGENCIA (solo si no fue definido por validación de plan activo)
+if (!$miembroActivo && empty($mensajeAlerta)) {
+    if ($fechaFin) {
+        $currentDate = new DateTime();
+        $fechaFinDate = new DateTime($fechaFin);
 
-if ($miembroActivo && in_array($idServicioActivo, $serviciosPlanFamiliar)) {
-    $mostrarAdminPlan = true;
+        $currentDate->setTime(0, 0, 0);
+        $fechaFinDate->setTime(0, 0, 0);
+
+        $fechaFinFormateada = $fechaFinDate->format('d/m/Y');
+
+        if ($currentDate > $fechaFinDate) {
+            $miembroActivo = false;
+            $mensajeAlerta = "Tu membresía ha finalizado. ¡Reactívala para no perderte de nada!";
+            $estadoMembresia = "Membresía Finalizada";
+            $fechaVencimientoTexto = "Venció el " . $fechaFinFormateada;
+            $claseEstado = "status-expired";
+            $iconoEstado = "fa-times-circle";
+        } else {
+            $miembroActivo = true;
+            $interval = $currentDate->diff($fechaFinDate);
+            $diasRestantes = $interval->days;
+            $fechaVencimientoTexto = "Vigente hasta el " . $fechaFinFormateada;
+
+            if ($diasRestantes <= 3) {
+                $mensajeAlerta = "¡Atención! A tu membresía le quedan solo $diasRestantes día(s). ¡Renuévala pronto!";
+                $estadoMembresia = "Vence en $diasRestantes día(s)";
+                $claseEstado = "status-warning";
+                $iconoEstado = "fa-exclamation-triangle";
+            } else {
+                $estadoMembresia = "Membresía Activa";
+                $claseEstado = "status-active";
+                $iconoEstado = "fa-check-circle";
+            }
+        }
+    } else {
+        $miembroActivo = false;
+        $estadoMembresia = "Sin membresía activa";
+        $claseEstado = "status-inactive";
+        $iconoEstado = "fa-user-times";
+        $mensajeAlerta = "No tienes una membresía activa. ¡Adquiere una para acceder a todos los beneficios!";
+    }
 }
 
 // =========================================================================
@@ -87,17 +201,72 @@ $stmtRef->execute([$socioId]);
 $idPadrino = $stmtRef->fetchColumn();
 
 $cuponGenerado = null;
+$cuponUsado = false;
 if ($idPadrino > 0) {
-    // Verificamos si ya generó un cupón previamente buscando la promoción ligada a él
     $stmtCupon = $conn->prepare("
-        SELECT c.codigo_generado 
+        SELECT c.codigo_generado, p.utilizado 
         FROM san_codigos c 
         INNER JOIN san_promociones p ON c.id_promocion = p.id_promocion
         WHERE p.titulo = ? LIMIT 1
     ");
     $tituloPromoBuscado = "REFERIDO-" . $socioId;
     $stmtCupon->execute([$tituloPromoBuscado]);
-    $cuponGenerado = $stmtCupon->fetchColumn();
+    $cuponData = $stmtCupon->fetch(PDO::FETCH_ASSOC);
+    if ($cuponData) {
+        $cuponGenerado = $cuponData['codigo_generado'];
+        $cuponUsado = (bool)$cuponData['utilizado'];
+}
+}
+// =========================================================================
+
+// =========================================================================
+// --- LÓGICA DE CUPÓN DE REACTIVACIÓN (> 30 DÍAS) ---
+// =========================================================================
+$diasVencido = 0;
+$puedeGenerarReactivacion = false;
+$btnReactivacionDeshabilitado = true;
+$leyendaReactivacion = "Opción disponible 30 días después del vencimiento";
+
+if (!$miembroActivo && $fechaFin) {
+    $currentDateObj = new DateTime();
+    $fechaFinDateObj = new DateTime($fechaFin);
+    $currentDateObj->setTime(0, 0, 0);
+    $fechaFinDateObj->setTime(0, 0, 0);
+
+    if ($currentDateObj > $fechaFinDateObj) {
+        $intervalVencido = $fechaFinDateObj->diff($currentDateObj);
+        $diasVencido = $intervalVencido->days;
+    }
+}
+
+$stmtReactivacion = $conn->prepare("
+    SELECT c.codigo_generado, p.utilizado 
+    FROM san_codigos c 
+    INNER JOIN san_promociones p ON c.id_promocion = p.id_promocion
+    WHERE p.titulo = ? LIMIT 1
+");
+$tituloReactivacion = "REACTIVACION-" . $socioId;
+$stmtReactivacion->execute([$tituloReactivacion]);
+$cuponReactData = $stmtReactivacion->fetch(PDO::FETCH_ASSOC);
+
+$cuponReactivacionGenerado = null;
+$cuponReactivacionUsado = false;
+
+if ($cuponReactData) {
+    $cuponReactivacionGenerado = $cuponReactData['codigo_generado'];
+    $cuponReactivacionUsado = (bool)$cuponReactData['utilizado'];
+    $btnReactivacionDeshabilitado = true;
+    if ($cuponReactivacionUsado) {
+        $leyendaReactivacion = "Cupón de reactivación ya utilizado";
+    } else {
+        $leyendaReactivacion = "Ya tienes un código generado";
+    }
+} else {
+    if ($diasVencido > 30) {
+        $puedeGenerarReactivacion = true;
+        $btnReactivacionDeshabilitado = false;
+        $leyendaReactivacion = "";
+    }
 }
 // =========================================================================
 ?>
@@ -523,24 +692,58 @@ if ($idPadrino > 0) {
 
 <div class="container">
 
-    <?php if ($idPadrino > 0): ?>
-        <div class="referral-banner">
-            <?php if ($cuponGenerado): ?>
-                <h4><i class="fas fa-gift"></i> ¡Tu código de bienvenida!</h4>
-                <p>Usa este código en tu próxima mensualidad para obtener un descuento especial:</p>
-                <span class="referral-code"><?php echo htmlspecialchars($cuponGenerado); ?></span>
-            <?php else: ?>
-                <h4><i class="fas fa-ticket-alt"></i> ¡Tienes un regalo de bienvenida!</h4>
-                <p>Por haber sido invitado por un amigo, tienes derecho a un código de descuento para tu mensualidad.</p>
-                <form action="api/procesar_cupon_referido.php" method="POST">
-                    <input type="hidden" name="id_socio" value="<?php echo $socioId; ?>">
-                    <button type="submit" name="generar_cupon" class="btn-generar-cupon">
-                        <i class="fas fa-magic mr-2"></i> Generar mi código ahora
-                    </button>
-                </form>
-            <?php endif; ?>
+    <?php if ($idPadrino > 0 && !$cuponUsado): ?>
+        <div class="referral-banner" id="referralBanner" style="position: relative; display: none;">
+            <button type="button" class="close-banner" style="position: absolute; top: 10px; right: 15px; background: none; border: none; color: #aaaaaa; font-size: 24px; cursor: pointer; transition: 0.3s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#aaaaaa'">&times;</button>
+            <div id="referralBannerContent">
+                <?php if ($cuponGenerado): ?>
+                    <h4><i class="fas fa-gift"></i> ¡Tu código de bienvenida!</h4>
+                    <p>Usa este código en tu próxima mensualidad para obtener un descuento especial:</p>
+                    <span class="referral-code"><?php echo htmlspecialchars($cuponGenerado); ?></span>
+                <?php else: ?>
+                    <h4><i class="fas fa-ticket-alt"></i> ¡Tienes un regalo de bienvenida!</h4>
+                    <p>Por haber sido invitado por un amigo, tienes derecho a un código de descuento para tu mensualidad.</p>
+                    <form id="form-generar-cupon">
+                        <input type="hidden" name="id_socio" value="<?php echo $socioId; ?>">
+                        <button type="submit" name="generar_cupon" class="btn-generar-cupon">
+                            <i class="fas fa-magic mr-2"></i> Generar mi código ahora
+                        </button>
+                    </form>
+                <?php endif; ?>
+            </div>
         </div>
     <?php endif; ?>
+
+    <?php if (!$miembroActivo && !$cuponReactivacionUsado): ?>
+        <div class="referral-banner reactivacion-banner" style="margin-top: 20px; border-color: rgba(16, 185, 129, 0.3); background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, #121212 100%);">
+            <div id="reactivacionBannerContent">
+                <?php if ($cuponReactivacionGenerado): ?>
+                    <h4><i class="fas fa-gift" style="color: #10b981;"></i> ¡Tu código de reactivación!</h4>
+                    <p>Usa este código en tu próxima mensualidad (1 Mes) para obtener un descuento especial:</p>
+                    <span class="referral-code"><?php echo htmlspecialchars($cuponReactivacionGenerado); ?></span>
+                <?php else: ?>
+                    <h4><i class="fas fa-undo-alt" style="color: #10b981;"></i> ¡Te extrañamos!</h4>
+                    <p>Obtén un código de descuento especial para tu mensualidad. Solo disponible después de 30 días de inactividad.</p>
+                    
+                    <?php if ($btnReactivacionDeshabilitado): ?>
+                        <button type="button" class="btn-generar-cupon" style="background-color: #555; cursor: not-allowed; box-shadow: none;" disabled>
+                            <i class="fas fa-lock mr-2"></i> Generar mi código
+                        </button>
+                        <p style="margin-top: 10px; font-size: 13px; color: #ef4444;"><i class="fas fa-info-circle"></i> <?php echo $leyendaReactivacion; ?></p>
+                    <?php else: ?>
+                        <form id="form-generar-reactivacion">
+                            <input type="hidden" name="id_socio" value="<?php echo $socioId; ?>">
+                            <input type="hidden" name="action" value="generar_reactivacion">
+                            <button type="submit" class="btn-generar-cupon" style="background-color: #10b981; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);">
+                                <i class="fas fa-magic mr-2"></i> Generar mi código ahora
+                            </button>
+                        </form>
+                    <?php endif; ?>
+                <?php endif; ?>
+            </div>
+        </div>
+    <?php endif; ?>
+
     <section class="dashboard-grid">
 
         <a href="index.php?page=user_pago_membresia" class="app-card">
@@ -603,113 +806,192 @@ if ($idPadrino > 0) {
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<?php
-// =========================================================================
-// --- ALERTAS DE GENERACIÓN DE CUPÓN ---
-// =========================================================================
-if (isset($_GET['success']) && $_GET['success'] === 'cupon_generado'): ?>
-    <script>
-        $(document).ready(function () {
-            Swal.fire({
-                icon: 'success',
-                title: '¡Cupón Generado!',
-                text: 'Tu código de descuento está listo para usarse.',
-                confirmButtonColor: '#10b981'
-            });
-            // Limpiar la URL para evitar que la alerta salga si recargan la página
-            window.history.replaceState(null, null, window.location.pathname + "?page=user_home");
+<script>
+$(document).ready(function () {
+    const socioId = <?php echo json_encode($socioId); ?>;
+
+    // --- BANNER DISMISSABLE LOGIC ---
+    const banner = $('#referralBanner');
+    if (banner.length > 0) {
+        if (!localStorage.getItem(`hide_welcome_banner_${socioId}`)) {
+            banner.fadeIn();
+        }
+
+        $(document).on('click', '.close-banner', function() {
+            banner.fadeOut(300);
+            localStorage.setItem(`hide_welcome_banner_${socioId}`, 'true');
         });
-    </script>
-<?php endif; ?>
+    }
 
-<?php if (isset($_GET['error'])): ?>
-    <script>
-        $(document).ready(function () {
-            let msg = 'Ocurrió un error al procesar tu solicitud.';
-            if ("<?php echo $_GET['error']; ?>" === 'cupon_invalido') msg = 'Ya has generado tu cupón de bienvenida o no tienes uno disponible.';
+    // --- AJAX CUPON GENERATION ---
+    $(document).on('submit', '#form-generar-cupon', function (e) {
+        e.preventDefault();
+        const $btn = $(this).find('button[type="submit"]');
+        const originalText = $btn.html();
+        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> Generando...');
 
-            Swal.fire({
-                icon: 'error',
-                title: 'Lo sentimos',
-                text: msg,
-                confirmButtonColor: '#ef4444'
-            });
-            window.history.replaceState(null, null, window.location.pathname + "?page=user_home");
-        });
-    </script>
-<?php endif; ?>
-
-<?php
-// =========================================================================
-// --- DETECTOR DE INVITACIONES MÁGICAS ---
-// =========================================================================
-$pendingInviteId = $_COOKIE['gym_pending_invite'] ?? $_SESSION['gym_pending_invite'] ?? null;
-
-if ($pendingInviteId && $pendingInviteId != $socioId):
-    ?>
-    <script>
-        $(document).ready(function () {
-            const hostId = "<?php echo htmlspecialchars($pendingInviteId); ?>";
-
-            $.ajax({
-                url: 'api/join_plan_session.php',
-                type: 'POST',
-                data: {
-                    host_id: hostId,
-                    action: 'check'
-                },
-                dataType: 'json',
-                success: function (res) {
-                    if (res.success) {
-                        Swal.fire({
-                            title: '¡Invitación Especial!',
-                            html: `<span style="color:#aaa; font-size:15px;"><strong>${res.host_name}</strong> te ha invitado a unirte a su Plan Grupal en Sandy's Gym.</span><br><br><span style="color:#fff; font-size:18px;">¿Aceptas la invitación?</span>`,
-                            icon: 'info',
-                            showCancelButton: true,
-                            confirmButtonColor: '#10b981',
-                            cancelButtonColor: '#333',
-                            confirmButtonText: '<i class="fas fa-check mr-2"></i> Sí, unirme al plan',
-                            cancelButtonText: 'Más tarde'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                unirAlPlan(hostId);
-                            }
-                        });
-                    }
-                }
-            });
-        });
-
-        function unirAlPlan(hostId) {
-            Swal.fire({
-                title: 'Vinculando cuenta...',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-
-            $.post('api/join_plan_session.php', {
-                host_id: hostId,
-                action: 'confirm'
-            }, function (res) {
+        $.ajax({
+            url: 'api/procesar_cupon_referido.php',
+            type: 'POST',
+            data: $(this).serialize() + '&generar_cupon=1',
+            dataType: 'json',
+            success: function (res) {
                 if (res.success) {
-                    localStorage.removeItem('gym_pending_invite');
-
                     Swal.fire({
                         icon: 'success',
-                        title: '¡Bienvenido al grupo!',
-                        text: 'Ya eres parte del plan familiar.',
-                        confirmButtonColor: '#ef4444'
-                    }).then(() => location.reload());
+                        title: '¡Cupón Generado!',
+                        text: res.message,
+                        confirmButtonColor: '#10b981'
+                    });
+                    const bannerHtml = `
+                        <h4><i class="fas fa-gift"></i> ¡Tu código de bienvenida!</h4>
+                        <p>Usa este código en tu próxima mensualidad para obtener un descuento especial:</p>
+                        <span class="referral-code">${res.codigo}</span>
+                    `;
+                    $('#referralBannerContent').html(bannerHtml);
                 } else {
                     Swal.fire({
                         icon: 'error',
-                        title: 'Ups...',
-                        text: res.message
+                        title: 'Lo sentimos',
+                        text: res.message,
+                        confirmButtonColor: '#ef4444'
                     });
                 }
-            }, 'json');
-        }
-    </script>
-<?php endif; ?>
+            },
+            error: function (xhr) {
+                let msg = 'Error de conexión con el servidor.';
+                if (xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: msg,
+                    confirmButtonColor: '#ef4444'
+                });
+            },
+            complete: function () {
+                $btn.prop('disabled', false).html(originalText);
+            }
+        });
+    });
+
+    // --- FETCH API CUPON REACTIVACION ---
+    $(document).on('submit', '#form-generar-reactivacion', function (e) {
+        e.preventDefault();
+        const $btn = $(this).find('button[type="submit"]');
+        const originalText = $btn.html();
+        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> Generando...');
+
+        fetch(window.location.href, {
+            method: 'POST',
+            body: new FormData(this)
+        })
+        .then(response => response.json())
+        .then(res => {
+            if (res.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Código Generado!',
+                    text: res.message,
+                    confirmButtonColor: '#10b981'
+                });
+                const bannerHtml = `
+                    <h4><i class="fas fa-gift" style="color: #10b981;"></i> ¡Tu código de reactivación!</h4>
+                    <p>Usa este código en tu próxima mensualidad (1 Mes) para obtener un descuento especial:</p>
+                    <span class="referral-code">${res.codigo}</span>
+                `;
+                $('#reactivacionBannerContent').html(bannerHtml);
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Atención',
+                    text: res.message,
+                    confirmButtonColor: '#ef4444'
+                });
+            }
+        })
+        .catch(error => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error de conexión con el servidor.',
+                confirmButtonColor: '#ef4444'
+            });
+        })
+        .finally(() => {
+            $btn.prop('disabled', false).html(originalText);
+        });
+    });
+
+    // --- DETECTOR DE INVITACIONES MÁGICAS ---
+    const pendingToken = <?php echo json_encode($_COOKIE['gym_invite_token'] ?? null); ?>;
+    
+    if (pendingToken) {
+        $.ajax({
+            url: 'api/join_plan_session.php',
+            type: 'POST',
+            data: { token: pendingToken, action: 'check' },
+            dataType: 'json',
+            success: function (res) {
+                if (res.success) {
+                    Swal.fire({
+                        title: '¡Invitación Especial!',
+                        html: `<span style="color:#aaa; font-size:15px;"><strong>${res.host_name}</strong> te ha invitado a unirte a su Plan Grupal en Sandy's Gym.</span><br><br><span style="color:#fff; font-size:18px;">¿Aceptas la invitación?</span>`,
+                        icon: 'info',
+                        showCancelButton: true,
+                        confirmButtonColor: '#10b981',
+                        cancelButtonColor: '#333',
+                        confirmButtonText: '<i class="fas fa-check mr-2"></i> Sí, unirme al plan',
+                        cancelButtonText: 'Más tarde'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            unirAlPlan(pendingToken);
+                        }
+                    });
+                } else {
+                    document.cookie = "gym_invite_token=; path=/; max-age=0";
+                    localStorage.removeItem('gym_invite_token');
+                }
+            }
+        });
+    }
+
+    function unirAlPlan(token) {
+        Swal.fire({
+            title: 'Vinculando cuenta...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        $.post('api/join_plan_session.php', { token: token, action: 'confirm' }, function (res) {
+            if (res.success) {
+                localStorage.removeItem('gym_invite_token');
+                document.cookie = "gym_invite_token=; path=/; max-age=0";
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Bienvenido al grupo!',
+                    text: 'Ya eres parte del plan familiar.',
+                    confirmButtonColor: '#ef4444'
+                }).then(() => {
+                    $('.status-pill').removeClass('status-inactive status-expired status-warning').addClass('status-active');
+                    $('.status-pill').html('<span class="status-dot"></span> Membresía Activa');
+                    $('.membership-expiry').remove();
+                    if ($('.status-pill-container .membership-expiry').length === 0) {
+                        $('.status-pill-container').append('<span class="membership-expiry">Plan Familiar Vinculado</span>');
+                    }
+                    $('.app-card').removeClass('disabled');
+                    $('.alert-custom').closest('.mt-2').fadeOut(300, function() { $(this).remove(); });
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Ups...',
+                    text: res.message
+                });
+            }
+        }, 'json');
+    }
+});
+</script>

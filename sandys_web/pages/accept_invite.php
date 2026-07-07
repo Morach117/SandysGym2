@@ -1,15 +1,18 @@
 <?php
 // pages/accept_invite.php
 
-// 1. Capturar la referencia (ID en Base64)
-$ref = $_GET['ref'] ?? '';
-$idTitular = base64_decode($ref);
+// 1. Capturar el token
+$token = $_GET['token'] ?? '';
 
-// Si entran al link sin código válido, los mandamos al home usando JS
-if (empty($ref) || !is_numeric($idTitular)) {
+// Si entran al link sin token, los mandamos al home
+if (empty($token)) {
     echo "<script>window.location.href = 'index.php';</script>";
     exit;
 }
+
+// 2. Verificar si el usuario ya está logueado (PHP Session)
+$isLoggedIn = isset($_SESSION['admin']);
+$redirectPage = $isLoggedIn ? 'user_home' : 'login';
 ?>
 
 <div style="background-color: #050505; height: 100vh; width: 100vw; position: fixed; top: 0; left: 0; z-index: 9999; display: flex; justify-content: center; align-items: center; color: white; font-family: sans-serif;">
@@ -17,18 +20,14 @@ if (empty($ref) || !is_numeric($idTitular)) {
 </div>
 
 <script>
-    // 2. Obtenemos el ID desencriptado
-    const idTitular = "<?php echo htmlspecialchars($idTitular); ?>";
+    const inviteToken = "<?php echo htmlspecialchars($token); ?>";
+    const redirectPage = "<?php echo $redirectPage; ?>";
     
-    if (idTitular) {
-        // GUARDADO INFALIBLE 1: LocalStorage
-        localStorage.setItem('gym_pending_invite', idTitular);
-        
-        // GUARDADO INFALIBLE 2: Cookie generada desde JavaScript (Dura 2 horas)
-        // Esto evita el error de PHP "Headers already sent"
-        document.cookie = "gym_pending_invite=" + idTitular + "; path=/; max-age=" + (2 * 3600);
+    if (inviteToken) {
+        localStorage.setItem('gym_invite_token', inviteToken);
+        document.cookie = "gym_invite_token=" + inviteToken + "; path=/; max-age=" + (2 * 3600);
     }
 
-    // 3. Redirigir directamente a la página de inscripción
-    window.location.replace("index.php?page=login");
+    // 3. Redirigir dinámicamente
+    window.location.replace("index.php?page=" + redirectPage);
 </script>

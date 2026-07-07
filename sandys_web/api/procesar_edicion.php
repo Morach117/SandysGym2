@@ -18,13 +18,20 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 }
 
 // 2. VALIDAR DATOS OBLIGATORIOS
-if (empty($_POST["id_socio"]) || empty($_POST["nombres"]) || empty($_POST["ap_paterno"])) {
-    json_response('error', 'Error: Faltan datos obligatorios (ID, Nombres, Apellido Paterno).', 400);
+if (empty($_POST["nombres"]) || empty($_POST["ap_paterno"])) {
+    json_response('error', 'Error: Faltan datos obligatorios (Nombres, Apellido Paterno).', 400);
+}
+
+// Validar que exista la sesión del usuario actual
+session_start();
+if (empty($_SESSION['admin']['soc_id_socio'])) {
+    json_response('error', 'Acceso denegado. Inicie sesión para editar su perfil.', 401);
 }
 
 // 3. OBTENER Y SANITIZAR TODAS LAS ENTRADAS
 try {
-    $idSocio = $_POST["id_socio"]; 
+    // Mitigación IDOR: Se fuerza el ID del socio a partir de la sesión activa
+    $idSocio = (int)$_SESSION['admin']['soc_id_socio']; 
 
     // Campos de texto (Sanitizados contra XSS)
     $nombres        = htmlspecialchars($_POST["nombres"] ?? '', ENT_QUOTES, 'UTF-8');

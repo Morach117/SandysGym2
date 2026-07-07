@@ -22,11 +22,8 @@ if ($stmt->rowCount() > 0) {
         $response['exists'] = false;
         $response['message'] = "El correo electrónico ya está en uso.";
     } else {
-        // El correo está disponible, devolver los datos del usuario
+        // El correo está disponible, pero no devolvemos el nombre para evitar fuga de información de registros incompletos
         $response['exists'] = true;
-        $response['name'] = $user['name'];
-        $response['paternal_surname'] = $user['paternal_surname'];
-        $response['maternal_surname'] = $user['maternal_surname'];
     }
 } else {
     // El correo no existe

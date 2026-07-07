@@ -46,6 +46,11 @@ $(document).ready(function() {
         toggles: $('.toggle-password') 
     };
 
+    // --- VALIDACIÓN EN TIEMPO REAL ---
+    UI.inputs.telefono.add(UI.inputs.referral).on('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+    });
+
     const REGEX_EMAIL = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
     // ==========================================
@@ -192,6 +197,16 @@ $(document).ready(function() {
 
         if (hasError) {
             Swal.fire({ icon: 'warning', title: 'Faltan Datos', text: 'Completa los campos marcados en rojo.', background: '#1a1a1a', color: '#fff', confirmButtonColor: '#ef4444' });
+            return;
+        }
+
+        if (UI.inputs.telefono.val().length !== 10) {
+            Swal.fire({ icon: 'warning', title: 'Teléfono Inválido', text: 'El teléfono celular debe tener exactamente 10 dígitos numéricos.', background: '#1a1a1a', color: '#fff', confirmButtonColor: '#ef4444' });
+            return;
+        }
+
+        if (UI.inputs.referral.val().length > 0 && UI.inputs.referral.val().length !== 10) {
+            Swal.fire({ icon: 'warning', title: 'Código Inválido', text: 'El código de referido debe tener exactamente 10 dígitos numéricos.', background: '#1a1a1a', color: '#fff', confirmButtonColor: '#ef4444' });
             return;
         }
 

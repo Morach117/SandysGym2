@@ -4,7 +4,7 @@ $faqs = [];
 $error_faq = null;
 
 if (!isset($conn) || !($conn instanceof PDO)) {
-    $path_conexion = __DIR__ . '/conn.php'; 
+    $path_conexion = __DIR__ . '/../conn.php'; 
     if (file_exists($path_conexion)) {
         require_once $path_conexion;
     } else {

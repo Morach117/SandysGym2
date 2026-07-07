@@ -14,7 +14,23 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// 1. --- DEFINIR CREDENCIALES ---
+// Función para cargar .env de forma simple
+function loadEnv($path) {
+    if(!file_exists($path)) return;
+    $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach($lines as $line) {
+        if(strpos(trim($line), '#') === 0) continue;
+        list($name, $value) = explode('=', $line, 2);
+        $name = trim($name);
+        $value = trim($value, " \t\n\r\0\x0B\"'"); // Quitar comillas
+        if(!array_key_exists($name, $_SERVER) && !array_key_exists($name, $_ENV)) {
+            putenv(sprintf('%s=%s', $name, $value));
+            $_ENV[$name] = $value;
+            $_SERVER[$name] = $value;
+        }
+    }
+}
+loadEnv(__DIR__ . '/.env');
 
 // Lista de hosts que consideramos "locales"
 $local_hosts = [
@@ -34,11 +50,11 @@ if (in_array($current_host, $local_hosts)) {
     $pass = "";
     $db   = "dbs1756575";
 } else {
-    // Estamos en PRODUCCIÓN (el servidor de hosting)
-    $host = "db5002171142.hosting-data.io";
-    $user = "dbu577361";
-    $pass = "Sandys_empresas_2";
-    $db   = "dbs1756575";
+    // Estamos en PRODUCCIÓN
+    $host = getenv('DB_HOST') ?: "localhost";
+    $user = getenv('DB_USER') ?: "root";
+    $pass = getenv('DB_PASS') ?: "";
+    $db   = getenv('DB_NAME') ?: "dbs1756575";
 }
 
 // 2. --- CONEXIÓN PDO ÚNICA ---

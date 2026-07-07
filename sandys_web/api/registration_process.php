@@ -58,6 +58,13 @@ if (empty($name) || empty($email) || empty($password) || empty($telefono) || emp
     ], 400);
 }
 
+if (!empty($referral_code) && !preg_match('/^[0-9]{10}$/', $referral_code)) {
+    json_response([
+        'success' => false, 
+        'message' => 'El código de referido debe tener exactamente 10 dígitos numéricos.'
+    ], 400);
+}
+
 // 3. PROCESAR
 try {
     $conn->beginTransaction();

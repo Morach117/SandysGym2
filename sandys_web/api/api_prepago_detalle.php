@@ -1,105 +1,164 @@
 <?php
-// api_prepago_detalle.php
+// api/api_prepago_detalle.php
 
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
-header('Content-Type: application/json');
+// 1. Asegurar que no se imprima ningún espacio en blanco, warning o error de PHP antes del JSON
+ob_start();
+header('Content-Type: application/json; charset=utf-8');
 
-// Incluir conexión PDO usando tu estándar
-require_once '../conn.php'; 
+// Iniciar la sesión si no está activa
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-// Validar que la conexión PDO exista
-if (!isset($conn) || !$conn instanceof PDO) {
-    http_response_code(500);
-    echo json_encode(["error" => "Error de conexión a la base de datos."]);
+// Incluir conexión PDO
+require_once __DIR__ . '/../conn.php';
+
+// Función para vaciar el buffer e imprimir la respuesta JSON
+function responder_json(array $respuesta) {
+    if (ob_get_length()) {
+        ob_clean();
+    }
+    echo json_encode($respuesta);
     exit;
 }
 
-// Obtener el ID del socio desde la petición AJAX
-$id_socio = isset($_POST['id_socio']) ? intval($_POST['id_socio']) : 0;
+// 2. Valida la sesión activa y el token CSRF
+$session_id_socio = $_SESSION['admin']['soc_id_socio'] ?? null;
+$post_id_socio = isset($_POST['id_socio']) ? (int)$_POST['id_socio'] : null;
+$post_csrf_token = $_POST['csrf_token'] ?? null;
+$session_csrf_token = $_SESSION['csrf_token'] ?? null;
 
-// --- PARÁMETROS DE DATATABLES ---
-$draw = isset($_POST['draw']) ? intval($_POST['draw']) : 0;
-$start = isset($_POST['start']) ? intval($_POST['start']) : 0;
-$length = isset($_POST['length']) ? intval($_POST['length']) : 10;
-$searchValue = $_POST['search']['value'] ?? '';
+if (
+    empty($session_id_socio) || 
+    empty($post_id_socio) || 
+    $post_id_socio !== (int)$session_id_socio ||
+    empty($session_csrf_token) || 
+    empty($post_csrf_token) || 
+    !hash_equals($session_csrf_token, (string)$post_csrf_token)
+) {
+    echo json_encode([
+        "draw" => 0, 
+        "recordsTotal" => 0, 
+        "recordsFiltered" => 0, 
+        "data" => [], 
+        "error" => "Error de sesión o seguridad."
+    ]);
+    exit;
+}
 
-// Validar columna de ordenamiento para evitar inyección en el ORDER BY
-$columnasValidas = ['id_pdetalle', 'p_descripcion', 'importe', 'saldo', 'movimiento', 'fecha', 'hora'];
-$orderColumnIndex = isset($_POST['order'][0]['column']) ? intval($_POST['order'][0]['column']) : 0;
-$orderColumnName = $columnasValidas[$orderColumnIndex] ?? 'id_pdetalle';
+// Verificar conexión PDO
+if (!isset($conn) || !$conn instanceof PDO) {
+    echo json_encode([
+        "draw" => 0, 
+        "recordsTotal" => 0, 
+        "recordsFiltered" => 0, 
+        "data" => [], 
+        "error" => "Error de sesión o seguridad."
+    ]);
+    exit;
+}
+
+// 3. Captura los parámetros estándar de DataTables
+$draw = isset($_POST['draw']) ? (int)$_POST['draw'] : 0;
+$start = isset($_POST['start']) ? (int)$_POST['start'] : 0;
+$length = isset($_POST['length']) ? (int)$_POST['length'] : 10;
+$searchValue = isset($_POST['search']['value']) ? trim($_POST['search']['value']) : '';
+
+// Validar ordenamiento para evitar inyecciones SQL en ORDER BY
+$columnasValidas = [
+    0 => 'pred_id_pdetalle',
+    1 => 'pred_descripcion',
+    2 => 'pred_importe',
+    3 => 'pred_saldo',
+    4 => 'pred_movimiento',
+    5 => 'pred_fecha',
+    6 => 'pred_fecha'
+];
+
+$orderColumnIndex = isset($_POST['order'][0]['column']) ? (int)$_POST['order'][0]['column'] : 0;
+$orderColumnName = $columnasValidas[$orderColumnIndex] ?? 'pred_id_pdetalle';
 $orderDir = (isset($_POST['order'][0]['dir']) && strtolower($_POST['order'][0]['dir']) === 'asc') ? 'ASC' : 'DESC';
 
 try {
-    // 1. Total de registros sin filtrar
+    // A. Consultar total de registros sin filtrar
     $stmtTotal = $conn->prepare("SELECT COUNT(pred_id_pdetalle) FROM san_prepago_detalle WHERE pred_id_socio = :id_socio");
-    $stmtTotal->bindParam(':id_socio', $id_socio, PDO::PARAM_INT);
+    $stmtTotal->bindValue(':id_socio', $post_id_socio, PDO::PARAM_INT);
     $stmtTotal->execute();
-    $recordsTotal = $stmtTotal->fetchColumn();
+    $recordsTotal = (int)$stmtTotal->fetchColumn();
 
-    // 2. Total de registros con el filtro aplicado
+    // B. Construir filtro de búsqueda
     $searchCondition = "";
-    if (!empty($searchValue)) {
-        $searchCondition = " AND pred_descripcion LIKE :search";
+    if ($searchValue !== "") {
+        $searchCondition = " AND (pred_descripcion LIKE :search OR pred_movimiento LIKE :search)";
     }
 
+    // C. Consultar total de registros filtrados
     $stmtFiltrado = $conn->prepare("SELECT COUNT(pred_id_pdetalle) FROM san_prepago_detalle WHERE pred_id_socio = :id_socio" . $searchCondition);
-    $stmtFiltrado->bindParam(':id_socio', $id_socio, PDO::PARAM_INT);
-    if (!empty($searchValue)) {
-        $searchParam = "%$searchValue%";
-        $stmtFiltrado->bindParam(':search', $searchParam, PDO::PARAM_STR);
+    $stmtFiltrado->bindValue(':id_socio', $post_id_socio, PDO::PARAM_INT);
+    if ($searchValue !== "") {
+        $searchParam = "%" . $searchValue . "%";
+        $stmtFiltrado->bindValue(':search', $searchParam, PDO::PARAM_STR);
     }
     $stmtFiltrado->execute();
-    $recordsFiltered = $stmtFiltrado->fetchColumn();
+    $recordsFiltered = (int)$stmtFiltrado->fetchColumn();
 
-    // 3. Datos para la página actual
-    $query_data = "SELECT
+    // D. Obtener registros paginados
+    $queryData = "SELECT 
                     pred_id_pdetalle AS id_pdetalle,
                     pred_descripcion AS p_descripcion,
-                    ROUND(pred_importe, 2) AS importe,
-                    ROUND(pred_saldo, 2) AS saldo,
+                    pred_importe AS importe,
+                    pred_saldo AS saldo,
                     CASE pred_movimiento WHEN 'R' THEN 'Resta' WHEN 'S' THEN 'Suma' ELSE pred_movimiento END AS movimiento,
                     DATE_FORMAT(pred_fecha, '%d-%m-%Y') AS fecha,
                     LOWER(DATE_FORMAT(pred_fecha, '%r')) AS hora
-                   FROM san_prepago_detalle
-                   WHERE pred_id_socio = :id_socio $searchCondition
-                   ORDER BY $orderColumnName $orderDir
-                   LIMIT :start, :length";
+                  FROM san_prepago_detalle
+                  WHERE pred_id_socio = :id_socio" . $searchCondition . "
+                  ORDER BY " . $orderColumnName . " " . $orderDir . "
+                  LIMIT :start, :length";
 
-    $stmtData = $conn->prepare($query_data);
-    $stmtData->bindParam(':id_socio', $id_socio, PDO::PARAM_INT);
-    
-    if (!empty($searchValue)) {
-        $stmtData->bindParam(':search', $searchParam, PDO::PARAM_STR);
+    $stmtData = $conn->prepare($queryData);
+    $stmtData->bindValue(':id_socio', $post_id_socio, PDO::PARAM_INT);
+    if ($searchValue !== "") {
+        $stmtData->bindValue(':search', $searchParam, PDO::PARAM_STR);
     }
-    
-    // PDO requiere que LIMIT use enteros específicamente
     $stmtData->bindValue(':start', $start, PDO::PARAM_INT);
     $stmtData->bindValue(':length', $length, PDO::PARAM_INT);
-    
     $stmtData->execute();
+
     $resultados = $stmtData->fetchAll(PDO::FETCH_ASSOC);
 
-    // Formatear la moneda
+    // 4. Mapear y formatear exactamente las columnas requeridas
     $data = [];
     foreach ($resultados as $fila) {
-        $fila['importe'] = '$' . number_format($fila['importe'], 2);
-        $fila['saldo'] = '$' . number_format($fila['saldo'], 2);
-        $data[] = $fila;
+        $data[] = [
+            "id_pdetalle"   => (int)$fila['id_pdetalle'],
+            "p_descripcion" => $fila['p_descripcion'],
+            "importe"       => '$' . number_format((float)$fila['importe'], 2),
+            "saldo"         => '$' . number_format((float)$fila['saldo'], 2),
+            "movimiento"    => $fila['movimiento'],
+            "fecha"         => $fila['fecha'],
+            "hora"          => $fila['hora']
+        ];
     }
 
-    // 4. Enviar Respuesta JSON a DataTables
-    echo json_encode([
-        "draw" => $draw,
-        "recordsTotal" => intval($recordsTotal),
-        "recordsFiltered" => intval($recordsFiltered),
-        "data" => $data
+    // Retornar la respuesta final
+    responder_json([
+        "draw"            => $draw,
+        "recordsTotal"    => $recordsTotal,
+        "recordsFiltered" => $recordsFiltered,
+        "data"            => $data
     ]);
 
 } catch (PDOException $e) {
-    // Manejo de errores seguro
-    error_log("Error en DataTables Monedero: " . $e->getMessage());
-    http_response_code(500);
-    echo json_encode(["error" => "Error al consultar los datos."]);
+    // Registrar error internamente
+    error_log("Error en api_prepago_detalle.php: " . $e->getMessage());
+    
+    // Retornar error genérico compatible con DataTables
+    responder_json([
+        "draw"            => $draw,
+        "recordsTotal"    => 0,
+        "recordsFiltered" => 0,
+        "data"            => [],
+        "error"           => "Error al consultar los datos."
+    ]);
 }
-?>

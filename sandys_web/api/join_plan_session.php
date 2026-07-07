@@ -18,15 +18,29 @@ $idUsuarioActual     = (int)$_SESSION['admin']['soc_id_socio'];
 $id_empresa          = (int)($_SESSION['admin']['id_empresa']   ?? 1);
 $id_usuario_logueado = (int)($_SESSION['admin']['id_usuario']   ?? 1);
 
-$hostId = (int)($_POST['host_id'] ?? 0);
+$token = $_POST['token'] ?? '';
 $action = $_POST['action'] ?? '';
 
-if (!$hostId || !$action) {
+if (empty($token) || !$action) {
     echo json_encode(['success' => false, 'message' => 'Faltan datos de la invitación.']);
     exit;
 }
 
 try {
+    // 0. Validar Token
+    $qToken = "SELECT id_invitacion, id_socio_titular FROM san_plan_invitaciones WHERE token_unico = ? AND status = 'pendiente' AND fecha_expiracion >= NOW()";
+    $stmtToken = $conn->prepare($qToken);
+    $stmtToken->execute([$token]);
+    $invitacion = $stmtToken->fetch(PDO::FETCH_ASSOC);
+
+    if (!$invitacion) {
+        echo json_encode(['success' => false, 'message' => 'El enlace de invitación es inválido o ha expirado.']);
+        exit;
+    }
+
+    $hostId = (int)$invitacion['id_socio_titular'];
+    $idInvitacion = (int)$invitacion['id_invitacion'];
+
     // ACCIÓN 1: Verificar el nombre del anfitrión
     if ($action === 'check') {
         $q = "SELECT soc_nombres FROM san_socios WHERE soc_id_socio = ?";
@@ -47,11 +61,11 @@ try {
     if ($action === 'confirm') {
         $conn->beginTransaction();
 
-        // Buscamos el plan ACTIVO del Titular
+        // Buscamos el plan ACTIVO del Titular con LOCK FOR UPDATE para evitar Race Conditions
         $qPlan = "SELECT pag_id_servicio, pag_fecha_ini, pag_fecha_fin, pag_id_empresa 
                   FROM san_pagos 
                   WHERE pag_id_socio = ? AND pag_status = 'A' AND pag_fecha_fin >= CURDATE() 
-                  ORDER BY pag_id_pago DESC LIMIT 1";
+                  ORDER BY pag_id_pago DESC LIMIT 1 FOR UPDATE";
         $stmtPlan = $conn->prepare($qPlan);
         $stmtPlan->execute([$hostId]);
         $planTitular = $stmtPlan->fetch(PDO::FETCH_ASSOC);
@@ -63,9 +77,33 @@ try {
         }
 
         $id_servicio_titular = (int)$planTitular['pag_id_servicio'];
+        $fechaFinTitular = $planTitular['pag_fecha_fin'];
+
+        // 1. Limpieza de beneficiarios de ciclos anteriores (Spotify Model)
+        // Desvincular usuarios cuyo ciclo no coincida con la fecha de fin actual del Titular
+        $qLimpiar = "SELECT soc_id_socio FROM san_socios WHERE soc_id_titular_grupo = ?";
+        $stmtLimpiar = $conn->prepare($qLimpiar);
+        $stmtLimpiar->execute([$hostId]);
+        $posibles = $stmtLimpiar->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($posibles as $p) {
+            $qCheckBen = $conn->prepare("
+                SELECT pag_fecha_fin 
+                FROM san_pagos 
+                WHERE pag_id_socio = ? AND pag_status = 'A' AND pag_id_servicio IN (125, 126, 127)
+                ORDER BY pag_fecha_fin DESC LIMIT 1
+            ");
+            $qCheckBen->execute([$p['soc_id_socio']]);
+            $pBen = $qCheckBen->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$pBen || $pBen['pag_fecha_fin'] < date('Y-m-d') || $pBen['pag_fecha_fin'] != $fechaFinTitular) {
+                $conn->prepare("UPDATE san_socios SET soc_id_titular_grupo = 0 WHERE soc_id_socio = ?")
+                     ->execute([$p['soc_id_socio']]);
+            }
+        }
         
-        // Contamos cuántos beneficiarios tiene actualmente el titular
-        $qCount = "SELECT COUNT(soc_id_socio) FROM san_socios WHERE soc_id_referido_por = ?";
+        // Contamos cuántos beneficiarios tiene actualmente el titular (post-limpieza)
+        $qCount = "SELECT COUNT(soc_id_socio) FROM san_socios WHERE soc_id_titular_grupo = ?";
         $stmtCount = $conn->prepare($qCount);
         $stmtCount->execute([$hostId]);
         $numBeneficiarios = (int)$stmtCount->fetchColumn();
@@ -96,7 +134,7 @@ try {
         }
 
         // 1. Vinculamos al usuario actual
-        $qLink = "UPDATE san_socios SET soc_id_referido_por = ? WHERE soc_id_socio = ?";
+        $qLink = "UPDATE san_socios SET soc_id_titular_grupo = ? WHERE soc_id_socio = ?";
         $stmtLink = $conn->prepare($qLink);
         $stmtLink->execute([$hostId, $idUsuarioActual]);
 
@@ -126,10 +164,14 @@ try {
             $fecha_ini, $fecha_fin, $id_usuario_logueado, $empresa_pago
         ]);
 
+        // 3. Marcar el token como aceptado
+        $stmtUpdateToken = $conn->prepare("UPDATE san_plan_invitaciones SET status = 'aceptado' WHERE id_invitacion = ?");
+        $stmtUpdateToken->execute([$idInvitacion]);
+
         $conn->commit();
 
-        setcookie('gym_pending_invite', '', time() - 3600, '/');
-        unset($_SESSION['gym_pending_invite']);
+        setcookie('gym_invite_token', '', time() - 3600, '/');
+        unset($_SESSION['gym_invite_token']);
 
         echo json_encode(['success' => true, 'message' => 'Vinculación exitosa.']);
         exit;

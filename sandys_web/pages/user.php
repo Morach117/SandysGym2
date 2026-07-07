@@ -30,18 +30,18 @@
                     <div class="col-md-6">
                         <h5>Datos Personales</h5>
                         <ul class="list-unstyled">
-                            <li><strong>Nombre Completo:</strong> <?php echo $selSocioData['soc_nombres'] . ' ' . $selSocioData['soc_apepat'] . ' ' . $selSocioData['soc_apemat']; ?></li>
-                            <li><strong>Género:</strong> <?php echo $selSocioData['soc_genero']; ?></li>
-                            <li><strong>Fecha de Nacimiento:</strong> <?php echo $selSocioData['soc_fecha_nacimiento']; ?></li>
-                            <li><strong>Correo Electrónico:</strong> <?php echo $selSocioData['soc_correo']; ?></li>
-                            <li><strong>Teléfono Celular:</strong> <?php echo $selSocioData['soc_tel_cel']; ?></li>
+                            <li><strong>Nombre Completo:</strong> <?php echo htmlspecialchars($selSocioData['soc_nombres'] . ' ' . $selSocioData['soc_apepat'] . ' ' . $selSocioData['soc_apemat'], ENT_QUOTES, 'UTF-8'); ?></li>
+                            <li><strong>Género:</strong> <?php echo htmlspecialchars($selSocioData['soc_genero'], ENT_QUOTES, 'UTF-8'); ?></li>
+                            <li><strong>Fecha de Nacimiento:</strong> <?php echo htmlspecialchars($selSocioData['soc_fecha_nacimiento'], ENT_QUOTES, 'UTF-8'); ?></li>
+                            <li><strong>Correo Electrónico:</strong> <?php echo htmlspecialchars($selSocioData['soc_correo'], ENT_QUOTES, 'UTF-8'); ?></li>
+                            <li><strong>Teléfono Celular:</strong> <?php echo htmlspecialchars($selSocioData['soc_tel_cel'], ENT_QUOTES, 'UTF-8'); ?></li>
                         </ul>
                     </div>
                     <div class="col-md-6">
                         <h5>Dirección</h5>
                         <ul class="list-unstyled">
-                            <li><strong>Dirección:</strong> <?php echo $selSocioData['soc_direccion']; ?></li>
-                            <li><strong>Colonia:</strong> <?php echo $selSocioData['soc_colonia']; ?></li>
+                            <li><strong>Dirección:</strong> <?php echo htmlspecialchars($selSocioData['soc_direccion'], ENT_QUOTES, 'UTF-8'); ?></li>
+                            <li><strong>Colonia:</strong> <?php echo htmlspecialchars($selSocioData['soc_colonia'], ENT_QUOTES, 'UTF-8'); ?></li>
                             <!-- Agregar más datos de dirección aquí -->
                         </ul>
                     </div>

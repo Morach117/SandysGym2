@@ -1,6 +1,8 @@
 <?php
 include('conn.php');
-include('./query/select_data.php');
+if (isset($_SESSION['admin'])) {
+    include('./api/select_data.php');
+}
 
 // Solo necesitamos saber si el usuario ha iniciado sesión
 $isLoggedIn = isset($_SESSION['admin']);

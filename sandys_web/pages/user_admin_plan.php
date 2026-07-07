@@ -35,13 +35,13 @@ try {
         $idTitularReal = $idUsuarioLogueado;
     } else {
         // 2. Si no soy titular, busco a mi Padrino (Titular Real)
-        $stmtRef = $conn->prepare("SELECT soc_id_referido_por FROM san_socios WHERE soc_id_socio = ?");
+        $stmtRef = $conn->prepare("SELECT soc_id_titular_grupo FROM san_socios WHERE soc_id_socio = ?");
         $stmtRef->execute([$idUsuarioLogueado]);
         $resRef = $stmtRef->fetch(PDO::FETCH_ASSOC);
 
-        if ($resRef && $resRef['soc_id_referido_por'] > 0) {
+        if ($resRef && $resRef['soc_id_titular_grupo'] > 0) {
             $esTitular = false;
-            $idTitularReal = $resRef['soc_id_referido_por'];
+            $idTitularReal = $resRef['soc_id_titular_grupo'];
         } else {
             mostrarError("No tienes un Plan Familiar activo ni estás vinculado a uno.");
             return;
@@ -50,7 +50,7 @@ try {
 
     // 3. Obtenemos los datos del Titular Real y su Plan
     $stmtPlan = $conn->prepare("
-        SELECT s.soc_nombres, s.soc_imagen, sv.ser_descripcion, pg.pag_id_servicio 
+        SELECT s.soc_nombres, s.soc_imagen, sv.ser_descripcion, pg.pag_id_servicio, pg.pag_fecha_fin 
         FROM san_socios s
         JOIN san_pagos pg ON pg.pag_id_socio = s.soc_id_socio
         JOIN san_servicios sv ON sv.ser_id_servicio = pg.pag_id_servicio
@@ -63,6 +63,9 @@ try {
     $idServicio = $planActual['pag_id_servicio'] ?? 0;
     
     if (!$planActual || !array_key_exists($idServicio, $planesTitulares)) {
+        // Si el plan caducó o cambió, desvinculamos a todos sus referidos (Spotify model)
+        $stmtDesv = $conn->prepare("UPDATE san_socios SET soc_id_titular_grupo = 0 WHERE soc_id_titular_grupo = ?");
+        $stmtDesv->execute([$idTitularReal]);
         mostrarError("El plan grupal ha expirado o el titular ya no está activo.");
         return;
     }
@@ -71,11 +74,37 @@ try {
     $totalSlots = $planesTitulares[$idServicio] ?? 3; 
     $fotoTitular = !empty($planActual['soc_imagen']) ? $planActual['soc_imagen'] : 'assets/img/avatar_default.png';
     $nombreTitular = explode(' ', trim($planActual['soc_nombres']))[0];
+    $fechaFinTitular = $planActual['pag_fecha_fin'];
 
-    // 4. Obtenemos a los hermanos (beneficiarios)
-    $stmtMiembros = $conn->prepare("SELECT soc_id_socio, soc_nombres, soc_imagen FROM san_socios WHERE soc_id_referido_por = ?");
+    // 4. Obtenemos a los hermanos (beneficiarios) y validamos su ciclo
+    $stmtMiembros = $conn->prepare("SELECT soc_id_socio, soc_nombres, soc_imagen FROM san_socios WHERE soc_id_titular_grupo = ?");
     $stmtMiembros->execute([$idTitularReal]);
-    $beneficiarios = $stmtMiembros->fetchAll(PDO::FETCH_ASSOC);
+    $posiblesBeneficiarios = $stmtMiembros->fetchAll(PDO::FETCH_ASSOC);
+
+    $beneficiarios = [];
+    foreach ($posiblesBeneficiarios as $b) {
+        $qCheck = $conn->prepare("
+            SELECT pag_fecha_fin 
+            FROM san_pagos 
+            WHERE pag_id_socio = ? AND pag_status = 'A' AND pag_id_servicio IN (125, 126, 127)
+            ORDER BY pag_fecha_fin DESC LIMIT 1
+        ");
+        $qCheck->execute([$b['soc_id_socio']]);
+        $pagoBen = $qCheck->fetch(PDO::FETCH_ASSOC);
+
+        // Si el beneficiario es de un ciclo anterior (diferente fecha de fin) o su plan expiró, se desvincula.
+        if (!$pagoBen || $pagoBen['pag_fecha_fin'] < date('Y-m-d') || $pagoBen['pag_fecha_fin'] != $fechaFinTitular) {
+            $stmtDesv = $conn->prepare("UPDATE san_socios SET soc_id_titular_grupo = 0 WHERE soc_id_socio = ?");
+            $stmtDesv->execute([$b['soc_id_socio']]);
+            
+            if ($b['soc_id_socio'] == $idUsuarioLogueado) {
+                mostrarError("El ciclo de tu membresía grupal ha finalizado. El Titular debe enviarte una nueva invitación.");
+                return;
+            }
+        } else {
+            $beneficiarios[] = $b;
+        }
+    }
 
     // 5. Armamos la lista (El Titular siempre es el primero)
     $miembros = [];
@@ -87,7 +116,7 @@ try {
         'es_yo' => ($idTitularReal == $idUsuarioLogueado)
     ];
     
-    // Agregamos a los hermanos/invitados
+    // Agregamos a los hermanos/invitados que siguen vigentes
     foreach($beneficiarios as $b) {
         if (count($miembros) < $totalSlots) {
             $miembros[] = [
@@ -108,7 +137,8 @@ function mostrarError($msg) {
     echo '<div style="background:#0f0f0f; min-height:80vh; padding-top:100px; display:flex; align-items:center; justify-content:center; color:white;"><div class="text-center p-4 border border-secondary rounded"><h3 class="text-danger">Aviso</h3><p>'.$msg.'</p><a href="index.php?page=user_home" class="btn btn-outline-light mt-3">Volver al Home</a></div></div>';
 }
 
-$linkInvitacion = "http://" . $_SERVER['HTTP_HOST'] . "/SandysGym2/sandys_web/index.php?page=accept_invite&ref=" . base64_encode($idTitularReal);
+// El enlace se generará dinámicamente vía AJAX usando tokens
+$linkInvitacion = "";
 ?>
 
 <style>
@@ -190,6 +220,18 @@ $linkInvitacion = "http://" . $_SERVER['HTTP_HOST'] . "/SandysGym2/sandys_web/in
     .btn-back i {
         margin-right: 8px;
     }
+
+    /* Corrección estética: Input de correo oscuro al escribir */
+    #inviteEmail {
+        background-color: #1a1a1a !important;
+        color: #ffffff !important;
+    }
+    #inviteEmail:focus {
+        background-color: #1a1a1a !important;
+        color: #ffffff !important;
+        border-color: #555;
+        box-shadow: none;
+    }
 </style>
 
 <div class="admin-plan-wrapper">
@@ -218,7 +260,7 @@ $linkInvitacion = "http://" . $_SERVER['HTTP_HOST'] . "/SandysGym2/sandys_web/in
                 <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
                     
                     <?php if (isset($miembros[$i])): $m = $miembros[$i]; ?>
-                        <div class="slot-card occupied" <?php echo $m['es_yo'] ? 'style="border-color: #ef4444;"' : ''; ?>>
+                        <div class="slot-card occupied" id="slot_<?php echo $m['id']; ?>" <?php echo $m['es_yo'] ? 'style="border-color: #ef4444;"' : ''; ?>>
                             
                             <?php if ($esTitular && $m['rol'] != 'Titular'): ?>
                                 <button class="btn-delete" onclick="eliminarMiembro(<?php echo $m['id']; ?>, '<?php echo addslashes($m['nombre']); ?>')" title="Desvincular usuario">
@@ -249,7 +291,7 @@ $linkInvitacion = "http://" . $_SERVER['HTTP_HOST'] . "/SandysGym2/sandys_web/in
                         </div>
                     
                     <?php else: ?>
-                        <div class="slot-card empty-slot" <?php echo $esTitular ? 'data-toggle="modal" data-target="#modalAddMember"' : ''; ?> style="<?php echo !$esTitular ? 'cursor: not-allowed; opacity: 0.5;' : ''; ?>">
+                        <div class="slot-card empty-slot" id="slot_libre_<?php echo $i; ?>" <?php echo $esTitular ? 'onclick="abrirModalInvitacion()"' : ''; ?> style="<?php echo !$esTitular ? 'cursor: not-allowed; opacity: 0.5;' : ''; ?>">
                             <div class="avatar-circle empty">
                                 <i class="fas fa-plus"></i>
                             </div>
@@ -290,27 +332,37 @@ $linkInvitacion = "http://" . $_SERVER['HTTP_HOST'] . "/SandysGym2/sandys_web/in
                 
                 <p class="text-muted small mb-4" style="font-size: 14px; line-height: 1.6;">
                     Comparte este enlace con la persona que deseas agregar a tu plan. 
-                    <br><strong class="text-light">Cuando se registren o inicien sesión desde el link, se vincularán automáticamente a tu grupo.</strong>
+                    <br><strong class="text-light">El enlace expirará en 48 horas.</strong>
                 </p>
 
-                <div class="p-3 mb-5" style="background: #0a0a0a; border: 1px dashed #444; border-radius: 10px; word-break: break-all;">
-                    <code class="text-success" style="font-size: 13px;" id="linkText">
-                        <?php echo htmlspecialchars($linkInvitacion); ?>
-                    </code>
+                <div class="p-3 mb-4" style="background: #0a0a0a; border: 1px dashed #444; border-radius: 10px; word-break: break-all; min-height: 50px;" id="linkContainer">
+                    <div class="spinner-border text-danger spinner-border-sm" role="status" id="linkSpinner"></div>
+                    <code class="text-success" style="font-size: 13px; display: none;" id="linkText"></code>
                 </div>
 
-                <div class="row mt-2">
+                <div class="row mt-2 mb-4">
                     <div class="col-6 pr-2">
-                        <button class="btn btn-success btn-block rounded-pill py-2 font-weight-bold" onclick="compartirWhatsApp()">
+                        <button class="btn btn-success btn-block rounded-pill py-2 font-weight-bold" onclick="compartirWhatsApp()" id="btnWp" disabled>
                             <i class="fab fa-whatsapp mr-1"></i> WhatsApp
                         </button>
                     </div>
                     <div class="col-6 pl-2">
-                        <button class="btn btn-outline-light btn-block rounded-pill py-2 font-weight-bold" onclick="copiarLink()" style="border-color: #444;">
+                        <button class="btn btn-outline-light btn-block rounded-pill py-2 font-weight-bold" onclick="copiarLink()" style="border-color: #444;" id="btnCopy" disabled>
                             <i class="fas fa-copy mr-1"></i> Copiar
                         </button>
                     </div>
                 </div>
+
+                <hr style="border-color: #333;">
+<div class="mt-4 text-left">
+    <label class="text-muted small font-weight-bold">O enviar por correo electrónico:</label>
+    <div class="input-group">
+        <input type="email" class="form-control text-white border-secondary" id="inviteEmail" placeholder="correo@ejemplo.com" style="background-color: #1a1a1a !important; color: #fff !important; border-top-left-radius: 50px; border-bottom-left-radius: 50px;">
+        <div class="input-group-append">
+            <button class="btn btn-danger px-4 font-weight-bold" type="button" onclick="enviarPorEmail()" id="btnEmail" style="border-top-right-radius: 50px; border-bottom-right-radius: 50px;" disabled>Enviar</button>
+        </div>
+    </div>
+</div>
 
             </div>
         </div>
@@ -318,10 +370,39 @@ $linkInvitacion = "http://" . $_SERVER['HTTP_HOST'] . "/SandysGym2/sandys_web/in
 </div>
 
 <script>
-    const inviteLink = "<?php echo $linkInvitacion; ?>";
+    let currentInviteLink = "";
+
+    function abrirModalInvitacion() {
+        $('#modalAddMember').modal('show');
+        $('#linkText').hide();
+        $('#linkSpinner').show();
+        $('#btnWp, #btnCopy, #btnEmail').prop('disabled', true);
+        
+        // Fetch new token
+        $.ajax({
+            url: 'api/generate_invite_token.php',
+            type: 'POST',
+            dataType: 'json',
+            success: function(res) {
+                if(res.success) {
+                    currentInviteLink = res.link;
+                    $('#linkText').text(currentInviteLink).fadeIn();
+                    $('#btnWp, #btnCopy, #btnEmail').prop('disabled', false);
+                } else {
+                    $('#linkText').text('Error al generar enlace').addClass('text-danger').removeClass('text-success').show();
+                }
+                $('#linkSpinner').hide();
+            },
+            error: function() {
+                $('#linkText').text('Error de conexión').addClass('text-danger').removeClass('text-success').show();
+                $('#linkSpinner').hide();
+            }
+        });
+    }
 
     function copiarLink() {
-        navigator.clipboard.writeText(inviteLink).then(() => {
+        if (!currentInviteLink) return;
+        navigator.clipboard.writeText(currentInviteLink).then(() => {
             Swal.fire({
                 icon: 'success', 
                 title: '¡Enlace Copiado!', 
@@ -335,8 +416,43 @@ $linkInvitacion = "http://" . $_SERVER['HTTP_HOST'] . "/SandysGym2/sandys_web/in
     }
 
     function compartirWhatsApp() {
-        const mensaje = encodeURIComponent("¡Hola! Te he invitado a unirte a mi Plan Familiar en Sandy's Gym. Haz clic en este enlace mágico para aceptar la invitación y crear tu cuenta: " + inviteLink);
+        if (!currentInviteLink) return;
+        const mensaje = encodeURIComponent("¡Hola! Te he invitado a unirte a mi Plan Familiar en Sandy's Gym. Haz clic en este enlace mágico para aceptar la invitación y crear tu cuenta: " + currentInviteLink);
         window.open("https://wa.me/?text=" + mensaje, "_blank");
+    }
+
+    function enviarPorEmail() {
+        const email = $('#inviteEmail').val().trim();
+        if(!email) {
+            Swal.fire({icon:'warning', title:'Atención', text:'Ingresa un correo electrónico', background: '#1a1a1a', color: '#fff'});
+            return;
+        }
+        
+        $('#btnEmail').html('<i class="fas fa-spinner fa-spin"></i>').prop('disabled', true);
+        
+        $.ajax({
+            url: 'api/send_invitation_email.php',
+            type: 'POST',
+            data: {
+                email: email,
+                link: currentInviteLink,
+                nombre: '<?php echo addslashes($nombreTitular); ?>'
+            },
+            dataType: 'json',
+            success: function(res) {
+                $('#btnEmail').text('Enviar').prop('disabled', false);
+                if(res.success) {
+                    Swal.fire({icon: 'success', title: 'Enviado', text: 'Invitación enviada por correo', background: '#1a1a1a', color: '#fff'});
+                    $('#inviteEmail').val('');
+                } else {
+                    Swal.fire({icon: 'error', title: 'Error', text: res.message, background: '#1a1a1a', color: '#fff'});
+                }
+            },
+            error: function() {
+                $('#btnEmail').text('Enviar').prop('disabled', false);
+                Swal.fire({icon: 'error', title: 'Error', text: 'Fallo de conexión', background: '#1a1a1a', color: '#fff'});
+            }
+        });
     }
 
     function eliminarMiembro(idSocio, nombreSocio) {
@@ -352,14 +468,51 @@ $linkInvitacion = "http://" . $_SERVER['HTTP_HOST'] . "/SandysGym2/sandys_web/in
             background: '#1a1a1a', color: '#fff'
         }).then((result) => {
             if (result.isConfirmed) {
+                Swal.fire({title: 'Procesando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }, background: '#1a1a1a', color: '#fff'});
                 $.ajax({
                     url: 'api/delete_group_member.php',
                     type: 'POST',
                     data: { id_beneficiario: idSocio },
                     dataType: 'json',
                     success: function(res) {
-                        if(res.success) { location.reload(); } 
-                        else { Swal.fire({icon: 'error', title: 'Error', text: res.message, background: '#1a1a1a', color: '#fff'}); }
+                        if(res.success) {
+                            Swal.close();
+                            // Manipulación del DOM para reactividad
+                            const slot = $('#slot_' + idSocio);
+                            const parentCol = slot.parent();
+                            
+                            // Transformar la tarjeta en una vacía
+                            const emptyCardHtml = `
+                                <div class="slot-card empty-slot" onclick="abrirModalInvitacion()">
+                                    <div class="avatar-circle empty">
+                                        <i class="fas fa-plus"></i>
+                                    </div>
+                                    <h5 class="text-muted mb-1" style="font-family: 'Oswald', sans-serif;">ESPACIO LIBRE</h5>
+                                    <span class="text-danger small font-weight-bold mt-2"><i class="fas fa-link mr-1"></i> Invitar / Agregar</span>
+                                </div>
+                            `;
+                            
+                            // Animación suave de desaparición y aparición
+                            slot.fadeOut(300, function() {
+                                parentCol.html(emptyCardHtml);
+                                parentCol.find('.empty-slot').hide().fadeIn(300);
+                            });
+                            
+                            // Actualizar contador
+                            let countText = $('.plan-header-card p strong').text();
+                            let parts = countText.split(' / ');
+                            if(parts.length == 2) {
+                                let newCount = parseInt(parts[0]) - 1;
+                                $('.plan-header-card p strong').text(newCount + ' / ' + parts[1]);
+                            }
+                            
+                            Swal.fire({icon: 'success', title: 'Desvinculado', text: nombreSocio + ' ha sido removido del plan.', background: '#1a1a1a', color: '#fff', timer: 2000, showConfirmButton: false});
+                        } else { 
+                            Swal.fire({icon: 'error', title: 'Error', text: res.message, background: '#1a1a1a', color: '#fff'}); 
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({icon: 'error', title: 'Error', text: 'Fallo de red', background: '#1a1a1a', color: '#fff'});
                     }
                 });
             }

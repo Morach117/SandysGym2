@@ -22,40 +22,54 @@ function responder_json(array $respuesta) {
     exit;
 }
 
-// 2. Valida la sesión activa y el token CSRF
+// 2. Valida la sesión activa
 $session_id_socio = $_SESSION['admin']['soc_id_socio'] ?? null;
 $post_id_socio = isset($_POST['id_socio']) ? (int)$_POST['id_socio'] : null;
+
+// Obtener token CSRF de la petición (POST o cabeceras HTTP)
 $post_csrf_token = $_POST['csrf_token'] ?? null;
+if (empty($post_csrf_token)) {
+    // Buscar en cabeceras HTTP
+    if (function_exists('apache_request_headers')) {
+        $headers = apache_request_headers();
+        if (isset($headers['X-CSRF-Token'])) {
+            $post_csrf_token = $headers['X-CSRF-Token'];
+        }
+    }
+    if (empty($post_csrf_token) && isset($_SERVER['HTTP_X_CSRF_TOKEN'])) {
+        $post_csrf_token = $_SERVER['HTTP_X_CSRF_TOKEN'];
+    }
+}
+
 $session_csrf_token = $_SESSION['csrf_token'] ?? null;
 
+// Verificar sesión y CSRF token
 if (
     empty($session_id_socio) || 
     empty($post_id_socio) || 
-    $post_id_socio !== (int)$session_id_socio ||
+    (int)$post_id_socio !== (int)$session_id_socio ||
     empty($session_csrf_token) || 
     empty($post_csrf_token) || 
     !hash_equals($session_csrf_token, (string)$post_csrf_token)
 ) {
-    echo json_encode([
+    responder_json([
         "draw" => 0, 
         "recordsTotal" => 0, 
         "recordsFiltered" => 0, 
         "data" => [], 
         "error" => "Error de sesión o seguridad."
     ]);
-    exit;
 }
 
 // Verificar conexión PDO
 if (!isset($conn) || !$conn instanceof PDO) {
-    echo json_encode([
+    responder_json([
         "draw" => 0, 
         "recordsTotal" => 0, 
         "recordsFiltered" => 0, 
         "data" => [], 
-        "error" => "Error de sesión o seguridad."
+        "error" => "Error crítico: No se pudo conectar a la base de datos."
     ]);
-    exit;
 }
 
 // 3. Captura los parámetros estándar de DataTables

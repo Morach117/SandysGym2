@@ -1,7 +1,7 @@
 <?php
 /*
 |--------------------------------------------------------------------------
-| Instalador Independiente de Base de Datos - Sandys Gym (Landing & Amenidades)
+| Instalador Independiente de Base de Datos - Sandys Gym (Plan Invitaciones)
 |--------------------------------------------------------------------------
 */
 
@@ -29,63 +29,37 @@ $options = [
 $dsn = "mysql:host=$host;dbname=$db;charset=utf8mb4";
 
 echo "<body style='background-color: #050505; color: #ffffff; font-family: sans-serif; padding: 40px;'>";
-echo "<h2 style='color: #F28123;'>⚙️ Instalador de Módulos: Landing Page & Amenidades</h2>";
+echo "<h2 style='color: #F28123;'>⚙️ Instalador de Módulos: Plan Invitaciones</h2>";
 echo "<hr style='border-color: #333;'>";
 
 try {
     $conn = new PDO($dsn, $user, $pass, $options);
     echo "<p style='color: #10b981;'>✅ Conexión establecida con éxito.</p>";
 
-    // 1. Crear tabla san_landing_amenidades
+    // 1. Crear tabla san_plan_invitaciones
     $conn->exec("
-        CREATE TABLE IF NOT EXISTS `san_landing_amenidades` (
-          `id_amenidad` INT(11) NOT NULL AUTO_INCREMENT,
-          `icono` VARCHAR(100) NOT NULL,
-          `titulo` VARCHAR(100) NOT NULL,
-          `descripcion` TEXT NOT NULL,
-          `estado` TINYINT(1) DEFAULT '1',
-          PRIMARY KEY (`id_amenidad`)
+        CREATE TABLE IF NOT EXISTS `san_plan_invitaciones` (
+          `id_invitacion` INT(11) NOT NULL AUTO_INCREMENT,
+          `id_socio_titular` INT(11) NOT NULL,
+          `token_unico` VARCHAR(64) NOT NULL,
+          `status` ENUM('pendiente', 'aceptado', 'expirado', 'cancelado') NOT NULL DEFAULT 'pendiente',
+          `fecha_creacion` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          `fecha_expiracion` DATETIME NOT NULL,
+          PRIMARY KEY (`id_invitacion`),
+          UNIQUE KEY `token_unico` (`token_unico`),
+          KEY `id_socio_titular` (`id_socio_titular`),
+          KEY `status` (`status`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     ");
-    echo "<p style='color: #10b981;'>✅ Tabla <b>'san_landing_amenidades'</b> verificada/creada.</p>";
+    echo "<p style='color: #10b981;'>✅ Tabla <b>'san_plan_invitaciones'</b> verificada/creada.</p>";
 
-    // 2. Insertar registros iniciales en san_landing_amenidades (si está vacía)
-    $checkAmenidades = $conn->query("SELECT COUNT(*) FROM `san_landing_amenidades`")->fetchColumn();
-    if ($checkAmenidades == 0) {
-        $conn->exec("
-            INSERT INTO `san_landing_amenidades` (`icono`, `titulo`, `descripcion`) VALUES 
-            ('fa-solid fa-dumbbell', 'Peso Libre e Integrado', 'Equipamiento moderno para todo tipo de rutinas.'),
-            ('fa-solid fa-person-running', 'Zona Cardio', 'Caminadoras, elípticas y escaladoras de última generación.'),
-            ('fa-solid fa-people-group', 'Clases Grupales', 'Zumba, Cross, funcional y más actividades guiadas.'),
-            ('fa-solid fa-shower', 'Regaderas y Lockers', 'Vestidores amplios, seguros y con agua caliente.');
-        ");
-        echo "<p style='color: #34d399;'>🔹 Datos iniciales insertados en <b>'san_landing_amenidades'</b>.</p>";
+    // 2. Agregar columna soc_id_titular_grupo a san_socios si no existe
+    $checkCol = $conn->query("SHOW COLUMNS FROM `san_socios` LIKE 'soc_id_titular_grupo'")->fetch();
+    if (!$checkCol) {
+        $conn->exec("ALTER TABLE san_socios ADD COLUMN soc_id_titular_grupo INT DEFAULT 0 AFTER soc_id_referido_por;");
+        echo "<p style='color: #10b981;'>✅ Columna <b>'soc_id_titular_grupo'</b> agregada exitosamente en 'san_socios'.</p>";
     } else {
-        echo "<p style='color: #9ca3af;'>ℹ️ La tabla 'san_landing_amenidades' ya contiene registros. No se duplicaron los datos iniciales.</p>";
-    }
-
-    // 3. Alterar la tabla san_landing_config para añadir las nuevas columnas
-    // Añadimos validaciones individuales por columna para evitar fallos si el script se corre más de una vez
-    $columnasNuevas = [
-        'app_titulo'    => "VARCHAR(255) DEFAULT 'Lleva tu entrenamiento'",
-        'app_subtitulo' => "VARCHAR(255) DEFAULT 'al siguiente nivel'",
-        'app_desc'      => "TEXT DEFAULT 'Al formar parte de la familia Sandys Gym, tienes acceso a un seguimiento continuo.'",
-        'app_btn_url'   => "VARCHAR(255) DEFAULT 'index.php?page=login'",
-        'app_imagen'    => "VARCHAR(255) DEFAULT ''",
-        'cta_titulo'    => "VARCHAR(255) DEFAULT '¿Listo para transformar tu vida?'",
-        'cta_desc'      => "VARCHAR(255) DEFAULT 'Visítanos en Tuxtla y comienza hoy mismo.'",
-        'cta_btn_url'   => "VARCHAR(255) DEFAULT 'index.php?page=inscribite'"
-    ];
-
-    foreach ($columnasNuevas as $columna => $definicion) {
-        // Verificar si la columna ya existe en san_landing_config
-        $checkCol = $conn->query("SHOW COLUMNS FROM `san_landing_config` LIKE '$columna'")->fetch();
-        if (!$checkCol) {
-            $conn->exec("ALTER TABLE `san_landing_config` ADD COLUMN `$columna` $definicion;");
-            echo "<p style='color: #10b981;'>✅ Columna <b>'$columna'</b> agregada exitosamente.</p>";
-        } else {
-            echo "<p style='color: #9ca3af;'>ℹ️ La columna '$columna' ya existía en 'san_landing_config'.</p>";
-        }
+        echo "<p style='color: #9ca3af;'>ℹ️ La columna 'soc_id_titular_grupo' ya existía en 'san_socios'.</p>";
     }
 
     echo "<br><div style='background-color: #1a1a1a; padding: 20px; border-left: 5px solid #ef4444; border-radius: 5px;'>";

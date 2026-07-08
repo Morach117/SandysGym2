@@ -33,7 +33,7 @@ try {
     
     $stmtInsert->execute([$idTitular, $token, $fecha_creacion, $fecha_expiracion]);
     
-    $link = "http://" . $_SERVER['HTTP_HOST'] . "/SandysGym2/sandys_web/index.php?page=accept_invite&token=" . $token;
+    $link = "http://" . $_SERVER['HTTP_HOST'] . "/index.php?page=accept_invite&token=" . $token;
     
     echo json_encode(['success' => true, 'link' => $link, 'token' => $token]);
 

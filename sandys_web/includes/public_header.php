@@ -300,14 +300,14 @@ $isLoggedIn = isset($_SESSION['admin']);
                         </div>
                         
                         <div>
-                            <a href="index.php?page=inscribite" class="primary-btn btn-inscribete">Inscríbete Ya</a>
+                            <a href="index.php?page=registro" class="primary-btn btn-inscribete">Inscríbete Ya</a>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="mobile-controls d-flex d-lg-none">
-                <a href="index.php?page=inscribite" class="btn-inscribete-mobile">¡Inscríbete ya!</a>
+                <a href="index.php?page=registro" class="btn-inscribete-mobile">¡Inscríbete ya!</a>
                 <div class="canvas-open">
                     <i class="fa fa-bars"></i>
                 </div>

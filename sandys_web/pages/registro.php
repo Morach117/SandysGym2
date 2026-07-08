@@ -5,8 +5,8 @@
     /* --- 0. FIX PARA EL MENÚ SUPERIOR --- */
     /* Esto ocultará el botón "Inscríbete Ya" del menú superior en esta página. 
        Si tu botón tiene una clase específica, puedes agregarla aquí. */
-    header a[href*="inscribite"], 
-    .navbar a[href*="inscribite"], 
+    header a[href*="registro"], 
+    .navbar a[href*="registro"], 
     .header-btn, 
     .inscribete-btn { 
         display: none !important; 

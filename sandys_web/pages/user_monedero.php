@@ -4,6 +4,15 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Generar CSRF Token seguro si no existe en la sesión actual
+if (empty($_SESSION['csrf_token'])) {
+    try {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    } catch (Exception $e) {
+        $_SESSION['csrf_token'] = md5(uniqid((string)mt_rand(), true));
+    }
+}
+
 // --- 2. VERIFICAR ACCESO ---
 if (!isset($_SESSION['admin']) || !isset($_SESSION['admin']['soc_id_socio'])) {
     header('Location: index.php?page=login&error=session_expired');
@@ -619,6 +628,9 @@ if (!$prepago) {
                 "ajax": {
                     "url": "api/api_prepago_detalle.php",
                     "type": "POST",
+                    "headers": {
+                        "X-CSRF-Token": csrfToken
+                    },
                     "data": function (d) {
                         d.id_socio = $('#id_socio').val();
                         d.csrf_token = csrfToken; // Inyección de CSRF al backend de DT

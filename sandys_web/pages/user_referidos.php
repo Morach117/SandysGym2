@@ -31,9 +31,44 @@ try {
     $listaReferidos = []; // Si falla la consulta, array vacío para no romper la página
 }
 
+// --- OBTENER CONFIGURACIÓN DE REFERIDOS Y ESTADO DE MEMBRESÍA ---
+$idConsorcio = $_SESSION['id_empresa'] ?? $selSocioData['soc_id_consorcio'] ?? 1; // Ajusta según tu contexto
+$gananciaPorReferido = 35.00; // Valor por defecto
+$fechaFin = null;
+
+$queryPanel = "
+    SELECT 
+        c.con_referidos,
+        p.pag_fecha_fin
+    FROM san_consorcios c
+    LEFT JOIN san_pagos p 
+        ON p.pag_id_socio = :miId 
+        AND CURDATE() <= p.pag_fecha_fin
+    WHERE c.con_id_consorcio = :idConsorcio
+    ORDER BY p.pag_fecha_fin DESC, p.pag_id_pago DESC 
+    LIMIT 1
+";
+
+try {
+    $stmtPanel = $conn->prepare($queryPanel);
+    $stmtPanel->bindParam(':miId', $miId, PDO::PARAM_INT);
+    $stmtPanel->bindParam(':idConsorcio', $idConsorcio, PDO::PARAM_INT);
+    $stmtPanel->execute();
+    
+    if ($row = $stmtPanel->fetch(PDO::FETCH_ASSOC)) {
+        if (!empty($row['con_referidos'])) {
+            $gananciaPorReferido = (float) $row['con_referidos'];
+        }
+        if (!empty($row['pag_fecha_fin'])) {
+            $fechaFin = $row['pag_fecha_fin']; // Disponible si se requiere validar vigencia en la vista
+        }
+    }
+} catch (PDOException $e) {
+    // Si falla, se conservan los valores por defecto
+}
+
 // Cálculos
 $totalReferidos = count($listaReferidos);   
-$gananciaPorReferido = 35; 
 $gananciaTotal = $totalReferidos * $gananciaPorReferido;
 
 // Construcción del Link
@@ -41,7 +76,7 @@ $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "
 $host = $_SERVER['HTTP_HOST'];
 
 // Liga directa a la creación de cuenta
-$baseUrl = "$protocol://$host/index.php?page=inscribite"; 
+$baseUrl = "$protocol://$host/index.php?page=registro"; 
 
 // CORRECCIÓN: Ahora el parámetro ref lleva el número de teléfono en lugar del ID
 $linkCompleto = $baseUrl . "&ref=" . $miTelefono;

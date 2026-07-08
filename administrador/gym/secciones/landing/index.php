@@ -301,7 +301,7 @@ $config_ui = mysqli_fetch_assoc($res_config);
                         </div>
                         <button type="button" class="btn btn-xs btn-default" onclick="$('#contenedor_beneficios').append('<input type=\'text\' name=\'beneficios[]\' class=\'form-control\' style=\'margin-bottom:5px;\'>')"><span class="glyphicon glyphicon-plus"></span> Añadir Beneficio</button>
                     </div>
-                    <div class="form-group"><label>URL Botón:</label><input type="text" name="url_boton" class="form-control" value="index.php?page=inscribite"></div>
+                    <div class="form-group"><label>URL Botón:</label><input type="text" name="url_boton" class="form-control" value="index.php?page=registro"></div>
                 </div>
                 <div class="modal-footer"><button type="submit" class="btn btn-primary">Guardar</button></div>
             </form>

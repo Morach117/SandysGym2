@@ -94,19 +94,30 @@ $miembroActivo = false;
 $mostrarAdminPlan = false;
 $nombreSocio = htmlspecialchars(explode(' ', trim($selSocioData['soc_nombres']))[0]);
 
-// 2. Consultar el último pago ACTIVO del socio
+// 2. Consultar el último pago ACTIVO del socio y configuración del consorcio (Referidos)
 $socioId = $selSocioData['soc_id_socio'];
-$query = "SELECT pag_fecha_fin, pag_id_servicio 
-          FROM san_pagos 
-          WHERE pag_id_socio = :socioId AND pag_status = 'A' 
-          ORDER BY pag_fecha_fin DESC LIMIT 1";
+$idConsorcio = $_SESSION['id_empresa'] ?? $selSocioData['soc_id_consorcio'] ?? 1; // Adaptable al contexto
+
+$query = "SELECT 
+            c.con_referidos, 
+            p.pag_fecha_fin, 
+            p.pag_id_servicio 
+          FROM san_consorcios c
+          LEFT JOIN san_pagos p 
+            ON p.pag_id_socio = :socioId 
+            AND CURDATE() <= p.pag_fecha_fin 
+          WHERE c.con_id_consorcio = :idConsorcio
+          ORDER BY p.pag_fecha_fin DESC, p.pag_id_pago DESC LIMIT 1";
+
 $stmt = $conn->prepare($query);
 $stmt->bindParam(':socioId', $socioId, PDO::PARAM_INT);
+$stmt->bindParam(':idConsorcio', $idConsorcio, PDO::PARAM_INT);
 $stmt->execute();
 $pagoData = $stmt->fetch(PDO::FETCH_ASSOC);
 
 $fechaFin = $pagoData['pag_fecha_fin'] ?? null;
 $idServicioActivo = $pagoData['pag_id_servicio'] ?? 0;
+$gananciaPorReferido = $pagoData['con_referidos'] ?? 35.00;
 
 // 3. VALIDACIÓN ESTRICTA PARA MOSTRAR "ADMINISTRAR PLAN" Y ESTADO ACTIVO
 $serviciosPlanFamiliar = [123, 124, 125, 126, 127, 167];

@@ -141,7 +141,7 @@
             <div class="img-overlay">
                 <h4>¿Nuevo en el Gimnasio?</h4>
                 <p>Únete y empieza a transformar tu vida hoy mismo. Regístrate de forma rápida y sencilla.</p>
-                <a class="btn-outline-light-custom" href="index.php?page=inscribite">Crear una Cuenta</a>
+                <a class="btn-outline-light-custom" href="index.php?page=registro">Crear una Cuenta</a>
             </div>
         </div>
 

@@ -32,19 +32,23 @@ $id_empresa = 1;
 function obtener_prepago_pdo($conexion_pdo, $id_socio, $id_empresa)
 {
     try {
-        $query = "SELECT CONCAT(soc_apepat, ' ', soc_apemat, ' ', soc_nombres) AS nombre,
-                         soc_mon_saldo AS saldo,
-                         soc_id_socio AS id_socio
-                  FROM san_socios
-                  WHERE soc_id_socio = :socioId 
-                  AND soc_id_empresa = :empresaId LIMIT 1";
+        $query = "SELECT CONCAT(s.soc_apepat, ' ', s.soc_apemat, ' ', s.soc_nombres) AS nombre,
+                         IFNULL(p.prep_saldo, 0) AS saldo,
+                         s.soc_id_socio AS id_socio,
+                         s.soc_id_consorcio
+                  FROM san_socios s
+                  LEFT JOIN san_prepago p ON p.prep_id_socio = s.soc_id_socio
+                  WHERE s.soc_id_socio = :socioId 
+                  AND s.soc_id_empresa = :empresaId LIMIT 1";
 
         $stmt = $conexion_pdo->prepare($query);
         $stmt->bindParam(':socioId', $id_socio, PDO::PARAM_INT);
         $stmt->bindParam(':empresaId', $id_empresa, PDO::PARAM_INT);
         $stmt->execute();
 
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $socio = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $socio;
     } catch (PDOException $e) {
         error_log("Error DB al obtener saldo de monedero: " . $e->getMessage());
         return false;

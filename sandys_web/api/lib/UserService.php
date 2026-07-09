@@ -183,10 +183,10 @@ class UserService {
             $stmt->execute();
             $monto = $stmt->fetchColumn();
             
-            return $monto !== false ? (float)$monto : 0.00;
+            return !empty($monto) ? (float)$monto : 70.00;
         } catch (PDOException $e) {
             error_log("Error obteniendo bono de referido: " . $e->getMessage());
-            return 0.00;
+            return 70.00;
         }
     }
 }

@@ -299,29 +299,18 @@ function registrar_recarga_monedero_pdo(PDO $conn, int $payment_id, array $metad
 {
     $conn->beginTransaction();
     try {
-        // Validamos variables con tolerancias (puede venir como id_socio o id_socio_beneficiario)
         $id_socio = (int) ($metadata['id_socio'] ?? $metadata['id_socio_beneficiario'] ?? 0);
         $id_usuario = (int) ($metadata['id_usuario'] ?? 1); // Fallback a 1 si no existe
         $importe_recarga = (float) ($metadata['importe_recarga'] ?? 0);
+        $id_empresa = 1; // Generalmente es 1 para el entorno web
         
         if ($id_socio <= 0 || $importe_recarga <= 0) {
             throw new Exception("Datos de recarga inválidos. Socio: $id_socio | Importe: $importe_recarga");
         }
 
-        $incremento_monto = (float) ($metadata['incremento_monto'] ?? 0);
-        $porc_incremento = (float) ($metadata['porcentaje_incremento'] ?? 0);
         $fecha_mov = date('Y-m-d H:i:s');
 
-        // Lock de fila con FOR UPDATE para evitar race conditions por notificaciones simultáneas
-        $stmtSocio = $conn->prepare("SELECT soc_mon_saldo FROM san_socios WHERE soc_id_socio = ? FOR UPDATE");
-        $stmtSocio->execute([$id_socio]);
-        $saldo_row = $stmtSocio->fetch(PDO::FETCH_ASSOC);
-
-        if (!$saldo_row) {
-            throw new Exception("Socio ID $id_socio no encontrado en la base de datos.");
-        }
-
-        // Verificar duplicado dentro de la transacción (con el lock activo)
+        // Verificar duplicado dentro de la transacción
         $stmtDup = $conn->prepare("SELECT COUNT(*) FROM san_prepago_detalle WHERE pred_descripcion LIKE ? LIMIT 1");
         $stmtDup->execute(["%MP Ref: $payment_id%"]);
         if ((int) $stmtDup->fetchColumn() > 0) {
@@ -330,24 +319,51 @@ function registrar_recarga_monedero_pdo(PDO $conn, int $payment_id, array $metad
             return false;
         }
 
-        $saldo_actual = (float) $saldo_row['soc_mon_saldo'];
-        $saldo_tras_abono = $saldo_actual + $importe_recarga;
+        // 1. Verificar si el socio ya tiene una cuenta de prepago creada
+        $stmtPrepago = $conn->prepare("SELECT prep_id_prepago, prep_saldo FROM san_prepago WHERE prep_id_socio = ? FOR UPDATE");
+        $stmtPrepago->execute([$id_socio]);
+        $prepago_row = $stmtPrepago->fetch(PDO::FETCH_ASSOC);
 
-        $sql_detalle = "INSERT INTO san_prepago_detalle (pred_descripcion, pred_importe, pred_saldo, pred_movimiento, pred_fecha, pred_id_socio, pred_id_usuario) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        $stmtDetalle = $conn->prepare($sql_detalle);
+        $prep_id_prepago = 0;
+        $saldo_tras_abono = 0;
+        $descripcion_movimiento = '';
 
-        $stmtDetalle->execute(["ABONO PREPAGO (MP Ref: $payment_id)", $importe_recarga, $saldo_tras_abono, 'S', $fecha_mov, $id_socio, $id_usuario]);
-
-        $saldo_final = $saldo_tras_abono;
-        if ($incremento_monto > 0) {
-            $saldo_final = $saldo_tras_abono + $incremento_monto;
-            $stmtDetalle->execute(["INCREMENTO PROMOCIONAL ($porc_incremento%) (MP Ref: $payment_id)", $incremento_monto, $saldo_final, 'A', $fecha_mov, $id_socio, $id_usuario]);
+        if ($prepago_row) {
+            // Ya cuenta con registro, se ejecuta un UPDATE
+            $prep_id_prepago = (int) $prepago_row['prep_id_prepago'];
+            $saldo_actual = (float) $prepago_row['prep_saldo'];
+            $saldo_tras_abono = $saldo_actual + $importe_recarga;
+            
+            $stmtUpd = $conn->prepare("UPDATE san_prepago SET prep_saldo = ? WHERE prep_id_prepago = ?");
+            $stmtUpd->execute([$saldo_tras_abono, $prep_id_prepago]);
+            
+            $descripcion_movimiento = "RECARGA DE CUENTA PREPAGO (MP Ref: $payment_id)";
+        } else {
+            // No cuenta con registro, se ejecuta un INSERT
+            $saldo_tras_abono = $importe_recarga;
+            
+            $stmtIns = $conn->prepare("INSERT INTO san_prepago (prep_id_socio, prep_saldo, prep_id_empresa) VALUES (?, ?, ?)");
+            $stmtIns->execute([$id_socio, $saldo_tras_abono, $id_empresa]);
+            $prep_id_prepago = (int) $conn->lastInsertId();
+            
+            $descripcion_movimiento = "APERTURA DE CUENTA PREPAGO (MP Ref: $payment_id)";
         }
 
-        $conn->prepare("UPDATE san_socios SET soc_mon_saldo = ? WHERE soc_id_socio = ?")->execute([$saldo_final, $id_socio]);
+        // 2. Registro obligatorio en la tabla de detalles para auditar el movimiento
+        $sql_detalle = "INSERT INTO san_prepago_detalle (pred_id_prepago, pred_descripcion, pred_importe, pred_saldo, pred_movimiento, pred_fecha, pred_id_usuario) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        $stmtDetalle = $conn->prepare($sql_detalle);
+        $stmtDetalle->execute([
+            $prep_id_prepago,
+            $descripcion_movimiento,
+            $importe_recarga,
+            $saldo_tras_abono,
+            'S',
+            $fecha_mov,
+            $id_usuario
+        ]);
 
         $conn->commit();
-        log_webhook("ÉXITO: Recarga procesada. Socio: {$id_socio} | Monto: {$importe_recarga} | Saldo final: {$saldo_final}");
+        log_webhook("ÉXITO: Recarga procesada. Socio: {$id_socio} | Monto: {$importe_recarga} | Saldo final: {$saldo_tras_abono}");
         return true;
     } catch (PDOException $e) {
         $conn->rollBack();
@@ -399,11 +415,9 @@ function enviar_correo_monedero_pdo(PDO $conn, int $payment_id, array $metadata)
 
     // Variables que la plantilla espera
     $importe_recarga = (float) ($metadata['importe_recarga'] ?? 0);
-    $incremento_monto = (float) ($metadata['incremento_monto'] ?? 0);
-    $porcentaje_incremento = (float) ($metadata['porcentaje_incremento'] ?? 0);
 
     // Calcular saldo final actual desde la BD
-    $stmtSaldo = $conn->prepare("SELECT soc_mon_saldo FROM san_socios WHERE soc_id_socio = ? LIMIT 1");
+    $stmtSaldo = $conn->prepare("SELECT prep_saldo FROM san_prepago WHERE prep_id_socio = ? LIMIT 1");
     $stmtSaldo->execute([$id_socio]);
     $saldo_final = (float) $stmtSaldo->fetchColumn();
 

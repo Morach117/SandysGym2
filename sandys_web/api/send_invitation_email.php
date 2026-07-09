@@ -48,7 +48,15 @@ if (empty($linkRegistro)) {
      json_response(['success' => false, 'message' => 'Error al generar el enlace de invitación.'], 400);
 }
 
-// 3. LÓGICA DE ENVÍO
+// 3. VALIDACIÓN DE SOCIO EXISTENTE
+$stmtCheck = $conn->prepare("SELECT soc_id_socio FROM san_socios WHERE soc_correo = :email LIMIT 1");
+$stmtCheck->bindParam(':email', $emailDestino, PDO::PARAM_STR);
+$stmtCheck->execute();
+if ($stmtCheck->fetch()) {
+    json_response(['success' => false, 'message' => 'Este correo ya se encuentra registrado en el sistema. Las invitaciones solo son válidas para nuevos usuarios.'], 400);
+}
+
+// 4. LÓGICA DE ENVÍO
 try {
     $asunto = '¡' . mb_strtoupper($nombreSocio, 'UTF-8') . ' te ha invitado a Sandy\'s Gym!';
 

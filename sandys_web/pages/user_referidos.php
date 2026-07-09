@@ -33,7 +33,7 @@ try {
 
 // --- OBTENER CONFIGURACIÓN DE REFERIDOS Y ESTADO DE MEMBRESÍA ---
 $idConsorcio = $_SESSION['id_empresa'] ?? $selSocioData['soc_id_consorcio'] ?? 1; // Ajusta según tu contexto
-$gananciaPorReferido = 35.00; // Valor por defecto
+$gananciaPorReferido = 70.00; // Valor por defecto actualizado a 70
 $fechaFin = null;
 
 $queryPanel = "
@@ -288,7 +288,7 @@ $textoInvitacion = "¡Hola! Ven a entrenar conmigo a Sandys Gym. 🏋️‍♂�
 <section class="referral-hero">
     <div class="container">
         <h1 class="hero-title">Gana Dinero Invitando</h1>
-        <p class="hero-subtitle">Invita a tus amigos a entrenar. Por cada amigo que se inscriba con tu código, recibirás <strong>$<?= $gananciaPorReferido ?> MXN</strong> en tu monedero.</p>
+        <p class="hero-subtitle">Invita a tus amigos a entrenar. Por cada amigo que se inscriba por primera vez con tu código, recibirás <strong>$<?= $gananciaPorReferido ?> MXN</strong> en tu monedero.</p>
     </div>
 </section>
 

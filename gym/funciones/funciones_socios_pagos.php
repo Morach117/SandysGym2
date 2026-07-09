@@ -547,7 +547,7 @@ function procesar_recompensa_referido_caja($id_socio, $fecha_mov) {
                         $idCons = isset($id_consorcio) ? (int)$id_consorcio : 1;
                         $queryConf = "SELECT con_referidos FROM san_consorcios WHERE con_id_consorcio = $idCons LIMIT 1";
                         $resConf = mysqli_query($conexion, $queryConf);
-                        $monto = 35.00; // default
+                        $monto = 70.00; // default
                         if ($resConf && $rowConf = mysqli_fetch_assoc($resConf)) {
                             if (!empty($rowConf['con_referidos'])) {
                                 $monto = (float)$rowConf['con_referidos'];

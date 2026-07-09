@@ -72,14 +72,6 @@ try {
         throw new InvalidArgumentException("El importe es inválido. Debe ser entre $50.00 y $20,000.00 MXN.");
     }
 
-    // 4. Obtener promoción del consorcio (Uso estricto de PDO)
-    $stmt = $conn->prepare("SELECT con_abono FROM san_consorcios WHERE con_id_consorcio = ? LIMIT 1");
-    $stmt->execute([$id_consorcio]);
-    $consorcio = $stmt->fetch(PDO::FETCH_ASSOC);
-    $porcentaje_incremento = $consorcio ? (float)$consorcio['con_abono'] : 10.0;
-
-    $incremento_monto = round($importe_recarga * ($porcentaje_incremento / 100), 2);
-
     $item = [
         'title'       => "Recarga de Monedero - Sandy's Gym",
         'quantity'    => 1,
@@ -91,8 +83,6 @@ try {
         'tipo_operacion'        => 'recarga_monedero',
         'id_socio'              => $id_socio,
         'importe_recarga'       => $importe_recarga,
-        'porcentaje_incremento' => $porcentaje_incremento,
-        'incremento_monto'      => $incremento_monto,
         'id_empresa'            => $id_empresa,
         'id_usuario'            => $id_usuario
     ];

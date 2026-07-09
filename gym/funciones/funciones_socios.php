@@ -131,7 +131,6 @@ function lista_socios()
                        AND pag_fecha_fin = (SELECT pag_fecha_fin
                                             FROM san_pagos
                                             WHERE pag_id_socio = soc_id_socio
-                                            AND '$fecha_mov' <= pag_fecha_fin 
                                             AND pag_status = 'A'
                                             ORDER BY pag_fecha_fin DESC 
                                             LIMIT 0, 1)
@@ -151,13 +150,12 @@ function lista_socios()
                               soc_correo_status,
                               DATE_FORMAT(soc_fecha_nacimiento, '%d-%m-%Y') AS fecha_nacimiento,
                               soc_tel_cel,
-                              IF(pag_id_pago > 0, CONCAT(DATE_FORMAT(pag_fecha_ini, '%d-%m-%Y'), ' al ', DATE_FORMAT(pag_fecha_fin, '%d-%m-%Y')), 'Pago Vencido') AS status_pago
+                              IF(pag_id_pago > 0 AND pag_fecha_fin >= '$fecha_mov', CONCAT(DATE_FORMAT(pag_fecha_ini, '%d-%m-%Y'), ' al ', DATE_FORMAT(pag_fecha_fin, '%d-%m-%Y')), 'Pago Vencido') AS status_pago
                        FROM san_socios
                        LEFT JOIN san_pagos ON pag_id_socio = soc_id_socio
                        AND pag_fecha_fin = (SELECT pag_fecha_fin
                                             FROM san_pagos
                                             WHERE pag_id_socio = soc_id_socio
-                                            AND '$fecha_mov' <= pag_fecha_fin 
                                             AND pag_status = 'A'
                                             ORDER BY pag_fecha_fin DESC 
                                             LIMIT 0, 1)

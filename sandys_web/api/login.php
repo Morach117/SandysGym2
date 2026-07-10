@@ -1,5 +1,13 @@
 <?php
 // 1. INICIAR SESIÓN Y CONFIGURAR RESPUESTA
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => '/',
+    'domain' => $_SERVER['HTTP_HOST'] ?? '',
+    'secure' => isset($_SERVER['HTTPS']), // True si está en HTTPS
+    'httponly' => true,
+    'samesite' => 'Strict'
+]);
 session_start();
 header('Content-Type: application/json'); // Siempre define el tipo de contenido
 

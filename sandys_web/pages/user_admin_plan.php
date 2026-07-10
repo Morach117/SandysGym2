@@ -4,6 +4,44 @@
 if (session_status() === PHP_SESSION_NONE) session_start();
 require_once __DIR__ . '/../conn.php';
 
+// Interceptor para verificar la existencia del correo antes de enviar invitación
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'check_email_exists') {
+    header('Content-Type: application/json');
+    
+    // Verificación de sesión
+    if (!isset($_SESSION['admin']) || !isset($_SESSION['admin']['soc_id_socio'])) {
+        echo json_encode(['success' => false, 'message' => 'Acceso denegado. Sesión no iniciada.']);
+        exit;
+    }
+    
+    $email = isset($_POST['email']) ? trim($_POST['email']) : '';
+    
+    if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        echo json_encode(['success' => false, 'message' => 'Por favor, ingrese un correo válido.']);
+        exit;
+    }
+    
+    try {
+        $stmtCheck = $conn->prepare("SELECT COUNT(*) FROM san_socios WHERE soc_correo = ?");
+        $stmtCheck->execute([$email]);
+        $exists = $stmtCheck->fetchColumn() > 0;
+        
+        if (!$exists) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'El correo ingresado no pertenece a un miembro registrado del gimnasio.'
+            ]);
+            exit;
+        }
+        
+        echo json_encode(['success' => true]);
+        exit;
+    } catch (PDOException $e) {
+        echo json_encode(['success' => false, 'message' => 'Error SQL: ' . $e->getMessage()]);
+        exit;
+    }
+}
+
 if (!isset($_SESSION['admin']) || !isset($_SESSION['admin']['soc_id_socio'])) {
     echo "<script>window.location.href = 'index.php?page=login';</script>";
     exit;
@@ -430,27 +468,63 @@ $linkInvitacion = "";
         
         $('#btnEmail').html('<i class="fas fa-spinner fa-spin"></i>').prop('disabled', true);
         
+        // Primero verificamos si el correo pertenece a un miembro registrado del gimnasio
         $.ajax({
-            url: 'api/send_invitation_email.php',
+            url: 'pages/user_admin_plan.php',
             type: 'POST',
             data: {
-                email: email,
-                link: currentInviteLink,
-                nombre: '<?php echo addslashes($nombreTitular); ?>'
+                action: 'check_email_exists',
+                email: email
             },
             dataType: 'json',
-            success: function(res) {
-                $('#btnEmail').text('Enviar').prop('disabled', false);
-                if(res.success) {
-                    Swal.fire({icon: 'success', title: 'Enviado', text: 'Invitación enviada por correo', background: '#1a1a1a', color: '#fff'});
-                    $('#inviteEmail').val('');
-                } else {
-                    Swal.fire({icon: 'error', title: 'Error', text: res.message, background: '#1a1a1a', color: '#fff'});
+            success: function(checkRes) {
+                if (!checkRes.success) {
+                    $('#btnEmail').text('Enviar').prop('disabled', false);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error de Validación',
+                        text: checkRes.message,
+                        background: '#1a1a1a',
+                        color: '#fff'
+                    });
+                    return;
                 }
+                
+                // Si el correo sí existe, procedemos con el envío del correo de invitación original
+                $.ajax({
+                    url: 'api/send_invitation_email.php',
+                    type: 'POST',
+                    data: {
+                        email: email,
+                        link: currentInviteLink,
+                        nombre: '<?php echo addslashes($nombreTitular); ?>',
+                        allow_existing: '1'
+                    },
+                    dataType: 'json',
+                    success: function(res) {
+                        $('#btnEmail').text('Enviar').prop('disabled', false);
+                        if(res.success) {
+                            Swal.fire({icon: 'success', title: 'Enviado', text: 'Invitación enviada por correo', background: '#1a1a1a', color: '#fff'});
+                            $('#inviteEmail').val('');
+                        } else {
+                            Swal.fire({icon: 'error', title: 'Error', text: res.message, background: '#1a1a1a', color: '#fff'});
+                        }
+                    },
+                    error: function() {
+                        $('#btnEmail').text('Enviar').prop('disabled', false);
+                        Swal.fire({icon: 'error', title: 'Error', text: 'Fallo de conexión al enviar la invitación', background: '#1a1a1a', color: '#fff'});
+                    }
+                });
             },
             error: function() {
                 $('#btnEmail').text('Enviar').prop('disabled', false);
-                Swal.fire({icon: 'error', title: 'Error', text: 'Fallo de conexión', background: '#1a1a1a', color: '#fff'});
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Fallo de conexión al verificar el correo electrónico',
+                    background: '#1a1a1a',
+                    color: '#fff'
+                });
             }
         });
     }

@@ -14,6 +14,8 @@ $(document).ready(function() {
     // ==========================================
     // 1. CONFIGURACIÓN Y SELECTORES
     // ==========================================
+    let isEmailVerified = false;
+    
     const UI = {
         form: $('#registrationForm'),
         inputs: {
@@ -81,15 +83,17 @@ $(document).ready(function() {
         })
         .done(function(response) {
             if (response.exists) {
+                isEmailVerified = false;
                 showInlineFeedback(response.message || "El correo ya está en uso.", true);
             } else {
+                isEmailVerified = true;
                 showInlineFeedback("", false); 
                 lockEmailState(true);
             }
         })
         .fail(function() {
-             // Si falla la conexión (ej. localhost sin internet), permitimos avanzar para pruebas
-             lockEmailState(true); 
+             isEmailVerified = false;
+             showInlineFeedback("Error de conexión. Intente de nuevo más tarde.", true);
         })
         .always(function() {
             setLoading(UI.buttons.verify, false, 'Continuar <i class="fas fa-arrow-right ml-2"></i>');
@@ -101,6 +105,7 @@ $(document).ready(function() {
         UI.containers.additional.find('.form-control').css('border-color', '#333');
         $('.password-requirements li').removeClass('valid').find('i').removeClass('fa-check').addClass('fa-circle').css('color', '');
         $('.password-requirements li').css('color', '');
+        isEmailVerified = false;
         lockEmailState(false);
     });
 
@@ -179,6 +184,11 @@ $(document).ready(function() {
     UI.form.on('submit', function(event) {
         event.preventDefault();
 
+        if (!isEmailVerified) {
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Por favor, verifica tu correo electrónico antes de continuar.', background: '#1a1a1a', color: '#fff', confirmButtonColor: '#ef4444' });
+            return;
+        }
+
         // 1. Validar vacíos
         let hasError = false;
         const requiredFields = [
@@ -255,7 +265,11 @@ $(document).ready(function() {
         })
         .fail(function(xhr) {
             console.error(xhr.responseText); 
-            Swal.fire({ icon: 'error', title: 'Error', text: 'Error de conexión con el servidor.', background: '#1a1a1a', color: '#fff', confirmButtonColor: '#ef4444' });
+            let errorMsg = 'Error de conexión con el servidor.';
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+                errorMsg = xhr.responseJSON.message;
+            }
+            Swal.fire({ icon: 'error', title: 'Error', text: errorMsg, background: '#1a1a1a', color: '#fff', confirmButtonColor: '#ef4444' });
         })
         .always(function() {
             setLoading(btn, false, originalText);

@@ -61,7 +61,12 @@ try {
         
         // Variables para la plantilla y el envío
         $name = $row['soc_nombres'];
-        $validation_code = $row['validation_code'];
+        
+        // Generar un nuevo código de validación y expiración
+        $validation_code = str_pad((string)random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
+        $updateStmt = $conn->prepare("UPDATE san_socios SET validation_code = ?, validation_expires = DATE_ADD(NOW(), INTERVAL 24 HOUR) WHERE soc_correo = ?");
+        $updateStmt->execute([$validation_code, $email]);
+
         $asunto = 'Tu Código de Validación de Sandys Gym';
 
         // 4.2. Preparar y enviar correo

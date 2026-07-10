@@ -26,7 +26,11 @@ $(document).ready(function() {
         $('#togglePassword').on('click', function() {
             const type = passwordInput.attr('type') === 'password' ? 'text' : 'password';
             passwordInput.attr('type', type);
-            $(this).toggleClass('fa-eye fa-eye-slash');
+            if (type === 'text') {
+                $(this).removeClass('fa-eye').addClass('fa-eye-slash text-danger');
+            } else {
+                $(this).removeClass('fa-eye-slash text-danger').addClass('fa-eye');
+            }
         });
 
         $('#passwordResetFrm').on('submit', function(event) {

@@ -37,8 +37,11 @@ try {
     // Ahora $currentDateTime usará la zona horaria de Mexico City
     $currentDateTime = date('Y-m-d H:i:s'); 
     
+    // Hash del token recibido para comparar con la base de datos
+    $hashedToken = hash('sha256', $token);
+    
     $stmt = $conn->prepare("SELECT email FROM password_resets WHERE token = :token AND expDate > :now");
-    $stmt->bindParam(':token', $token);
+    $stmt->bindParam(':token', $hashedToken);
     $stmt->bindParam(':now', $currentDateTime);
     $stmt->execute();
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -62,7 +65,7 @@ try {
 
     // Eliminar el token para que no pueda ser reutilizado
     $deleteStmt = $conn->prepare("DELETE FROM password_resets WHERE token = :token");
-    $deleteStmt->bindParam(':token', $token);
+    $deleteStmt->bindParam(':token', $hashedToken);
     $deleteStmt->execute();
 
     // Si ambas operaciones fueron exitosas, confirmar los cambios

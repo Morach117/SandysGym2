@@ -36,30 +36,13 @@ try {
     $conn = new PDO($dsn, $user, $pass, $options);
     echo "<p style='color: #10b981;'>✅ Conexión establecida con éxito.</p>";
 
-    // 1. Crear tabla san_plan_invitaciones
-    $conn->exec("
-        CREATE TABLE IF NOT EXISTS `san_plan_invitaciones` (
-          `id_invitacion` INT(11) NOT NULL AUTO_INCREMENT,
-          `id_socio_titular` INT(11) NOT NULL,
-          `token_unico` VARCHAR(64) NOT NULL,
-          `status` ENUM('pendiente', 'aceptado', 'expirado', 'cancelado') NOT NULL DEFAULT 'pendiente',
-          `fecha_creacion` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-          `fecha_expiracion` DATETIME NOT NULL,
-          PRIMARY KEY (`id_invitacion`),
-          UNIQUE KEY `token_unico` (`token_unico`),
-          KEY `id_socio_titular` (`id_socio_titular`),
-          KEY `status` (`status`)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-    ");
-    echo "<p style='color: #10b981;'>✅ Tabla <b>'san_plan_invitaciones'</b> verificada/creada.</p>";
-
-    // 2. Agregar columna soc_id_titular_grupo a san_socios si no existe
-    $checkCol = $conn->query("SHOW COLUMNS FROM `san_socios` LIKE 'soc_id_titular_grupo'")->fetch();
+    // 1. Agregar columna validation_expires a san_socios si no existe
+    $checkCol = $conn->query("SHOW COLUMNS FROM `san_socios` LIKE 'validation_expires'")->fetch();
     if (!$checkCol) {
-        $conn->exec("ALTER TABLE san_socios ADD COLUMN soc_id_titular_grupo INT DEFAULT 0 AFTER soc_id_referido_por;");
-        echo "<p style='color: #10b981;'>✅ Columna <b>'soc_id_titular_grupo'</b> agregada exitosamente en 'san_socios'.</p>";
+        $conn->exec("ALTER TABLE san_socios ADD COLUMN validation_expires DATETIME NULL;");
+        echo "<p style='color: #10b981;'>✅ Columna <b>'validation_expires'</b> agregada exitosamente en 'san_socios'.</p>";
     } else {
-        echo "<p style='color: #9ca3af;'>ℹ️ La columna 'soc_id_titular_grupo' ya existía en 'san_socios'.</p>";
+        echo "<p style='color: #9ca3af;'>ℹ️ La columna 'validation_expires' ya existía en 'san_socios'.</p>";
     }
 
     echo "<br><div style='background-color: #1a1a1a; padding: 20px; border-left: 5px solid #ef4444; border-radius: 5px;'>";

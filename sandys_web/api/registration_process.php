@@ -67,6 +67,14 @@ if (!empty($referral_code) && !preg_match('/^[0-9]{10}$/', $referral_code)) {
 
 // 3. PROCESAR
 try {
+    // 3.1 VALIDAR SI EL CORREO YA EXISTE
+    $stmtCheck = $conn->prepare("SELECT soc_id_socio FROM san_socios WHERE soc_correo = :email LIMIT 1");
+    $stmtCheck->bindParam(':email', $email, PDO::PARAM_STR);
+    $stmtCheck->execute();
+    if ($stmtCheck->fetch()) {
+        json_response(['success' => false, 'message' => 'Correo ya existe, favor de introducir uno diferente'], 400);
+    }
+
     $conn->beginTransaction();
 
     $userService = new UserService($conn);

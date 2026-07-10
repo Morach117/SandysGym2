@@ -63,9 +63,12 @@ try {
         $deleteQuery = $conn->prepare("DELETE FROM password_resets WHERE email = ?");
         $deleteQuery->execute([$email]);
 
-        // Insertar el nuevo token
+        // Hashear el token antes de guardarlo
+        $hashedToken = hash('sha256', $token);
+
+        // Insertar el nuevo token hasheado en la base de datos
         $insertQuery = $conn->prepare("INSERT INTO password_resets (email, token, expDate) VALUES (?, ?, ?)");
-        $insertQuery->execute([$email, $token, $expDate]);
+        $insertQuery->execute([$email, $hashedToken, $expDate]);
 
         // =================================================================
         // --- INICIO DE LA MEJORA (USANDO EmailService) ---

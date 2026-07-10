@@ -47,7 +47,8 @@ class UserService {
     public function registerOrUpdate($name, $paternal, $maternal, $email, $rawPassword, $telefono, $genero, $fecha_nacimiento_sql, $referral_code = null) {
         
         $password = password_hash($rawPassword, PASSWORD_DEFAULT);
-        $val_code = substr(str_shuffle("0123456789"), 0, 4);
+        // Generar un código de validación seguro de 6 dígitos
+        $val_code = str_pad((string)random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
         $fecha = date("Y-m-d H:i:s");
         
         // 1. LÓGICA REFERIDO (SOLO VINCULACIÓN, SIN DINERO INICIAL)
@@ -73,22 +74,20 @@ class UserService {
 
         try {
             if ($userByEmail) {
-                // UPDATE
-                $sql = "UPDATE san_socios SET san_password=?, validation_code=?, soc_nombres=?, soc_apepat=?, soc_apemat=?, soc_fecha_captura=?, soc_tel_cel=?, soc_genero=?, soc_fecha_nacimiento=?, soc_correo_status=0 WHERE soc_correo=?";
-                $this->conn->prepare($sql)->execute([$password, $val_code, $name, $paternal, $maternal, $fecha, $telefono, $genero_db, $fecha_nacimiento_sql, $email]);
-            
+                // Lanzar excepción para evitar secuestro de cuentas
+                throw new Exception("Correo ya existe, favor de introducir uno diferente");
             } else {
                 // INSERT NUEVO
                 $query = "INSERT INTO san_socios (
                             soc_nombres, soc_apepat, soc_apemat, soc_correo, san_password, 
                             soc_fecha_captura, soc_fecha_nacimiento, soc_genero, 
-                            validation_code, soc_id_usuario, soc_id_empresa, soc_id_consorcio, 
+                            validation_code, validation_expires, soc_id_usuario, soc_id_empresa, soc_id_consorcio, 
                             soc_tel_cel, soc_correo_status, is_active,
                             soc_id_referido_por, soc_mon_saldo 
                           ) VALUES (
                             ?, ?, ?, ?, ?, 
                             ?, ?, ?, 
-                            ?, 1, 1, 1, 
+                            ?, DATE_ADD(NOW(), INTERVAL 24 HOUR), 1, 1, 1, 
                             ?, 0, 0,
                             ?, ? 
                           )";

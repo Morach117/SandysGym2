@@ -49,11 +49,14 @@ if (empty($linkRegistro)) {
 }
 
 // 3. VALIDACIÓN DE SOCIO EXISTENTE
-$stmtCheck = $conn->prepare("SELECT soc_id_socio FROM san_socios WHERE soc_correo = :email LIMIT 1");
-$stmtCheck->bindParam(':email', $emailDestino, PDO::PARAM_STR);
-$stmtCheck->execute();
-if ($stmtCheck->fetch()) {
-    json_response(['success' => false, 'message' => 'Este correo ya se encuentra registrado en el sistema. Las invitaciones solo son válidas para nuevos usuarios.'], 400);
+$allowExisting = isset($_POST['allow_existing']) && $_POST['allow_existing'] === '1';
+if (!$allowExisting) {
+    $stmtCheck = $conn->prepare("SELECT soc_id_socio FROM san_socios WHERE soc_correo = :email LIMIT 1");
+    $stmtCheck->bindParam(':email', $emailDestino, PDO::PARAM_STR);
+    $stmtCheck->execute();
+    if ($stmtCheck->fetch()) {
+        json_response(['success' => false, 'message' => 'Correo ya existe, favor de introducir uno diferente'], 400);
+    }
 }
 
 // 4. LÓGICA DE ENVÍO

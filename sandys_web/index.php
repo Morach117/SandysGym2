@@ -1,4 +1,13 @@
 <?php
+// INICIAR SESIÓN CON PARÁMETROS SEGUROS
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => '/',
+    'domain' => $_SERVER['HTTP_HOST'] ?? '',
+    'secure' => isset($_SERVER['HTTPS']), // True si está en HTTPS
+    'httponly' => true,
+    'samesite' => 'Strict'
+]);
 session_start();
 
 // --- Lógica de enrutamiento y seguridad ---

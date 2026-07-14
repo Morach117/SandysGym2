@@ -1,9 +1,30 @@
 <?php
 // api/generar_reactivacion.php
-require_once '../conn.php';
+
+// 1. INICIAR SESIÓN CON PARÁMETROS SEGUROS
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => '/',
+    'domain' => $_SERVER['HTTP_HOST'] ?? '',
+    'secure' => isset($_SERVER['HTTPS']), // True si está en HTTPS
+    'httponly' => true,
+    'samesite' => 'Strict'
+]);
+session_start();
 
 header('Content-Type: application/json');
-$idSocioPost = (int)($_POST['id_socio'] ?? 0);
+
+// 2. VALIDAR SESIÓN DE USUARIO
+if (!isset($_SESSION['admin']['soc_id_socio'])) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Sesión expirada o no válida. Por favor, inicia sesión nuevamente.']);
+    exit;
+}
+
+require_once '../conn.php';
+
+// Obtener ID del socio desde la sesión
+$idSocioPost = (int)$_SESSION['admin']['soc_id_socio'];
 
 if ($idSocioPost <= 0) {
     echo json_encode(['success' => false, 'message' => 'ID de socio inválido.']);
@@ -66,11 +87,32 @@ try {
     
     $conn->commit();
     echo json_encode(['success' => true, 'codigo' => $codigoFinal, 'message' => 'Cupón generado exitosamente.']);
+} catch (PDOException $e) {
+    if ($conn->inTransaction()) {
+        $conn->rollBack();
+    }
+    // Registrar el error internamente (opcional, útil para debugging sin exponerlo en la UI)
+    error_log("Error PDO en generar_reactivacion.php: " . $e->getMessage());
+    
+    // Retornar código HTTP 500 y JSON estructurado
+    http_response_code(500);
+    echo json_encode([
+        'success' => false, 
+        'message' => 'Error de base de datos al procesar la solicitud. Por favor intenta nuevamente.'
+        // Puedes descomentar la siguiente línea en entorno de desarrollo para ver el error real en la consola de red:
+        // , 'error_debug' => $e->getMessage()
+    ]);
 } catch (Exception $e) {
     if ($conn->inTransaction()) {
         $conn->rollBack();
     }
-    echo json_encode(['success' => false, 'message' => 'Error al generar cupón: ' . $e->getMessage()]);
+    error_log("Error General en generar_reactivacion.php: " . $e->getMessage());
+    
+    http_response_code(500);
+    echo json_encode([
+        'success' => false, 
+        'message' => 'Ocurrió un error inesperado al generar el cupón.'
+    ]);
 }
 exit;
 ?>

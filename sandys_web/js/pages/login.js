@@ -79,8 +79,10 @@ $(document).ready(function() {
     $('#passwordResetRequestFrm').on('submit', function(event) {
         event.preventDefault();
         
-        var email = $('#reset_email').val();
         let btnReset = $('#btnResetSubmit');
+        if (btnReset.prop('disabled')) return; // Previene múltiples clics rápidos
+
+        var email = $('#reset_email').val();
         let originalResetText = btnReset.html();
 
         btnReset.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> Enviando...');
@@ -90,6 +92,19 @@ $(document).ready(function() {
             method: 'POST',
             data: { email: email },
             success: function(response) {
+                if (response.success && response.message.includes('espera un par de minutos')) {
+                    // Muestra el mensaje si la petición se procesó pero se bloqueó por rate limit
+                    btnReset.prop('disabled', false).html(originalResetText);
+                    Swal.fire({
+                        title: 'Aviso',
+                        text: response.message,
+                        icon: 'info',
+                        confirmButtonColor: '#ef4444',
+                        background: '#1a1a1a', color: '#fff'
+                    });
+                    return;
+                }
+
                 btnReset.prop('disabled', false).html(originalResetText);
                 $('#forgotPasswordModal').modal('hide');
 

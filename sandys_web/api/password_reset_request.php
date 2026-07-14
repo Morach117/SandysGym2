@@ -1,5 +1,6 @@
 <?php
 // /api/password_reset_request.php
+date_default_timezone_set('America/Mexico_City');
 
 // 1. CARGAR DEPENDENCIAS (MANUALMENTE) Y CONFIGURACIÓN
 // --- Carga manual de PHPMailer ---
@@ -45,7 +46,6 @@ if (!isset($_POST['email']) || !filter_var($_POST['email'], FILTER_VALIDATE_EMAI
 }
 
 $email = $_POST['email'];
-date_default_timezone_set('America/Mexico_City');
 
 // 4. LÓGICA DE NEGOCIO (CON PREVENCIÓN DE ENUMERACIÓN DE USUARIOS)
 try {
@@ -55,11 +55,28 @@ try {
 
     // Solo si el usuario existe, generamos el token y enviamos el correo.
     if ($user) {
-        // Generar token y expiración
-        $token = bin2hex(random_bytes(32));
-        $expDate = date("Y-m-d H:i:s", strtotime('+1 hour'));
+        
+        // 1. Evitar doble envío (Rate Limiting de 2 minutos)
+        $checkQuery = $conn->prepare("SELECT expDate FROM password_resets WHERE email = ? ORDER BY expDate DESC LIMIT 1");
+        $checkQuery->execute([$email]);
+        $lastRequest = $checkQuery->fetch(PDO::FETCH_ASSOC);
 
-        // Invalidar tokens antiguos
+        if ($lastRequest) {
+            // Calculamos cuándo se creó el token restando los 30 minutos que le dimos de vigencia
+            $creationTime = strtotime($lastRequest['expDate']) - 1800; // 1800 segundos = 30 minutos
+            $timeElapsed = time() - $creationTime;
+
+            if ($timeElapsed < 120) { // 120 segundos = 2 minutos
+                // Devolvemos success true para no revelar si el correo existe o no, pero con un mensaje de advertencia
+                json_response(['success' => true, 'message' => 'Ya se ha enviado un correo recientemente. Por favor, revisa tu bandeja de entrada o espera un par de minutos.']);
+            }
+        }
+
+        // 2. Generar token y expiración (30 minutos)
+        $token = bin2hex(random_bytes(32));
+        $expDate = date("Y-m-d H:i:s", strtotime('+30 minutes'));
+
+        // 3. Invalidar tokens antiguos
         $deleteQuery = $conn->prepare("DELETE FROM password_resets WHERE email = ?");
         $deleteQuery->execute([$email]);
 

@@ -77,6 +77,13 @@ $(document).ready(function () {
     // =======================================================================
     $('#passwordResetRequestFrm').on('submit', function (event) {
         event.preventDefault();
+        
+        let btnReset = $(this).find('button[type="submit"]');
+        if (btnReset.prop('disabled')) return; // Evitar doble envío (doble clic)
+        
+        let originalResetText = btnReset.html();
+        btnReset.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> Enviando...');
+        
         var email = $('#reset_email').val();
 
         $.ajax({
@@ -84,6 +91,8 @@ $(document).ready(function () {
             method: 'POST',
             data: { email: email },
             success: function (response) {
+                btnReset.prop('disabled', false).html(originalResetText); // Restaurar botón
+                
                 // 1. Close the Bootstrap modal.
                 $('#forgotPasswordModal').modal('hide');
 
@@ -100,6 +109,8 @@ $(document).ready(function () {
                 });
             },
             error: function () {
+                btnReset.prop('disabled', false).html(originalResetText); // Restaurar botón
+                
                 // If there's an error, also make sure to clean up the screen.
                 $('.modal-backdrop').remove();
                 $('body').removeClass('modal-open').css('padding-right', '');

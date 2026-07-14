@@ -45,6 +45,15 @@ try {
         echo "<p style='color: #9ca3af;'>ℹ️ La columna 'validation_expires' ya existía en 'san_socios'.</p>";
     }
 
+    // 2. Agregar columna id_socio a san_codigos si no existe
+    $checkColCodigos = $conn->query("SHOW COLUMNS FROM `san_codigos` LIKE 'id_socio'")->fetch();
+    if (!$checkColCodigos) {
+        $conn->exec("ALTER TABLE san_codigos ADD COLUMN id_socio INT(11) NULL;");
+        echo "<p style='color: #10b981;'>✅ Columna <b>'id_socio'</b> agregada exitosamente en 'san_codigos'.</p>";
+    } else {
+        echo "<p style='color: #9ca3af;'>ℹ️ La columna 'id_socio' ya existía en 'san_codigos'.</p>";
+    }
+
     echo "<br><div style='background-color: #1a1a1a; padding: 20px; border-left: 5px solid #ef4444; border-radius: 5px;'>";
     echo "<h3 style='color: #ef4444; margin-top: 0;'>⚠️ ALERTA DE SEGURIDAD</h3>";
     echo "<p>Elimina este archivo de inmediato tras su ejecución exitosa en producción.</p>";

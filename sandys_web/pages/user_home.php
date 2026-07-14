@@ -29,7 +29,6 @@ $query = "SELECT
           FROM san_consorcios c
           LEFT JOIN san_pagos p 
             ON p.pag_id_socio = :socioId 
-            AND CURDATE() <= p.pag_fecha_fin 
           WHERE c.con_id_consorcio = :idConsorcio
           ORDER BY p.pag_fecha_fin DESC, p.pag_id_pago DESC LIMIT 1";
 

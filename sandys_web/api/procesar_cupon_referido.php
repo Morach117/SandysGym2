@@ -1,7 +1,25 @@
 <?php
 // api/procesar_cupon_referido.php
 
+// 1. INICIAR SESIÓN CON PARÁMETROS SEGUROS
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => '/',
+    'domain' => $_SERVER['HTTP_HOST'] ?? '',
+    'secure' => isset($_SERVER['HTTPS']), // True si está en HTTPS
+    'httponly' => true,
+    'samesite' => 'Strict'
+]);
 session_start();
+
+// 2. VALIDAR SESIÓN DE USUARIO
+if (!isset($_SESSION['admin']['soc_id_socio'])) {
+    header('Content-Type: application/json');
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Sesión expirada o no válida. Por favor, inicia sesión nuevamente.']);
+    exit;
+}
+
 // Ajustamos la ruta asumiendo que este archivo está dentro de la carpeta 'api/'
 require_once __DIR__ . '/../conn.php'; 
 
@@ -44,9 +62,10 @@ function generar_codigo_promocion()
 // =========================================================================
 // Procesamiento de la petición POST
 // =========================================================================
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['generar_cupon']) && isset($_POST['id_socio'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['generar_cupon'])) {
     
-    $idSocio = (int)$_POST['id_socio'];
+    // Obtener ID del socio desde la sesión en lugar del POST (seguridad)
+    $idSocio = (int)$_SESSION['admin']['soc_id_socio'];
 
     try {
         $conn->beginTransaction();

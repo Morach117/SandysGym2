@@ -332,7 +332,7 @@ function registrar_recarga_monedero_pdo(PDO $conn, int $payment_id, array $metad
             // Ya cuenta con registro, se ejecuta un UPDATE
             $prep_id_prepago = (int) $prepago_row['prep_id_prepago'];
             $saldo_actual = (float) $prepago_row['prep_saldo'];
-            $saldo_tras_abono = $saldo_actual + $importe_recarga;
+            $saldo_tras_abono = round($saldo_actual + $importe_recarga, 2);
             
             $stmtUpd = $conn->prepare("UPDATE san_prepago SET prep_saldo = ? WHERE prep_id_prepago = ?");
             $stmtUpd->execute([$saldo_tras_abono, $prep_id_prepago]);
@@ -340,7 +340,7 @@ function registrar_recarga_monedero_pdo(PDO $conn, int $payment_id, array $metad
             $descripcion_movimiento = "RECARGA DE CUENTA PREPAGO (MP Ref: $payment_id)";
         } else {
             // No cuenta con registro, se ejecuta un INSERT
-            $saldo_tras_abono = $importe_recarga;
+            $saldo_tras_abono = round($importe_recarga, 2);
             
             $stmtIns = $conn->prepare("INSERT INTO san_prepago (prep_id_socio, prep_saldo, prep_id_empresa) VALUES (?, ?, ?)");
             $stmtIns->execute([$id_socio, $saldo_tras_abono, $id_empresa]);

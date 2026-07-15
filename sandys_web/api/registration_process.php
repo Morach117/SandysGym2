@@ -36,7 +36,7 @@ $name               = trim($_POST['name'] ?? '');
 $paternal_surname   = trim($_POST['paternal_surname'] ?? '');
 $maternal_surname   = trim($_POST['maternal_surname'] ?? '');
 $email              = trim($_POST['email'] ?? '');
-$password           = $_POST['password'] ?? '';
+$password           = trim($_POST['password'] ?? '');
 $telefono           = trim($_POST['telefono'] ?? '');
 $genero             = trim($_POST['genero'] ?? '');
 // Fecha (Soporte doble nombre)

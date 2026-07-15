@@ -34,8 +34,8 @@ $limiter = &$_SESSION['login_limiter'];
 
 // 4. MEJORA DE SEGURIDAD: NO USAR extract()
 // Obtenemos las variables de forma segura
-$email = $_POST['email'] ?? null;
-$password = $_POST['password'] ?? null;
+$email = trim($_POST['email'] ?? '');
+$password = trim($_POST['password'] ?? '');
 
 if (empty($email) || empty($password)) {
     json_response('invalid'); // Mensaje genérico

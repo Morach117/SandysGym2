@@ -431,13 +431,18 @@ $textoInvitacion = "¡Hola! Ven a entrenar conmigo a Sandys Gym. 🏋️‍♂�
                     },
                     dataType: 'json'
                 }).then(response => {
-                    // CORRECCIÓN: Tu backend funcional usa 'success' como booleano, no 'status'
-                    if(!response.success) { 
-                        throw new Error(response.message);
+                    if(response.status !== 'success') { 
+                        throw new Error(response.message || 'Error desconocido al enviar.');
                     }
                     return response;
                 }).catch(error => {
-                    Swal.showValidationMessage(`Error: ${error.message}`);
+                    let errorMsg = error.message;
+                    if (error.responseJSON && error.responseJSON.message) {
+                        errorMsg = error.responseJSON.message;
+                    } else if (error.statusText && error.status !== 200) {
+                        errorMsg = 'Error del servidor o de red.';
+                    }
+                    Swal.showValidationMessage(`Error: ${errorMsg}`);
                 });
             },
             allowOutsideClick: () => !Swal.isLoading()

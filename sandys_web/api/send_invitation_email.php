@@ -10,7 +10,7 @@ if (!class_exists('PHPMailer\PHPMailer\PHPMailer')) {
         require_once $ruta_base_phpmailer . 'Exception.php';
     } else {
         http_response_code(500);
-        echo json_encode(['success' => false, 'message' => 'Error crítico del servidor (Fallo al cargar Mailer).']);
+        echo json_encode(['status' => 'error', 'message' => 'Error crítico del servidor (Fallo al cargar Mailer).']);
         exit;
     }
 }
@@ -32,7 +32,7 @@ function json_response($data, $statusCode = 200) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    json_response(['success' => false, 'message' => 'Método no permitido.'], 405);
+    json_response(['status' => 'error', 'message' => 'Método no permitido.'], 405);
 }
 
 // 2. RECIBIR DATOS DEL FRONTEND
@@ -41,11 +41,11 @@ $linkRegistro = $_POST['link'] ?? null;
 $nombreSocio  = $_POST['nombre'] ?? 'Un amigo';
 
 if (empty($emailDestino) || !filter_var($emailDestino, FILTER_VALIDATE_EMAIL)) {
-     json_response(['success' => false, 'message' => 'Por favor, ingrese un correo válido.'], 400);
+     json_response(['status' => 'error', 'message' => 'Por favor, ingrese un correo válido.'], 400);
 }
 
 if (empty($linkRegistro)) {
-     json_response(['success' => false, 'message' => 'Error al generar el enlace de invitación.'], 400);
+     json_response(['status' => 'error', 'message' => 'Error al generar el enlace de invitación.'], 400);
 }
 
 // 3. VALIDACIÓN DE SOCIO EXISTENTE
@@ -55,7 +55,7 @@ if (!$allowExisting) {
     $stmtCheck->bindParam(':email', $emailDestino, PDO::PARAM_STR);
     $stmtCheck->execute();
     if ($stmtCheck->fetch()) {
-        json_response(['success' => false, 'message' => 'Correo ya existe, favor de introducir uno diferente'], 400);
+        json_response(['status' => 'error', 'message' => 'Correo ya existe, favor de introducir uno diferente'], 400);
     }
 }
 
@@ -72,12 +72,12 @@ try {
     $emailSent = EmailService::send($emailDestino, 'Futuro Socio', $asunto, $mensaje);
 
     if ($emailSent) {
-        json_response(['success' => true, 'message' => 'Invitación enviada con éxito.']);
+        json_response(['status' => 'success', 'message' => 'Invitación enviada con éxito.']);
     } else {
-        json_response(['success' => false, 'message' => 'Error al enviar el correo. Inténtalo de nuevo.']);
+        json_response(['status' => 'error', 'message' => 'Error al enviar el correo. Inténtalo de nuevo.']);
     }
 
 } catch (Exception $e) {
-    json_response(['success' => false, 'message' => 'Ocurrió un error inesperado al procesar el correo.'], 500);
+    json_response(['status' => 'error', 'message' => 'Ocurrió un error inesperado al procesar el correo.'], 500);
 }
 ?>

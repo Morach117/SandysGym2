@@ -58,6 +58,69 @@ $(document).ready(function() {
     // ==========================================
     // 2. LÓGICA DE CORREO
     // ==========================================
+    // --- VALIDACIÓN ASÍNCRONA DE CORREO EN SEGUNDO PLANO ---
+    let debounceTimer;
+    UI.inputs.email.on('input', function() {
+        clearTimeout(debounceTimer);
+        isEmailVerified = false;
+        debounceTimer = setTimeout(() => {
+            if(UI.inputs.email.val().trim().length > 0) {
+                checkEmailExistence(false);
+            }
+        }, 600);
+    });
+
+    UI.inputs.email.on('blur', function() {
+        clearTimeout(debounceTimer);
+        if(UI.inputs.email.val().trim().length > 0) {
+            checkEmailExistence(false);
+        }
+    });
+
+    function checkEmailExistence(lockAfterValid) {
+        const emailVal = UI.inputs.email.val().trim();
+        if (!REGEX_EMAIL.test(emailVal)) {
+            showInlineFeedback("Por favor ingresa un correo válido.", true);
+            isEmailVerified = false;
+            return;
+        }
+
+        if (lockAfterValid) {
+            setLoading(UI.buttons.verify, true, '<i class="fas fa-spinner fa-spin"></i> Verificando...');
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: './api/check_email.php',
+            data: { email: emailVal },
+            dataType: 'json'
+        })
+        .done(function(response) {
+            if (response.exists) {
+                isEmailVerified = false;
+                showInlineFeedback(response.message || "El correo ya está en uso.", true);
+            } else {
+                isEmailVerified = true;
+                showInlineFeedback("", false);
+                if (lockAfterValid) {
+                    lockEmailState(true);
+                }
+            }
+        })
+        .fail(function() {
+             isEmailVerified = false;
+             showInlineFeedback("Error de conexión. Intente de nuevo más tarde.", true);
+        })
+        .always(function() {
+            if (lockAfterValid) {
+                setLoading(UI.buttons.verify, false, 'Continuar <i class="fas fa-arrow-right ml-2"></i>');
+            }
+        });
+    }
+
+    // ==========================================
+    // 2. LÓGICA DE CORREO
+    // ==========================================
     UI.buttons.verify.on('click', function() {
         const emailVal = UI.inputs.email.val().trim();
         
@@ -73,40 +136,19 @@ $(document).ready(function() {
         }
         
         resetInputStyle(UI.inputs.email); 
-        setLoading(UI.buttons.verify, true, '<i class="fas fa-spinner fa-spin"></i> Verificando...');
-
-        $.ajax({
-            type: 'POST',
-            url: './api/check_email.php',
-            data: { email: emailVal },
-            dataType: 'json'
-        })
-        .done(function(response) {
-            if (response.exists) {
-                isEmailVerified = false;
-                showInlineFeedback(response.message || "El correo ya está en uso.", true);
-            } else {
-                isEmailVerified = true;
-                showInlineFeedback("", false); 
-                lockEmailState(true);
-            }
-        })
-        .fail(function() {
-             isEmailVerified = false;
-             showInlineFeedback("Error de conexión. Intente de nuevo más tarde.", true);
-        })
-        .always(function() {
-            setLoading(UI.buttons.verify, false, 'Continuar <i class="fas fa-arrow-right ml-2"></i>');
-        });
+        
+        if (isEmailVerified) {
+            lockEmailState(true);
+        } else {
+            checkEmailExistence(true);
+        }
     });
 
     UI.buttons.changeEmail.on('click', function() {
-        UI.containers.additional.find('input:not([type=hidden]), select').val('').trigger('change');
-        UI.containers.additional.find('.form-control').css('border-color', '#333');
-        $('.password-requirements li').removeClass('valid').find('i').removeClass('fa-check').addClass('fa-circle').css('color', '');
-        $('.password-requirements li').css('color', '');
         isEmailVerified = false;
-        lockEmailState(false);
+        // Sólo pasamos el correo a editable sin afectar el resto del formulario
+        UI.inputs.email.prop('readonly', false).prop('disabled', false).focus().select();
+        UI.buttons.changeEmail.fadeOut();
     });
 
     function lockEmailState(isLocked) {
@@ -116,11 +158,8 @@ $(document).ready(function() {
             UI.containers.additional.css({opacity: 0, display: 'block'}).animate({ opacity: 1 }, 400);
             UI.buttons.changeEmail.fadeIn();
         } else {
-            UI.inputs.email.prop('readonly', false).focus().select();
-            UI.containers.additional.slideUp();
-            UI.containers.verify.slideDown();
-            UI.buttons.changeEmail.fadeOut();
-            showInlineFeedback("", false);
+            // Ya no lo usamos para ocultar el formulario adicional, 
+            // solo se usa cuando es true para mostrarlo la primera vez.
         }
     }
 

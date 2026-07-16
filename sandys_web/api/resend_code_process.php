@@ -38,12 +38,22 @@ function json_response($data, $statusCode = 200) {
     exit;
 }
 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 // 3. VALIDAR MÉTODO Y DATOS DE ENTRADA
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     json_response(['success' => false, 'message' => 'Método no permitido.'], 405);
 }
 
 $email = $_POST['email'] ?? null;
+
+// Fallback a sesión si el POST llega vacío o indefinido
+if (empty($email)) {
+    $email = $_SESSION['user_email'] ?? $_SESSION['email'] ?? null;
+}
+
 if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
      json_response(['success' => false, 'message' => 'Por favor, ingrese un correo válido.'], 400);
 }

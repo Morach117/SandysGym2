@@ -113,10 +113,17 @@
                 <h1>¡Casi listo, <?php echo htmlspecialchars($name ?? 'Usuario'); ?>!</h1>
                 <p>Gracias por registrarte. Usa el siguiente código para validar tu cuenta en nuestra aplicación:</p>
                 
-                <div class.="code-box" style="background-color: #f8f9fa; border: 1px solid #eeeeee; border-radius: 8px; padding: 20px; margin: 25px auto; max-width: 200px;">
+                <div class="code-box" style="background-color: #f8f9fa; border: 1px solid #eeeeee; border-radius: 8px; padding: 20px; margin: 25px auto; max-width: 200px;">
                     <div class="code" style="font-size: 36px; font-weight: bold; color: #e74c3c; letter-spacing: 5px; font-family: 'Courier New', Courier, monospace;">
                         <?php echo htmlspecialchars($validation_code); ?>
                     </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="https://sandysgym.com/index.php?page=validate&email=<?php echo urlencode($email); ?>&code=<?php echo htmlspecialchars($validation_code); ?>" 
+                       style="background-color: #e74c3c; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+                        Validar mi cuenta
+                    </a>
                 </div>
                 
                 <p style="font-size: 14px; color: #888; margin-top: 30px;">

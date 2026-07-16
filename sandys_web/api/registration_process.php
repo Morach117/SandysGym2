@@ -2,6 +2,9 @@
 // api/registration_process.php
 
 // 1. CONFIGURACIÓN
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 ini_set('display_errors', 1); // Solo para desarrollo
 error_reporting(E_ALL);
 header('Content-Type: application/json');
@@ -68,11 +71,48 @@ if (!empty($referral_code) && !preg_match('/^[0-9]{10}$/', $referral_code)) {
 // 3. PROCESAR
 try {
     // 3.1 VALIDAR SI EL CORREO YA EXISTE
-    $stmtCheck = $conn->prepare("SELECT soc_id_socio FROM san_socios WHERE soc_correo = :email LIMIT 1");
+    $stmtCheck = $conn->prepare("SELECT soc_id_socio, soc_correo_status FROM san_socios WHERE soc_correo = :email LIMIT 1");
     $stmtCheck->bindParam(':email', $email, PDO::PARAM_STR);
     $stmtCheck->execute();
-    if ($stmtCheck->fetch()) {
-        json_response(['success' => false, 'message' => 'Correo ya existe, favor de introducir uno diferente'], 400);
+    $existingUser = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+
+    if ($existingUser) {
+        if ($existingUser['soc_correo_status'] == 1) {
+            json_response(['success' => false, 'message' => 'Este correo ya está registrado'], 400);
+        } else {
+            $conn->beginTransaction();
+            $validation_code = str_pad((string)random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
+            $expires = date('Y-m-d H:i:s', strtotime('+1 day'));
+            
+            $stmtUpdate = $conn->prepare("UPDATE san_socios SET validation_code = :code, validation_expires = :expires WHERE soc_id_socio = :id");
+            $stmtUpdate->bindParam(':code', $validation_code);
+            $stmtUpdate->bindParam(':expires', $expires);
+            $stmtUpdate->bindParam(':id', $existingUser['soc_id_socio']);
+            
+            if (!$stmtUpdate->execute()) {
+                $conn->rollBack();
+                json_response(['success' => false, 'message' => 'Error al actualizar el código de validación.'], 500);
+            }
+            
+            $asunto = "Bienvenido a Sandys Gym - Valida tu cuenta";
+            ob_start();
+            if(file_exists('templates/validation_email.php')) {
+                include 'templates/validation_email.php';
+            } else {
+                echo "<h1>¡Bienvenido $name!</h1><p>Tu código: <strong>$validation_code</strong></p>";
+            }
+            $mensaje = ob_get_clean();
+
+            $emailSent = EmailService::send($email, $name, $asunto, $mensaje);
+            if ($emailSent) {
+                $conn->commit();
+                $_SESSION['user_email'] = $email;
+                json_response(['success' => true, 'message' => 'Revisa tu correo con el nuevo código de validación.']);
+            } else {
+                $conn->rollBack();
+                json_response(['success' => false, 'message' => 'Error al enviar correo. Verifica tu email.'], 500);
+            }
+        }
     }
 
     $conn->beginTransaction();
@@ -111,6 +151,7 @@ try {
 
     if ($emailSent) {
         $conn->commit();
+        $_SESSION['user_email'] = $email;
         json_response(['success' => true, 'message' => 'Registro exitoso. Revisa tu correo.']);
     } else {
         $conn->rollBack();

@@ -37,6 +37,10 @@ try {
     }
     $userCode = trim($_POST['validation_code']);
 
+    if (strlen($userCode) !== 6 || !ctype_digit($userCode)) {
+        throw new Exception('¡El código de validación debe ser numérico y de exactamente 6 dígitos!');
+    }
+
     // 6. CONSULTA PREPARADA SEGURA
     $stmt = $conn->prepare("SELECT soc_id_socio, soc_correo_status, validation_expires FROM san_socios WHERE validation_code = :code");
     $stmt->bindParam(':code', $userCode);

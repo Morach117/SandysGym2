@@ -1,30 +1,27 @@
 <?php
-require '../conn.php'; // Archivo de conexión a la base de datos
+require '../conn.php'; 
 
 header('Content-Type: application/json');
 
-// Obtener el correo electrónico del cliente
-$email = $_POST['email'];
+if (!isset($_POST['email'])) {
+    echo json_encode(['exists' => false, 'message' => 'Correo no proporcionado']);
+    exit;
+}
+
+$email = trim($_POST['email']);
 
 // Preparar la consulta
-$query = "SELECT soc_nombres AS name, soc_apepat AS paternal_surname, soc_apemat AS maternal_surname, soc_correo_status FROM san_socios WHERE soc_correo = ?";
+$query = "SELECT soc_correo_status FROM san_socios WHERE soc_correo = :email LIMIT 1";
 $stmt = $conn->prepare($query);
-$stmt->bindParam(1, $email);
+$stmt->bindParam(':email', $email, PDO::PARAM_STR);
 $stmt->execute();
 
 $response = array();
 
 if ($stmt->rowCount() > 0) {
-    // El correo existe, obtener los datos del usuario
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-    if ($user['soc_correo_status'] == 1) {
-        // El correo está en uso, mostrar mensaje de error con SweetAlert
-        $response['exists'] = false;
-        $response['message'] = "El correo electrónico ya está en uso.";
-    } else {
-        // El correo está disponible, pero no devolvemos el nombre para evitar fuga de información de registros incompletos
-        $response['exists'] = true;
-    }
+    // El correo ya existe
+    $response['exists'] = true;
+    $response['message'] = "El correo electrónico ya está registrado.";
 } else {
     // El correo no existe
     $response['exists'] = false;

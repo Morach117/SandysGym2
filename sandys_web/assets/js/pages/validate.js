@@ -1,10 +1,49 @@
 $(document).ready(function () {
-    // Obtenemos el email guardado en el LocalStorage durante el registro
-    const email = localStorage.getItem('email');
+    const urlParams = new URLSearchParams(window.location.search);
+    const email = urlParams.get('email') || localStorage.getItem('email');
     if (email) {
         $('#userEmail').text(email);
     } else {
         $('#userEmail').text('tu dirección de correo electrónico.');
+    }
+
+    const inputs = document.querySelectorAll('.code-input');
+    const hiddenInput = document.getElementById('validation_code');
+
+    inputs.forEach((input, index) => {
+        input.addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+            if (e.target.value.length === 1 && index < inputs.length - 1) {
+                inputs[index + 1].focus();
+            }
+            updateHiddenInput();
+        });
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace' && e.target.value.length === 0 && index > 0) {
+                inputs[index - 1].focus();
+            }
+        });
+        
+        input.addEventListener('paste', (e) => {
+            e.preventDefault();
+            let pasteData = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '');
+            for(let i = 0; i < pasteData.length; i++) {
+                if (index + i < inputs.length) {
+                    inputs[index + i].value = pasteData[i];
+                }
+            }
+            if (index + pasteData.length < inputs.length) {
+                inputs[index + pasteData.length].focus();
+            } else {
+                inputs[inputs.length - 1].focus();
+            }
+            updateHiddenInput();
+        });
+    });
+
+    function updateHiddenInput() {
+        hiddenInput.value = Array.from(inputs).map(input => input.value).join('');
     }
 
     $('#validationForm').submit(function (event) {
@@ -13,8 +52,8 @@ $(document).ready(function () {
         var validationCode = $('#validation_code').val();
         var submitButton = $(this).find('button[type="submit"]');
 
-        if (!validationCode || validationCode.length < 4) {
-            Swal.fire('Atención', 'Por favor, introduce el código de 4 dígitos.', 'warning');
+        if (!validationCode || validationCode.length < 6 || !/^\d+$/.test(validationCode)) {
+            Swal.fire('Atención', 'Por favor, introduce el código de 6 dígitos completo y numérico.', 'warning');
             return;
         }
 
@@ -53,8 +92,12 @@ $(document).ready(function () {
     $('#resendCodeLink').click(function (e) {
         e.preventDefault();
         
-        // 1. Verificamos que tengamos el email del localStorage
-        if (!email) {
+        // 1. Intentamos obtener el email del input oculto, de la URL o del localStorage
+        var fallbackEmail = $('#resend_email_fallback').val();
+        var currentEmail = fallbackEmail || email;
+
+        if (!currentEmail) {
+            console.error("Error: Correo no encontrado en la sesión, URL ni localStorage.");
             Swal.fire('Error', 'No se pudo encontrar tu correo. Por favor, regresa y vuelve a registrarte.', 'error');
             return;
         }
@@ -67,7 +110,7 @@ $(document).ready(function () {
         $.ajax({
             type: 'POST',
             url: './api/resend_code_process.php', // Apunta a tu nuevo archivo PHP
-            data: { email: email },      // Envía el correo
+            data: { email: currentEmail },      // Envía el correo
             dataType: 'json'
         }).done(function (response) {
             if (response.success) {

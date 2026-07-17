@@ -75,8 +75,88 @@ try {
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.img-container img:hover {
+    transform: scale(1.05);
+}
+
+/* Modal de Imagen Personalizado */
+.custom-image-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 99999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), visibility 0.4s;
+}
+
+.custom-image-modal.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.custom-modal-content {
+    position: relative;
+    max-width: 90%;
+    max-height: 90%;
+    transform: scale(0.7);
+    opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.custom-image-modal.active .custom-modal-content {
+    transform: scale(1);
+    opacity: 1;
+}
+
+.custom-modal-content img {
+    max-width: 100%;
+    max-height: 90vh;
+    border-radius: 12px;
+    object-fit: contain;
+    display: block;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    border: 2px solid #333;
+}
+
+.custom-modal-close {
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 2.5rem;
+    cursor: pointer;
+    transition: color 0.3s, transform 0.3s;
+    line-height: 1;
+    z-index: 2;
+}
+
+.custom-modal-close:hover {
+    color: #F28123;
+    transform: scale(1.1);
+}
+
+@media (max-width: 768px) {
+    .custom-modal-close {
+        top: -40px;
+        right: 0;
+    }
 }
 
 .img-container.antes img {
@@ -175,14 +255,14 @@ try {
                             <span class="img-label label-antes">ANTES</span>
                             <div class="img-container antes">
                                 <img src="https://sergym.com/imagenes/exito/<?= htmlspecialchars($caso['foto_antes'], ENT_QUOTES, 'UTF-8') ?>"
-                                    alt="Antes" loading="lazy">
+                                    alt="Antes" loading="lazy" onclick="openImageModal(this.src, 'antes')">
                             </div>
                         </div>
                         <div class="col-6 pl-2 text-center">
                             <span class="img-label label-despues">DESPUÉS</span>
                             <div class="img-container despues">
                                 <img src="https://sergym.com/imagenes/exito/<?= htmlspecialchars($caso['foto_despues'], ENT_QUOTES, 'UTF-8') ?>"
-                                    alt="Después" loading="lazy">
+                                    alt="Después" loading="lazy" onclick="openImageModal(this.src, 'despues')">
                             </div>
                         </div>
                     </div>
@@ -217,6 +297,14 @@ try {
         <?php endif; ?>
     </div>
 </section>
+
+<!-- Modal de Imagen Flotante -->
+<div id="imageModal" class="custom-image-modal" onclick="closeImageModal()">
+    <div class="custom-modal-content" onclick="event.stopPropagation()">
+        <button class="custom-modal-close" onclick="closeImageModal()">&times;</button>
+        <img id="modalImage" src="" alt="Vista a gran escala">
+    </div>
+</div>
 
 <!-- Scripts Requeridos -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -272,4 +360,41 @@ function verVideoExito(url_video) {
         }
     });
 }
+
+// Funciones para la Modal de Imágenes
+function openImageModal(imgSrc, type) {
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImage');
+    
+    // Cambiar color del borde según si es antes o después para mantener la estética
+    if (type === 'antes') {
+        modalImg.style.borderColor = '#ef4444';
+    } else if (type === 'despues') {
+        modalImg.style.borderColor = '#10b981';
+    } else {
+        modalImg.style.borderColor = '#333';
+    }
+
+    modalImg.src = imgSrc;
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden'; // Evitar scroll
+}
+
+function closeImageModal() {
+    const modal = document.getElementById('imageModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = ''; // Restaurar scroll
+    
+    // Esperar a que termine la animación para quitar la fuente
+    setTimeout(() => {
+        document.getElementById('modalImage').src = '';
+    }, 400); 
+}
+
+// Escuchar tecla ESC para cerrar la modal
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeImageModal();
+    }
+});
 </script>

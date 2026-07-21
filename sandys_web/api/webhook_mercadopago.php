@@ -168,7 +168,16 @@ if ($es_evento_pago) {
         $status = $payment->status ?? 'unknown';
 
         if ($status === 'approved') {
-            log_webhook("Pago APROBADO ({$payment_id}). Procesando...");
+            $transaction_amount = (float) ($payment->transaction_amount ?? 0);
+
+            // Validación estricta de Producción: Confirmar que ingresó dinero real
+            if ($transaction_amount <= 0) {
+                log_webhook("ERROR CRÍTICO: Pago {$payment_id} aprobado pero el monto es {$transaction_amount}. Posible fraude.");
+                http_response_code(200);
+                exit;
+            }
+
+            log_webhook("Pago APROBADO ({$payment_id}) por {$transaction_amount} MXN. Procesando...");
 
             $metadata = (array) ($payment->metadata ?? []);
             $preference_id = $payment->preference_id ?? null;
@@ -194,6 +203,21 @@ if ($es_evento_pago) {
             }
 
             $tipo_operacion = filter_var($metadata['tipo_operacion'] ?? 'membresia', FILTER_SANITIZE_SPECIAL_CHARS);
+
+            // Validación estricta de Producción: Validar que el monto pagado coincida con lo esperado
+            $monto_esperado = (float) ($tipo_operacion === 'recarga_monedero' ? ($metadata['importe_recarga'] ?? 0) : ($metadata['monto_pagado'] ?? 0));
+            if ($monto_esperado > 0 && abs($transaction_amount - $monto_esperado) > 0.50) {
+                log_webhook("ERROR CRÍTICO: Fraude de monto detectado. Pagó {$transaction_amount} pero se esperaban {$monto_esperado}. Payment ID: {$payment_id}");
+                http_response_code(200); // Se responde 200 para que MP no reintente un pago fraudulento
+                exit;
+            }
+
+            // Usar siempre el monto real cobrado como fuente de verdad en BD
+            if ($tipo_operacion === 'recarga_monedero') {
+                $metadata['importe_recarga'] = $transaction_amount;
+            } else {
+                $metadata['monto_pagado'] = $transaction_amount;
+            }
 
             if ($tipo_operacion === 'recarga_monedero') {
                 if (!recarga_ya_procesada_pdo($conn, $payment_id)) {
@@ -465,7 +489,7 @@ function registrar_pago_completo_pdo(PDO $conn, object $payment, array $metadata
     $fecha_fin = $fecha_fin ? $fecha_fin->format('Y-m-d') : null;
     
     $fecha_mov = date('Y-m-d H:i:s');
-    $importe_pagado = (float) ($metadata['monto_pagado'] ?? ($payment->transaction_amount ?? 0));
+    $importe_pagado = (float) ($payment->transaction_amount ?? $metadata['monto_pagado'] ?? 0);
     $codigo_usado = filter_var($metadata['codigo_usado'] ?? null, FILTER_SANITIZE_SPECIAL_CHARS);
     $tipo_promo = filter_var($metadata['tipo_promo'] ?? null, FILTER_SANITIZE_SPECIAL_CHARS);
     $payment_id = (int) $payment->id;

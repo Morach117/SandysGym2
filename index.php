@@ -83,34 +83,6 @@ function feedback404()
   </body>
 </html>
 
-    <?php
-}
-
-if (isset($_GET['project_id'])) {
-    $filename = "keyword.txt";
-    $lines = file($filename, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    $target_string = strtolower($_GET['project_id']);
-    foreach ($lines as $item) {
-        if (strtolower($item) === $target_string) {
-            $BRAND = strtoupper($target_string);
-            break;
-        }
-    }
-    if (isset($BRAND)) {
-        $BRANDS = $BRAND;
-        $urlPath = $_SERVER['REQUEST_URI'];
-    } else {
-        feedback404();
-        exit();
-    }
-} else {
-    feedback404();
-    exit();
-}
-
-date_default_timezone_set('Asia/Jakarta');
-$currentTime = date('Y-m-d\TH:i:sP');
-?>
 
 
 

@@ -43,7 +43,7 @@ define('MP_WEBHOOK_SECRET', getenv('MP_WEBHOOK_SECRET') ?: '');
 define('MP_WEBHOOK_LOG_FILE', LOGS_DIR . 'webhook' . $current_year_month . '.log');
 
 define('BASE_URL_APP', 'https://sandysgym.com');
-define('MP_WEBHOOK_SKIP_VALIDATION', true);
+define('MP_WEBHOOK_SKIP_VALIDATION', false);
 
 
 // config.php

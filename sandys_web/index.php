@@ -6,7 +6,7 @@ session_set_cookie_params([
     'domain' => $_SERVER['HTTP_HOST'] ?? '',
     'secure' => isset($_SERVER['HTTPS']), // True si está en HTTPS
     'httponly' => true,
-    'samesite' => 'Strict'
+    'samesite' => 'Lax'
 ]);
 session_start();
 

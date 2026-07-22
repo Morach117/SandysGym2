@@ -1,10 +1,11 @@
 <?php
 // 1. INICIAR SESIÓN Y CONFIGURAR RESPUESTA
+$domain = isset($_SERVER['HTTP_HOST']) ? preg_replace('/^www\./', '', explode(':', $_SERVER['HTTP_HOST'])[0]) : '';
 session_set_cookie_params([
     'lifetime' => 0,
     'path' => '/',
-    'domain' => $_SERVER['HTTP_HOST'] ?? '',
-    'secure' => isset($_SERVER['HTTPS']), // True si está en HTTPS
+    'domain' => $domain,
+    'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
     'httponly' => true,
     'samesite' => 'Lax'
 ]);

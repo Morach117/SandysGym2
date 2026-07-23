@@ -1,6 +1,4 @@
 <?php
-// Archivo exclusivo de vista: Casos de Éxito
-// Requiere que conexion.php defina la instancia de PDO en la variable $conn
 require_once("conn.php");
 
 try {
@@ -13,15 +11,12 @@ try {
 }
 ?>
 <style>
-/* Corrección de superposición del Navbar */
 .success-stories-section {
     background-color: #050505;
     padding-top: 140px;
-    /* Fuerza el margen superior para esquivar el navbar fixed/absolute */
     padding-bottom: 60px;
 }
 
-/* Estilos de la Tarjeta */
 .success-card {
     background-color: #1a1a1a;
     border: 1px solid #333;
@@ -60,7 +55,6 @@ try {
     color: #10b981;
 }
 
-/* Contenedor de imagen responsivo con Relación de Aspecto 1:1 */
 .img-container {
     position: relative;
     width: 100%;
@@ -85,7 +79,6 @@ try {
     transform: scale(1.05);
 }
 
-/* Modal de Imagen Personalizado */
 .custom-image-modal {
     position: fixed;
     top: 0;
@@ -190,7 +183,6 @@ try {
     color: #050505;
 }
 
-/* Hacks para Owl Carousel - Altura uniforme de las tarjetas */
 .success-slider .owl-stage {
     display: flex;
     align-items: stretch;
@@ -204,10 +196,8 @@ try {
     width: 100%;
     display: flex;
     padding: 10px;
-    /* Espaciado entre elementos del carrusel */
 }
 
-/* Estilos para los dots del carrusel en Dark Mode */
 .success-slider .owl-dots {
     text-align: center;
     margin-top: 20px;
@@ -241,11 +231,9 @@ try {
         </div>
 
         <?php if (!empty($casos_exito)): ?>
-        <!-- Contenedor del Carrusel -->
         <div class="success-slider owl-carousel">
             <?php foreach ($casos_exito as $caso): ?>
             <div class="item">
-                <!-- d-flex flex-column asegura que las tarjetas tengan la misma altura y el botón baje -->
                 <div class="success-card p-4 d-flex flex-column">
                     <h4 class="client-name text-center">
                         <?= htmlspecialchars($caso['cliente_nombre'], ENT_QUOTES, 'UTF-8') ?></h4>
@@ -255,14 +243,14 @@ try {
                             <span class="img-label label-antes">ANTES</span>
                             <div class="img-container antes">
                                 <img src="https://sergym.com/imagenes/exito/<?= htmlspecialchars($caso['foto_antes'], ENT_QUOTES, 'UTF-8') ?>"
-                                    alt="Antes" loading="lazy" onclick="openImageModal(this.src, 'antes')">
+                                     alt="Antes" loading="lazy" onclick="openImageModal(this.src, 'antes')">
                             </div>
                         </div>
                         <div class="col-6 pl-2 text-center">
                             <span class="img-label label-despues">DESPUÉS</span>
                             <div class="img-container despues">
                                 <img src="https://sergym.com/imagenes/exito/<?= htmlspecialchars($caso['foto_despues'], ENT_QUOTES, 'UTF-8') ?>"
-                                    alt="Después" loading="lazy" onclick="openImageModal(this.src, 'despues')">
+                                     alt="Después" loading="lazy" onclick="openImageModal(this.src, 'despues')">
                             </div>
                         </div>
                     </div>
@@ -272,7 +260,6 @@ try {
                         "<?= htmlspecialchars($caso['testimonio'], ENT_QUOTES, 'UTF-8') ?>"
                     </div>
                     <?php else: ?>
-                    <!-- Espaciador si no hay testimonio -->
                     <div class="flex-grow-1"></div>
                     <?php endif; ?>
 
@@ -298,7 +285,6 @@ try {
     </div>
 </section>
 
-<!-- Modal de Imagen Flotante -->
 <div id="imageModal" class="custom-image-modal" onclick="closeImageModal()">
     <div class="custom-modal-content" onclick="event.stopPropagation()">
         <button class="custom-modal-close" onclick="closeImageModal()">&times;</button>
@@ -306,10 +292,8 @@ try {
     </div>
 </div>
 
-<!-- Scripts Requeridos -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-// Inicialización del Owl Carousel
 $(document).ready(function() {
     if (typeof $.fn.owlCarousel !== 'undefined') {
         $('.success-slider').owlCarousel({
@@ -329,7 +313,7 @@ $(document).ready(function() {
                 },
                 992: {
                     items: 3
-                } /* Muestra 3 tarjetas en pantallas grandes */
+                }
             }
         });
     } else {
@@ -361,12 +345,10 @@ function verVideoExito(url_video) {
     });
 }
 
-// Funciones para la Modal de Imágenes
 function openImageModal(imgSrc, type) {
     const modal = document.getElementById('imageModal');
     const modalImg = document.getElementById('modalImage');
     
-    // Cambiar color del borde según si es antes o después para mantener la estética
     if (type === 'antes') {
         modalImg.style.borderColor = '#ef4444';
     } else if (type === 'despues') {
@@ -377,21 +359,19 @@ function openImageModal(imgSrc, type) {
 
     modalImg.src = imgSrc;
     modal.classList.add('active');
-    document.body.style.overflow = 'hidden'; // Evitar scroll
+    document.body.style.overflow = 'hidden';
 }
 
 function closeImageModal() {
     const modal = document.getElementById('imageModal');
     modal.classList.remove('active');
-    document.body.style.overflow = ''; // Restaurar scroll
+    document.body.style.overflow = '';
     
-    // Esperar a que termine la animación para quitar la fuente
     setTimeout(() => {
         document.getElementById('modalImage').src = '';
     }, 400); 
 }
 
-// Escuchar tecla ESC para cerrar la modal
 document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
         closeImageModal();

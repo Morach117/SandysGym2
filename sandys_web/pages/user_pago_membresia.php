@@ -1,9 +1,4 @@
 <?php
-// =================================================================
-// INICIO DEL BLOQUE PHP (Lógica optimizada y segura)
-// =================================================================
-
-// 1. Garantizar sesión activa y token CSRF ANTES del renderizado
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -16,19 +11,19 @@ if (empty($_SESSION['csrf_token'])) {
     }
 }
 
-// 2. Verificar la sesión del socio
 if (empty($_SESSION['admin']['soc_id_socio'])) {
     echo "<div style='color:white; text-align:center; padding:50px;'>Error: Sesión no válida. Por favor, inicie sesión de nuevo.</div>";
     exit;
 }
 
-// 3. Obtener IDs de la sesión
 $id_socio = (int)$_SESSION['admin']['soc_id_socio'];
 $id_empresa = 1;
 $id_consorcio = 1;
 $id_giro = 1;
 
-// 4. Funciones de BD (adaptadas a PDO y sanitizadas)
+/**
+ * Obtiene los datos del socio
+ */
 function obtener_datos_socio_pdo($conexion_pdo, $id_socio, $id_empresa)
 {
     $query = "SELECT * FROM san_socios WHERE soc_id_socio = ? AND soc_id_empresa = ? LIMIT 1";
@@ -37,9 +32,11 @@ function obtener_datos_socio_pdo($conexion_pdo, $id_socio, $id_empresa)
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
+/**
+ * Obtiene los servicios disponibles filtrando los inactivos o bloqueados
+ */
 function obtener_servicios_pdo($conexion_pdo, $id_consorcio, $id_giro)
 {
-    // Bloqueo explícito de servicios 129 y 246 mediante NOT IN
     $query = "SELECT ser_id_servicio AS id_servicio, 
                      ser_descripcion AS descripcion,
                      ROUND( ser_cuota, 2 ) AS cuota,
@@ -57,7 +54,6 @@ function obtener_servicios_pdo($conexion_pdo, $id_consorcio, $id_giro)
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-// 5. Obtener los datos para la vista
 $selSocioData = obtener_datos_socio_pdo($conn, $id_socio, $id_empresa);
 $listaServicios = obtener_servicios_pdo($conn, $id_consorcio, $id_giro);
 
@@ -65,26 +61,20 @@ if (!$selSocioData) {
     echo "<div style='color:white;'>Error: No se pudieron cargar los datos del socio.</div>";
     exit;
 }
-// =================================================================
-// FIN DEL BLOQUE PHP
-// =================================================================
 ?>
 
 <style>
-    /* Base */
     body {
-        background-color: #050505 !important; /* Negro profundo */
+        background-color: #050505 !important;
         color: #e0e0e0;
         font-family: 'Muli', sans-serif;
     }
 
-    /* Sección Principal */
     .membership-payment {
         padding: 60px 0;
         min-height: 100vh;
     }
 
-    /* Títulos */
     .page-title {
         font-family: 'Oswald', sans-serif;
         font-size: 36px;
@@ -99,9 +89,8 @@ if (!$selSocioData) {
         margin-bottom: 40px;
     }
 
-    /* Tarjetas (Formulario y Resumen) */
     .payment-card, .summary-card {
-        background-color: #121212; /* Gris más oscuro premium */
+        background-color: #121212;
         border: 1px solid #2a2a2a;
         border-radius: 16px;
         padding: 35px 30px;
@@ -119,7 +108,6 @@ if (!$selSocioData) {
         padding-bottom: 15px;
     }
 
-    /* Inputs y Selects */
     .form-label {
         color: #bbb;
         font-size: 14px;
@@ -131,9 +119,9 @@ if (!$selSocioData) {
     }
 
     .form-control, .custom-select {
-        background-color: #1a1a1a !important; /* Fondo del input oscuro pero visible */
+        background-color: #1a1a1a !important;
         border: 1px solid #444 !important;
-        color: #ffffff !important; /* 🔥 TEXTO BLANCO BRILLANTE PARA QUE SE VEA BIEN 🔥 */
+        color: #ffffff !important;
         border-radius: 8px !important;
         padding: 14px 15px !important;
         height: auto !important;
@@ -142,13 +130,11 @@ if (!$selSocioData) {
         box-shadow: none !important;
     }
 
-    /* Color del placeholder para que se vea bien en fondo oscuro */
     .form-control::placeholder {
         color: #888888 !important;
         opacity: 1;
     }
 
-    /* Fix para autocompletado de Chrome (Evita que se ponga amarillo/blanco) */
     input:-webkit-autofill,
     input:-webkit-autofill:hover, 
     input:-webkit-autofill:focus, 
@@ -159,13 +145,12 @@ if (!$selSocioData) {
     }
 
     .form-control:focus, .custom-select:focus {
-        border-color: #ef4444 !important; /* Rojo al enfocar */
+        border-color: #ef4444 !important;
         background-color: #121212 !important;
         box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
         outline: none;
     }
 
-    /* 🔥 Input Readonly (Socio) - Estilo para que se note que NO es editable 🔥 */
     .form-control[readonly] {
         background-color: #0a0a0a !important;
         color: #888888 !important;
@@ -174,7 +159,6 @@ if (!$selSocioData) {
         font-weight: 600;
     }
 
-    /* Select Dropdown (Mejorando la flechita nativa) */
     .custom-select {
         appearance: none;
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ef4444' d='M10.293 3.293 6 7.586 1.707 3.293A1 1 0 0 0 .293 4.707l5 5a1 1 0 0 0 1.414 0l5-5a1 1 0 1 0-1.414-1.414z'/%3E%3C/svg%3E") !important;
@@ -187,10 +171,6 @@ if (!$selSocioData) {
         color: #fff;
     }
 
-    /* ========================================================
-       CORRECCIÓN DEFINITIVA: Input del Cupón
-       (Usando su ID exacto para aplastar las reglas de Bootstrap)
-       ======================================================== */
     .input-group {
         display: flex;
     }
@@ -232,7 +212,6 @@ if (!$selSocioData) {
         border-color: #ef4444 !important;
     }
 
-    /* Botón de Pago Principal */
     .primary-btn {
         background-color: #ef4444;
         color: #fff;
@@ -259,7 +238,6 @@ if (!$selSocioData) {
         color: #fff;
     }
 
-    /* Resumen Sticky */
     @media (min-width: 992px) {
         .summary-sticky {
             position: sticky;
@@ -267,7 +245,6 @@ if (!$selSocioData) {
         }
     }
 
-    /* Lista de Resumen */
     .list-group-item {
         background-color: transparent !important;
         border-color: #333 !important;
@@ -281,7 +258,6 @@ if (!$selSocioData) {
         font-weight: bold;
     }
 
-    /* Seguridad MP */
     .security-badge {
         display: flex;
         align-items: center;
@@ -296,7 +272,6 @@ if (!$selSocioData) {
     .security-badge i { font-size: 24px; color: #10b981; }
     .security-text { font-size: 13px; color: #a7f3d0; margin: 0; line-height: 1.4; }
 
-    /* --- RESPONSIVE MÓVIL --- */
     @media (max-width: 768px) {
         .membership-payment { padding: 120px 0 40px; } 
         .page-title { font-size: 28px; line-height: 1.2; }
@@ -322,7 +297,7 @@ if (!$selSocioData) {
     }
 
     .btn-back:hover {
-        background: #ef4444; /* Rojo Sandy's */
+        background: #ef4444;
         color: #fff;
         border-color: #ef4444;
         transform: translateX(-5px);
@@ -334,7 +309,6 @@ if (!$selSocioData) {
         margin-right: 10px;
     }
 
-    /* Ajuste para que el botón no quede pegado al menú en móviles */
     @media (max-width: 768px) {
         .btn-back {
             margin-left: 15px;

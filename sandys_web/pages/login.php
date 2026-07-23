@@ -2,10 +2,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-    /* --- 1. GENERAL --- */
     body { background-color: #050505; color: #e0e0e0; font-family: 'Muli', sans-serif; }
 
-    /* --- 2. LAYOUT --- */
     .login_box_area {
         padding-top: 140px; padding-bottom: 80px; min-height: 100vh;
         display: flex; align-items: center; justify-content: center; box-sizing: border-box;
@@ -17,7 +15,6 @@
         border: 1px solid #2a2a2a; overflow: hidden;
     }
 
-    /* --- 3. COLUMNA IZQUIERDA --- */
     .login_box_img {
         position: relative; width: 45%;
         background: linear-gradient(135deg, rgba(34, 10, 10, 0.85) 0%, rgba(0, 0, 0, 0.95) 100%), url('./assets/img/login.jpg');
@@ -28,12 +25,10 @@
     .img-overlay h4 { font-family: 'Oswald', sans-serif; font-size: 32px; color: #fff; margin-bottom: 15px; text-transform: uppercase; }
     .img-overlay p { color: #aaa; margin-bottom: 25px; font-size: 15px; }
 
-    /* --- 4. FORMULARIO DERECHA --- */
     .login_form_inner { width: 55%; padding: 50px 40px; background-color: #121212; display: flex; flex-direction: column; justify-content: center; }
     .login_form_inner h3 { font-family: 'Oswald', sans-serif; font-size: 28px; color: #fff; text-transform: uppercase; margin-bottom: 5px; }
     .welcome-text { margin-bottom: 30px; color: #888; font-size: 14px; }
 
-    /* --- 5. INPUTS CORREGIDOS --- */
     .form-group-login { position: relative; margin-bottom: 25px; width: 100%; }
     
     .form-group-login .form-control {
@@ -54,7 +49,6 @@
         background-color: #121212 !important;
     }
 
-    /* 🔥 SOLUCIÓN ANTIBALAS: FONDO BLANCO DE AUTOCOMPLETADO (CHROME/EDGE) 🔥 */
     input:-webkit-autofill,
     input:-webkit-autofill:hover, 
     input:-webkit-autofill:focus, 
@@ -68,7 +62,6 @@
     }
     input::-ms-reveal, input::-ms-clear { display: none; }
 
-    /* --- 6. ICONOS --- */
     .input-icon { 
         position: absolute; left: 18px; top: 50%; transform: translateY(-50%);
         color: #666; font-size: 18px; pointer-events: none; transition: 0.3s; z-index: 5;
@@ -81,7 +74,6 @@
     }
     .toggle-password:hover { color: #fff; }
 
-    /* --- 7. BOTONES Y OPCIONES --- */
     .form-options { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; font-size: 14px; color: #aaa; }
     .form-options a { color: #ef4444; text-decoration: none; font-weight: 600; transition: 0.3s; }
     .form-options a:hover { color: #ff6b6b; }
@@ -103,7 +95,6 @@
     }
     .btn-outline-light-custom:hover { background: #ef4444; box-shadow: 0 0 20px rgba(239, 68, 68, 0.6); color: #fff; text-decoration: none; }
 
-    /* --- 8. MODAL RECOVERY DARK MODE --- */
     .modal-content.dark-modal { background-color: #121212; color: #fff; border: 1px solid #333; border-radius: 12px; }
     .dark-modal .modal-header { border-bottom: 1px solid #222; }
     .dark-modal .modal-title { font-family: 'Oswald', sans-serif; font-size: 20px; text-transform: uppercase; }
@@ -111,7 +102,6 @@
     .dark-modal .close:hover { opacity: 1; }
     .dark-modal label { color: #aaa; font-size: 12px; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; }
 
-    /* 🔥 OVERRIDE GLOBAL PARA FORZAR SWEETALERT EN MODO OSCURO 🔥 */
     div.swal2-popup {
         background-color: #1a1a1a !important;
         color: #ffffff !important;

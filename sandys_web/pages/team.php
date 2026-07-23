@@ -1,4 +1,3 @@
-<!-- Breadcrumb Section Begin -->
 <section class="breadcrumb-section set-bg" data-setbg="./assets/img/breadcrumb-bg.jpg">
     <div class="container">
         <div class="row">
@@ -14,9 +13,7 @@
         </div>
     </div>
 </section>
-<!-- Breadcrumb Section End -->
 
-<!-- Team Section Begin -->
 <section class="team-section team-page spad">
     <div class="container">
         <div class="row">
@@ -124,4 +121,3 @@
         </div>
     </div>
 </section>
-<!-- Team Section End -->

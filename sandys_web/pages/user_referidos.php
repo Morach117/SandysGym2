@@ -1,22 +1,16 @@
 <?php
-// pages/referidos.php
-
-// --- INCLUDES OBLIGATORIOS ---
 require_once 'conn.php';
-include('./api/select_data.php'); // Datos del usuario logueado ($selSocioData)
+include('./api/select_data.php');
 
-// 1. VALIDACIÓN DE SESIÓN
 if (!$selSocioData) {
     echo "<script>window.location.href='index.php';</script>";
     exit;
 }
 
-// 2. VARIABLES DEL USUARIO ACTUAL
 $miId = $selSocioData['soc_id_socio'];
 $miNombre = htmlspecialchars($selSocioData['soc_nombres']);
-$miTelefono = $selSocioData['soc_tel_cel']; // Lo usamos como código visible y parámetro ref
+$miTelefono = $selSocioData['soc_tel_cel'];
 
-// 3. CONSULTA DE REFERIDOS
 $queryRef = "SELECT soc_nombres, soc_apepat, soc_fecha_captura, soc_imagen 
              FROM san_socios 
              WHERE soc_id_referido_por = :miId 
@@ -28,12 +22,11 @@ try {
     $stmtRef->execute();
     $listaReferidos = $stmtRef->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    $listaReferidos = []; // Si falla la consulta, array vacío para no romper la página
+    $listaReferidos = [];
 }
 
-// --- OBTENER CONFIGURACIÓN DE REFERIDOS Y ESTADO DE MEMBRESÍA ---
-$idConsorcio = $_SESSION['id_empresa'] ?? $selSocioData['soc_id_consorcio'] ?? 1; // Ajusta según tu contexto
-$gananciaPorReferido = 70.00; // Valor por defecto actualizado a 70
+$idConsorcio = $_SESSION['id_empresa'] ?? $selSocioData['soc_id_consorcio'] ?? 1;
+$gananciaPorReferido = 70.00;
 $fechaFin = null;
 
 $queryPanel = "
@@ -60,36 +53,25 @@ try {
             $gananciaPorReferido = (float) $row['con_referidos'];
         }
         if (!empty($row['pag_fecha_fin'])) {
-            $fechaFin = $row['pag_fecha_fin']; // Disponible si se requiere validar vigencia en la vista
+            $fechaFin = $row['pag_fecha_fin'];
         }
     }
 } catch (PDOException $e) {
-    // Si falla, se conservan los valores por defecto
 }
 
-// Cálculos
 $totalReferidos = count($listaReferidos);   
 $gananciaTotal = $totalReferidos * $gananciaPorReferido;
 
-// Construcción del Link
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
 $host = $_SERVER['HTTP_HOST'];
-
-// Liga directa a la creación de cuenta
 $baseUrl = "$protocol://$host/index.php?page=registro"; 
-
-// CORRECCIÓN: Ahora el parámetro ref lleva el número de teléfono en lugar del ID
 $linkCompleto = $baseUrl . "&ref=" . $miTelefono;
-
-// Mensaje base para WhatsApp (Cambiado de Vente a Ven)
 $textoInvitacion = "¡Hola! Ven a entrenar conmigo a Sandys Gym. 🏋️‍♂️ Regístrate aquí para una promo especial: " . $linkCompleto;
-
 ?>
 
 <style>
     body { background-color: #0f0f0f; color: #e0e0e0; font-family: 'Muli', sans-serif; }
 
-    /* Hero Header */
     .referral-hero {
         padding: 140px 0 60px;
         background: linear-gradient(180deg, rgba(15,15,15,0.9), #0f0f0f), url('./assets/img/hero/hero-referrals.jpg');
@@ -101,7 +83,6 @@ $textoInvitacion = "¡Hola! Ven a entrenar conmigo a Sandys Gym. 🏋️‍♂�
     .hero-title { font-family: 'Oswald', sans-serif; font-size: 38px; color: #fff; text-transform: uppercase; margin-bottom: 10px; }
     .hero-subtitle { font-size: 16px; color: #bbb; max-width: 600px; margin: 0 auto; }
 
-    /* Tarjetas de Estadísticas */
     .stats-container {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -121,7 +102,6 @@ $textoInvitacion = "¡Hola! Ven a entrenar conmigo a Sandys Gym. 🏋️‍♂�
     .stat-number { font-family: 'Oswald', sans-serif; font-size: 42px; color: #ef4444; font-weight: 700; }
     .stat-label { font-size: 14px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
 
-    /* Sección Compartir */
     .share-section { margin-top: 60px; text-align: center; padding: 40px 20px; background: #141414; border-radius: 16px; border: 1px dashed #333; }
     
     .share-code-box {
@@ -142,7 +122,6 @@ $textoInvitacion = "¡Hola! Ven a entrenar conmigo a Sandys Gym. 🏋️‍♂�
     .share-code-box:hover { background: #ef4444; color: #fff; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
     .share-code-box:active { transform: scale(0.98); }
     
-    /* Contenedor de Botones Compartir */
     .share-buttons-container {
         display: flex;
         justify-content: center;
@@ -167,7 +146,6 @@ $textoInvitacion = "¡Hola! Ven a entrenar conmigo a Sandys Gym. 🏋️‍♂�
     }
     .btn-email:hover { background: #dc2626; color: #fff; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); text-decoration: none; }
 
-    /* Input de Copiar Link */
     .copy-link-container {
         margin-top: 25px;
         max-width: 500px;
@@ -202,7 +180,6 @@ $textoInvitacion = "¡Hola! Ven a entrenar conmigo a Sandys Gym. 🏋️‍♂�
     }
     .copy-btn:hover { background: #333; }
 
-    /* Lista de Referidos */
     .referrals-list { margin-top: 50px; margin-bottom: 80px; }
     .list-title { font-family: 'Oswald', sans-serif; font-size: 24px; color: #fff; margin-bottom: 20px; border-left: 4px solid #ef4444; padding-left: 15px; }
     
@@ -263,7 +240,6 @@ $textoInvitacion = "¡Hola! Ven a entrenar conmigo a Sandys Gym. 🏋️‍♂�
         margin-right: 10px;
     }
 
-    /* Ajuste para que el botón flote correctamente sobre el hero */
     .back-button-container {
         position: absolute;
         top: 100px;
@@ -373,7 +349,6 @@ $textoInvitacion = "¡Hola! Ven a entrenar conmigo a Sandys Gym. 🏋️‍♂�
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    // Función para copiar el código corto
     function copiarTexto(texto) {
         navigator.clipboard.writeText(texto).then(function() {
             mostrarToast('Código copiado al portapapeles');
@@ -382,7 +357,6 @@ $textoInvitacion = "¡Hola! Ven a entrenar conmigo a Sandys Gym. 🏋️‍♂�
         });
     }
 
-    // Función para copiar la liga
     function copiarLinkInput() {
         var copyText = document.getElementById("linkReferido");
         copyText.select();
@@ -393,7 +367,6 @@ $textoInvitacion = "¡Hola! Ven a entrenar conmigo a Sandys Gym. 🏋️‍♂�
         });
     }
 
-    // Helper para las alertas de éxito pequeñas
     function mostrarToast(mensaje) {
         const Toast = Swal.mixin({
             toast: true, position: 'top-end', showConfirmButton: false, timer: 3000,
@@ -406,7 +379,6 @@ $textoInvitacion = "¡Hola! Ven a entrenar conmigo a Sandys Gym. 🏋️‍♂�
         Toast.fire({ icon: 'success', title: mensaje });
     }
 
-    // Lógica para pedir el correo y enviar AJAX
     function enviarInvitacionCorreo() {
         Swal.fire({
             title: 'Enviar invitación por correo',

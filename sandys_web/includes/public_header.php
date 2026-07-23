@@ -32,9 +32,6 @@ $isLoggedIn = isset($_SESSION['admin']);
     <link rel="stylesheet" href="./assets/css/style.css" type="text/css">
 
     <style>
-        /* =========================================
-           VARIABLES GLOBALES (DARK MODE ESTRICTO)
-           ========================================= */
         :root {
             --bg-color: #050505; 
             --input-bg: #1a1a1a; 
@@ -53,11 +50,6 @@ $isLoggedIn = isset($_SESSION['admin']);
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        /* =========================================
-           MEJORAS DE DISEÑO MODERNO (HEADER)
-           ========================================= */
-
-        /* Ajustes Menu Offcanvas (Móvil) */
         .offcanvas-menu-wrapper { background: var(--input-bg) !important; }
         .canvas-close i { color: #ffffff !important; }
         .slicknav_menu .slicknav_icon-bar { background-color: #ffffff !important; }
@@ -65,7 +57,6 @@ $isLoggedIn = isset($_SESSION['admin']);
         .slicknav_nav a { color: #ffffff !important; }
         .slicknav_nav a:hover { color: var(--accent-orange) !important; }
 
-        /* Iconos Sociales Móvil */
         .canvas-social {
             margin-top: 20px;
             display: flex;
@@ -78,7 +69,6 @@ $isLoggedIn = isset($_SESSION['admin']);
         }
         .canvas-social .social-icon i:hover { color: var(--accent-orange) !important; }
 
-        /* Iconos Sociales Escritorio */
         .to-social a {
             display: flex;
             align-items: center;
@@ -95,7 +85,6 @@ $isLoggedIn = isset($_SESSION['admin']);
             transform: translateY(-3px);
         }
 
-        /* Ajuste del menú de escritorio */
         @media (min-width: 992px) {
             .nav-menu ul {
                 display: flex;
@@ -106,7 +95,6 @@ $isLoggedIn = isset($_SESSION['admin']);
             .nav-menu ul li a:hover { color: var(--accent-orange) !important; }
         }
 
-        /* Botón Iniciar Sesión Moderno */
         .login-btn, .user-logged-btn {
             color: #ffffff !important;
             font-size: 13px;
@@ -138,7 +126,6 @@ $isLoggedIn = isset($_SESSION['admin']);
             color: var(--bg-color);
         }
 
-        /* Botón Inscribirse (Escritorio) */
         .btn-inscribete {
             background-color: var(--accent-orange) !important;
             color: var(--bg-color) !important;
@@ -157,31 +144,25 @@ $isLoggedIn = isset($_SESSION['admin']);
             color: var(--bg-color) !important;
         }
 
-        /* Iniciar sesión (Menú móvil) */
         .mobile-login-link { color: #ffffff !important; font-weight: 600; }
         .mobile-login-link i { color: var(--accent-orange); margin-right: 8px; }
         .mobile-login-link:hover, .mobile-login-link:hover i { color: var(--accent-orange) !important; }
 
-        /* =========================================
-           HEADER RESPONSIVE Y CONTROLES MÓVILES
-           ========================================= */
         .img-logo {
             width: 200px;
             height: auto;
         }
 
-        /* Ocultar controles móviles en escritorio por defecto */
         .mobile-controls { display: none; }
 
         @media (max-width: 991px) {
             .header-section {
-                padding: 15px 0; /* Reduce padding vertical */
+                padding: 15px 0; 
             }
             .img-logo {
-                width: 130px !important; /* Logo más pequeño para que quepa todo */
+                width: 130px !important; 
             }
             
-            /* Mostrar bloque contenedor absoluto a la derecha */
             .mobile-controls {
                 display: flex !important;
                 position: absolute;
@@ -192,7 +173,6 @@ $isLoggedIn = isset($_SESSION['admin']);
                 gap: 15px;
             }
 
-            /* Botón Inscríbete Compacto para Móvil */
             .btn-inscribete-mobile {
                 background-color: var(--accent-orange) !important;
                 color: var(--bg-color) !important;
@@ -207,7 +187,6 @@ $isLoggedIn = isset($_SESSION['admin']);
                 box-shadow: 0 2px 10px rgba(242, 129, 35, 0.2);
             }
             
-            /* Reseteamos el canvas-open de la plantilla original */
             .canvas-open {
                 position: static !important;
                 transform: none !important;

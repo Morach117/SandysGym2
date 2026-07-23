@@ -2,9 +2,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-    /* --- 0. FIX PARA EL MENÚ SUPERIOR --- */
-    /* Esto ocultará el botón "Inscríbete Ya" del menú superior en esta página. 
-       Si tu botón tiene una clase específica, puedes agregarla aquí. */
     header a[href*="registro"], 
     .navbar a[href*="registro"], 
     .header-btn, 
@@ -12,12 +9,9 @@
         display: none !important; 
     }
 
-    /* --- 1. GENERAL --- */
     body { background-color: #050505; color: #e0e0e0; font-family: 'Muli', sans-serif; }
 
-    /* --- 2. LAYOUT --- */
     .login_box_area {
-        /* Aumentamos el padding superior en PC para que el menú no estorbe */
         padding-top: 150px; padding-bottom: 80px; min-height: 100vh;
         display: flex; align-items: center; justify-content: center;
     }
@@ -29,7 +23,6 @@
         position: relative; z-index: 1; 
     }
 
-    /* --- 3. COLUMNA IZQUIERDA --- */
     .login_box_img {
         position: relative; width: 45%;
         background: linear-gradient(135deg, #220a0a 0%, #000000 100%);
@@ -44,16 +37,13 @@
     }
     .btn-outline-light-custom:hover { background: #ef4444; box-shadow: 0 0 20px rgba(239, 68, 68, 0.6); color: #fff; }
 
-    /* --- 4. FORMULARIO DERECHA --- */
     .login_form_inner { width: 55%; padding: 50px 40px; background-color: #121212; }
     .login_form_inner h3 { font-family: 'Oswald', sans-serif; font-size: 28px; color: #fff; text-transform: uppercase; margin-bottom: 5px; }
     .welcome-text { margin-bottom: 25px; color: #cccccc; font-size: 15px; }
 
-    /* --- 5. INPUTS Y LABELS --- */
     .form-group, .input-group { margin-bottom: 20px; }
     .form-group label { color: #ffffff; font-size: 13px; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; display: block; letter-spacing: 0.5px; }
 
-    /* CONTENEDOR MÁGICO PARA ALINEAR ICONOS PERFECTAMENTE */
     .input-wrapper {
         position: relative;
         width: 100%;
@@ -75,7 +65,6 @@
     #registrationForm .form-control::placeholder { color: #9ca3af !important; opacity: 1; }
     #registrationForm .form-control:focus { border-color: #ef4444 !important; outline: none; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important; }
 
-    /* Fix Autocomplete Chrome */
     #registrationForm input:-webkit-autofill,
     #registrationForm input:-webkit-autofill:hover, 
     #registrationForm input:-webkit-autofill:focus, 
@@ -87,18 +76,16 @@
     }
     input::-ms-reveal, input::-ms-clear { display: none; }
 
-    /* Select Flecha */
     select.form-control {
         cursor: pointer;
         background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239ca3af%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
         background-repeat: no-repeat; background-position: right 15px center; background-size: 10px auto;
     }
 
-    /* --- 6. ICONOS CENTRADOS --- */
     .input-wrapper .input-icon { 
         position: absolute; 
         left: 15px; 
-        top: 50%; /* Centrado vertical perfecto dentro del wrapper */
+        top: 50%; 
         transform: translateY(-50%);
         color: #9ca3af; 
         font-size: 18px; 
@@ -108,11 +95,10 @@
     }
     .form-control:focus ~ .input-icon { color: #ef4444; }
 
-    /* Ojo Contraseña */
     .input-wrapper .toggle-password { 
         position: absolute; 
         right: 15px; 
-        top: 50%; /* Centrado vertical perfecto */
+        top: 50%; 
         transform: translateY(-50%);
         cursor: pointer; 
         color: #9ca3af; 
@@ -122,30 +108,25 @@
     }
     .input-wrapper .toggle-password:hover { color: #ffffff; }
 
-    /* Botón Cambiar Correo */
     .input-wrapper .btn-change-email { 
         position: absolute; right: 15px; top: 50%; transform: translateY(-50%); 
         background: transparent; border: none; color: #9ca3af; font-size: 13px; cursor: pointer; text-decoration: underline; z-index: 10; font-weight: bold; 
     }
     .input-wrapper .btn-change-email:hover { color: #ffffff; }
 
-    /* --- 7. BOTONES --- */
     .primary-btn { background-color: #ef4444; color: white; border: none; padding: 14px; border-radius: 8px; font-family: 'Oswald', sans-serif; font-size: 16px; text-transform: uppercase; font-weight: 700; cursor: pointer; width: 100%; transition: 0.3s; }
     .primary-btn:hover { background-color: #d12f2f; transform: translateY(-2px); }
     .btn-normal { width: auto; padding: 10px 30px; border-radius: 50px; margin: 0 auto; }
 
-    /* --- 8. EXTRAS --- */
     small { color: #aaaaaa !important; font-size: 12px !important; }
     .password-requirements { padding-left: 0; margin-bottom: 15px; list-style: none; font-size: 13px; color: #aaaaaa; display: flex; gap: 15px; }
     .password-requirements li i { font-size: 8px; margin-right: 5px; transform: translateY(-2px); display: inline-block; }
     .password-requirements li.valid { color: #4ade80; }
 
-    /* --- 9. RESPONSIVE MÓVIL --- */
     @media (max-width: 991px) {
         .login_box_img { display: none; }
         .login_form_inner { width: 100%; padding: 30px 20px; }
         .login-container { max-width: 450px; border: none; background: transparent; box-shadow: none;}
-        /* Ajuste de espacio para móviles para que no choque con el logo */
         .login_box_area { padding-top: 130px; }
     }
 </style>

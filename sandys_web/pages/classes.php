@@ -1,4 +1,3 @@
-<!-- Breadcrumb Section Begin -->
 <section class="breadcrumb-section set-bg" data-setbg="./assets/img/breadcrumb-bg.jpg">
     <div class="container">
         <div class="row">
@@ -15,9 +14,7 @@
         </div>
     </div>
 </section>
-<!-- Breadcrumb Section End -->
 
-<!-- Class Details Section Begin -->
 <section class="class-details-section spad">
     <div class="container">
         <div class="row">
@@ -152,9 +149,7 @@
         </div>
     </div>
 </section>
-<!-- Class Details Section End -->
 
-<!-- Class Timetable Section Begin -->
 <section class="class-timetable-section class-details-timetable spad">
     <div class="container">
         <div class="row">
@@ -297,4 +292,3 @@
         </div>
     </div>
 </section>
-<!-- Class Timetable Section End -->

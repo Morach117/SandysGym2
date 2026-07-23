@@ -80,7 +80,7 @@ $(document).ready(function() {
         event.preventDefault();
         
         let btnReset = $('#btnResetSubmit');
-        if (btnReset.prop('disabled')) return; // Previene múltiples clics rápidos
+        if (btnReset.prop('disabled')) return;
 
         var email = $('#reset_email').val();
         let originalResetText = btnReset.html();
@@ -93,7 +93,6 @@ $(document).ready(function() {
             data: { email: email },
             success: function(response) {
                 if (response.success && response.message.includes('espera un par de minutos')) {
-                    // Muestra el mensaje si la petición se procesó pero se bloqueó por rate limit
                     btnReset.prop('disabled', false).html(originalResetText);
                     Swal.fire({
                         title: 'Aviso',

@@ -1,14 +1,11 @@
 <?php
 declare(strict_types=1);
 
-// api/webhook_mercadopago.php
-// SISTEMA UNIFICADO: Procesa Membresías y Recargas de Monedero con ENVÍO DE CORREOS MEDIANTE PLANTILLAS.
-
 date_default_timezone_set('America/Mexico_City');
 
 require_once __DIR__ . '/../vendor/autoload.php';
-require_once __DIR__ . '/../conn.php';           // $conn (PDO)
-require_once __DIR__ . '/config.php';            // MP_ACCESS_TOKEN, MP_WEBHOOK_SECRET
+require_once __DIR__ . '/../conn.php';
+require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/lib/EmailService.php';
 
 use MercadoPago\MercadoPagoConfig;
@@ -20,12 +17,18 @@ if (!defined('MP_WEBHOOK_LOG_FILE')) {
     define('MP_WEBHOOK_LOG_FILE', __DIR__ . '/../logs/webhook.log');
 }
 
+/**
+ * Registra un mensaje en el archivo de log del webhook
+ */
 function log_webhook(string $message): void
 {
     $ts = date("Y-m-d H:i:s");
     @file_put_contents(MP_WEBHOOK_LOG_FILE, "[$ts] $message" . PHP_EOL, FILE_APPEND);
 }
 
+/**
+ * Lee las cabeceras HTTP de forma insensible a mayúsculas/minúsculas
+ */
 function read_headers_ci(): array
 {
     $h = function_exists('getallheaders') ? getallheaders() : [];
@@ -44,14 +47,13 @@ function read_headers_ci(): array
 }
 
 /**
- * Validación estricta de la firma (X-Signature) para Webhooks API v3
+ * Valida la firma x-signature enviada por Mercado Pago
  */
 function mp_validate_signature(string $dataId, string $xSignature, string $xRequestId, string $secret): bool
 {
     $ts = null;
     $v1 = null;
 
-    // Desglose tolerante a espacios
     foreach (explode(',', $xSignature) as $part) {
         $keyValue = explode('=', trim($part), 2);
         if (count($keyValue) === 2) {
@@ -67,11 +69,10 @@ function mp_validate_signature(string $dataId, string $xSignature, string $xRequ
         return false;
     }
 
-    // Fallbacks del manifiesto para soportar API v3 y notificaciones IPN legacy/test
     $manifests = [
         "id:{$dataId};request-id:{$xRequestId};ts:{$ts};",
         "id:{$dataId};request-id:{$xRequestId};ts:{$ts}",
-        "id:{$dataId};ts:{$ts};" // Respaldo por si x-request-id viene vacío
+        "id:{$dataId};ts:{$ts};"
     ];
 
     foreach ($manifests as $manifest) {
@@ -84,7 +85,6 @@ function mp_validate_signature(string $dataId, string $xSignature, string $xRequ
     return false;
 }
 
-/* =================== INICIO DE SOLICITUD =================== */
 log_webhook("--- INICIO DE NOTIFICACIÓN ---");
 
 try {
@@ -108,7 +108,6 @@ try {
         exit;
     }
 
-    // Extracción en cascada: URL (Webhooks) -> URL (IPN) -> JSON data.id -> JSON id
     $dataId = $_GET['data_id'] ?? $_GET['id'] ?? ($data['data']['id'] ?? ($data['id'] ?? null));
     $dataId = $dataId !== null ? (string) $dataId : null;
 
@@ -118,7 +117,6 @@ try {
         exit;
     }
 
-    // Comprobación del modo de pruebas
     $skip_validation = defined('MP_WEBHOOK_SKIP_VALIDATION') && MP_WEBHOOK_SKIP_VALIDATION === true;
 
     if (!$skip_validation) {
@@ -134,7 +132,7 @@ try {
             exit;
         }
     } else {
-        log_webhook("AVISO: Validación de firma omitida por configuración (MP_WEBHOOK_SKIP_VALIDATION).");
+        log_webhook("AVISO: Validación de firma omitida por configuración.");
     }
 
 } catch (Exception $e) {
@@ -143,16 +141,12 @@ try {
     exit;
 }
 
-/* =================== PROCESAMIENTO =================== */
 $action = $data['action'] ?? 'N/A';
 $type = $data['type'] ?? $_GET['topic'] ?? 'N/A';
 
-// FIX CRÍTICO: MP envía payment.created Y payment.updated para un mismo pago.
-// Antes solo se procesaba payment.updated, lo que causaba que muchos pagos se ignoraran.
 $es_evento_pago = in_array($action, ['payment.created', 'payment.updated'], true) || $type === 'payment';
 
 if ($es_evento_pago) {
-    // Reutilizamos el $dataId validado y convertido a entero
     $payment_id = filter_var($dataId, FILTER_VALIDATE_INT);
 
     if (!$payment_id) {
@@ -162,7 +156,6 @@ if ($es_evento_pago) {
     }
 
     try {
-        // La fuente de verdad absoluta DEBE ser la API de MP, no el payload
         $payClient = new PaymentClient();
         $payment = $payClient->get((int) $payment_id);
         $status = $payment->status ?? 'unknown';
@@ -170,7 +163,6 @@ if ($es_evento_pago) {
         if ($status === 'approved') {
             $transaction_amount = (float) ($payment->transaction_amount ?? 0);
 
-            // Validación estricta de Producción: Confirmar que ingresó dinero real
             if ($transaction_amount <= 0) {
                 log_webhook("ERROR CRÍTICO: Pago {$payment_id} aprobado pero el monto es {$transaction_amount}. Posible fraude.");
                 http_response_code(200);
@@ -183,7 +175,6 @@ if ($es_evento_pago) {
             $preference_id = $payment->preference_id ?? null;
             $external_reference = $payment->external_reference ?? null;
 
-            // Resolución de metadata de base de datos segura
             if (empty($metadata) && $preference_id) {
                 $stmt = $conn->prepare("SELECT metadata_json FROM san_mp_pref WHERE pref_id = ? LIMIT 1");
                 $stmt->execute([$preference_id]);
@@ -204,15 +195,13 @@ if ($es_evento_pago) {
 
             $tipo_operacion = filter_var($metadata['tipo_operacion'] ?? 'membresia', FILTER_SANITIZE_SPECIAL_CHARS);
 
-            // Validación estricta de Producción: Validar que el monto pagado coincida con lo esperado
             $monto_esperado = (float) ($tipo_operacion === 'recarga_monedero' ? ($metadata['importe_recarga'] ?? 0) : ($metadata['monto_pagado'] ?? 0));
             if ($monto_esperado > 0 && abs($transaction_amount - $monto_esperado) > 0.50) {
                 log_webhook("ERROR CRÍTICO: Fraude de monto detectado. Pagó {$transaction_amount} pero se esperaban {$monto_esperado}. Payment ID: {$payment_id}");
-                http_response_code(200); // Se responde 200 para que MP no reintente un pago fraudulento
+                http_response_code(200); 
                 exit;
             }
 
-            // Usar siempre el monto real cobrado como fuente de verdad en BD
             if ($tipo_operacion === 'recarga_monedero') {
                 $metadata['importe_recarga'] = $transaction_amount;
             } else {
@@ -237,7 +226,6 @@ if ($es_evento_pago) {
                             log_webhook("ERROR EMAIL: " . $e->getMessage());
                         }
 
-                        // Lógica estricta de Referidos
                         procesar_recompensa_referido($conn, (int) ($metadata['id_socio_beneficiario'] ?? 0));
                     }
                 } else {
@@ -258,7 +246,6 @@ if ($es_evento_pago) {
             $http = (int) $apiResponse['status'];
         }
         log_webhook("MPApiException: HTTP={$http} | " . $e->getMessage());
-        // Si MP dice 404 (pago no existe) o 401/403, no hay nada que reintentar
         http_response_code(in_array($http, [401, 403, 404]) ? 200 : 500);
         exit;
     } catch (Exception $e) {
@@ -271,10 +258,9 @@ if ($es_evento_pago) {
 http_response_code(200);
 exit;
 
-/* =====================================================================
- * FUNCIONES DE NEGOCIO AISLADAS
- * ===================================================================== */
-
+/**
+ * Otorga la recompensa por referidos al padrino si corresponde
+ */
 function procesar_recompensa_referido(PDO $conn, int $id_socio): void
 {
     if ($id_socio <= 0)
@@ -283,7 +269,6 @@ function procesar_recompensa_referido(PDO $conn, int $id_socio): void
         $stmtPagos = $conn->prepare("SELECT COUNT(pag_id_pago) FROM san_pagos WHERE pag_id_socio = ?");
         $stmtPagos->execute([$id_socio]);
 
-        // La bonificación al Padrino se dispara solo con el PRIMER pago (COUNT == 1)
         if ($stmtPagos->fetchColumn() == 1) {
             $stmtSocio = $conn->prepare("SELECT soc_id_referido_por, soc_nombres, soc_apepat FROM san_socios WHERE soc_id_socio = ? LIMIT 1");
             $stmtSocio->execute([$id_socio]);
@@ -311,6 +296,9 @@ function procesar_recompensa_referido(PDO $conn, int $id_socio): void
     }
 }
 
+/**
+ * Verifica si una recarga de monedero ya ha sido registrada
+ */
 function recarga_ya_procesada_pdo(PDO $conn, int $payment_id): bool
 {
     $stmt = $conn->prepare("SELECT 1 FROM san_prepago_detalle WHERE pred_descripcion LIKE ? LIMIT 1");
@@ -319,14 +307,17 @@ function recarga_ya_procesada_pdo(PDO $conn, int $payment_id): bool
     return $result !== false && $result !== null;
 }
 
+/**
+ * Registra una recarga en la cuenta prepago del socio
+ */
 function registrar_recarga_monedero_pdo(PDO $conn, int $payment_id, array $metadata): bool
 {
     $conn->beginTransaction();
     try {
         $id_socio = (int) ($metadata['id_socio'] ?? $metadata['id_socio_beneficiario'] ?? 0);
-        $id_usuario = (int) ($metadata['id_usuario'] ?? 1); // Fallback a 1 si no existe
+        $id_usuario = (int) ($metadata['id_usuario'] ?? 1);
         $importe_recarga = (float) ($metadata['importe_recarga'] ?? 0);
-        $id_empresa = 1; // Generalmente es 1 para el entorno web
+        $id_empresa = 1;
         
         if ($id_socio <= 0 || $importe_recarga <= 0) {
             throw new Exception("Datos de recarga inválidos. Socio: $id_socio | Importe: $importe_recarga");
@@ -334,16 +325,16 @@ function registrar_recarga_monedero_pdo(PDO $conn, int $payment_id, array $metad
 
         $fecha_mov = date('Y-m-d H:i:s');
 
-        // Verificar duplicado dentro de la transacción
         $stmtDup = $conn->prepare("SELECT COUNT(*) FROM san_prepago_detalle WHERE pred_descripcion LIKE ? LIMIT 1");
         $stmtDup->execute(["%MP Ref: $payment_id%"]);
         if ((int) $stmtDup->fetchColumn() > 0) {
-            $conn->rollBack();
+            if ($conn->inTransaction()) {
+                $conn->rollBack();
+            }
             log_webhook("ADVERTENCIA: Recarga duplicada detectada dentro de transacción (Payment ID: {$payment_id}).");
             return false;
         }
 
-        // 1. Verificar si el socio ya tiene una cuenta de prepago creada
         $stmtPrepago = $conn->prepare("SELECT prep_id_prepago, prep_saldo FROM san_prepago WHERE prep_id_socio = ? FOR UPDATE");
         $stmtPrepago->execute([$id_socio]);
         $prepago_row = $stmtPrepago->fetch(PDO::FETCH_ASSOC);
@@ -353,7 +344,6 @@ function registrar_recarga_monedero_pdo(PDO $conn, int $payment_id, array $metad
         $descripcion_movimiento = '';
 
         if ($prepago_row) {
-            // Ya cuenta con registro, se ejecuta un UPDATE
             $prep_id_prepago = (int) $prepago_row['prep_id_prepago'];
             $saldo_actual = (float) $prepago_row['prep_saldo'];
             $saldo_tras_abono = round($saldo_actual + $importe_recarga, 2);
@@ -363,7 +353,6 @@ function registrar_recarga_monedero_pdo(PDO $conn, int $payment_id, array $metad
             
             $descripcion_movimiento = "RECARGA DE CUENTA PREPAGO (MP Ref: $payment_id)";
         } else {
-            // No cuenta con registro, se ejecuta un INSERT
             $saldo_tras_abono = round($importe_recarga, 2);
             
             $stmtIns = $conn->prepare("INSERT INTO san_prepago (prep_id_socio, prep_saldo, prep_id_empresa) VALUES (?, ?, ?)");
@@ -373,7 +362,6 @@ function registrar_recarga_monedero_pdo(PDO $conn, int $payment_id, array $metad
             $descripcion_movimiento = "APERTURA DE CUENTA PREPAGO (MP Ref: $payment_id)";
         }
 
-        // 2. Registro obligatorio en la tabla de detalles para auditar el movimiento
         $sql_detalle = "INSERT INTO san_prepago_detalle (pred_id_prepago, pred_descripcion, pred_importe, pred_saldo, pred_movimiento, pred_fecha, pred_id_usuario) VALUES (?, ?, ?, ?, ?, ?, ?)";
         $stmtDetalle = $conn->prepare($sql_detalle);
         $stmtDetalle->execute([
@@ -390,7 +378,9 @@ function registrar_recarga_monedero_pdo(PDO $conn, int $payment_id, array $metad
         log_webhook("ÉXITO: Recarga procesada. Socio: {$id_socio} | Monto: {$importe_recarga} | Saldo final: {$saldo_tras_abono}");
         return true;
     } catch (PDOException $e) {
-        $conn->rollBack();
+        if (isset($conn) && $conn->inTransaction()) {
+            $conn->rollBack();
+        }
         if ($e->getCode() == 23000 && strpos($e->getMessage(), '1062') !== false) {
             log_webhook("ADVERTENCIA: Recarga duplicada detectada por constraint de BD (Payment ID: {$payment_id}). Ignorado.");
             return false;
@@ -398,16 +388,16 @@ function registrar_recarga_monedero_pdo(PDO $conn, int $payment_id, array $metad
         log_webhook("ERROR MONEDERO: " . $e->getMessage());
         throw $e;
     } catch (Exception $e) {
-        $conn->rollBack();
+        if (isset($conn) && $conn->inTransaction()) {
+            $conn->rollBack();
+        }
         log_webhook("ERROR MONEDERO: " . $e->getMessage());
         throw $e;
     }
 }
 
 /**
- * FIX CRÍTICO: Esta función faltaba completamente en el archivo original.
- * Se llamaba en línea 197 pero nunca fue definida, causando un Fatal Error
- * que mataba silenciosamente el proceso del webhook para recargas de monedero.
+ * Envía la notificación de recarga de monedero por correo
  */
 function enviar_correo_monedero_pdo(PDO $conn, int $payment_id, array $metadata): void
 {
@@ -419,7 +409,6 @@ function enviar_correo_monedero_pdo(PDO $conn, int $payment_id, array $metadata)
         return;
     }
 
-    // Obtener datos del socio
     $stmtSocio = $conn->prepare("SELECT CONCAT(soc_nombres, ' ', soc_apepat) AS nombre, soc_correo FROM san_socios WHERE soc_id_socio = ? LIMIT 1");
     $stmtSocio->execute([$id_socio]);
     $socio = $stmtSocio->fetch(PDO::FETCH_ASSOC);
@@ -436,11 +425,8 @@ function enviar_correo_monedero_pdo(PDO $conn, int $payment_id, array $metadata)
     }
 
     $nombre = trim($socio['nombre']);
-
-    // Variables que la plantilla espera
     $importe_recarga = (float) ($metadata['importe_recarga'] ?? 0);
 
-    // Calcular saldo final actual desde la BD
     $stmtSaldo = $conn->prepare("SELECT prep_saldo FROM san_prepago WHERE prep_id_socio = ? LIMIT 1");
     $stmtSaldo->execute([$id_socio]);
     $saldo_final = (float) $stmtSaldo->fetchColumn();
@@ -448,7 +434,6 @@ function enviar_correo_monedero_pdo(PDO $conn, int $payment_id, array $metadata)
     $fecha_hora = date('d/m/Y H:i:s');
     $asunto = "Confirmación de Recarga de Monedero - Sandy's Gym";
 
-    // Renderizar la plantilla
     ob_start();
     include __DIR__ . '/templates/monedero_confirmation_email.php';
     $mensaje = ob_get_clean();
@@ -458,7 +443,6 @@ function enviar_correo_monedero_pdo(PDO $conn, int $payment_id, array $metadata)
         return;
     }
 
-    // Enviar el correo
     try {
         $resultado = EmailService::send($correo, $nombre, $asunto, $mensaje);
         if ($resultado) {
@@ -471,6 +455,9 @@ function enviar_correo_monedero_pdo(PDO $conn, int $payment_id, array $metadata)
     }
 }
 
+/**
+ * Verifica si un pago de membresía ya ha sido registrado
+ */
 function pago_ya_procesado_pdo(PDO $conn, int $payment_id): bool
 {
     $stmt = $conn->prepare("SELECT 1 FROM san_pagos WHERE pag_referencia_mp = ? LIMIT 1");
@@ -479,12 +466,14 @@ function pago_ya_procesado_pdo(PDO $conn, int $payment_id): bool
     return $result !== false && $result !== null;
 }
 
+/**
+ * Registra un pago de membresía aprobado en la base de datos
+ */
 function registrar_pago_completo_pdo(PDO $conn, object $payment, array $metadata): int
 {
     $fecha_ini = !empty($metadata['fecha_ini']) ? DateTime::createFromFormat('d-m-Y', $metadata['fecha_ini']) : null;
     $fecha_fin = !empty($metadata['fecha_fin']) ? DateTime::createFromFormat('d-m-Y', $metadata['fecha_fin']) : null;
     
-    // Protección contra fechas con formato incorrecto
     $fecha_ini = $fecha_ini ? $fecha_ini->format('Y-m-d') : null;
     $fecha_fin = $fecha_fin ? $fecha_fin->format('Y-m-d') : null;
     
@@ -493,18 +482,13 @@ function registrar_pago_completo_pdo(PDO $conn, object $payment, array $metadata
     $codigo_usado = filter_var($metadata['codigo_usado'] ?? null, FILTER_SANITIZE_SPECIAL_CHARS);
     $tipo_promo = filter_var($metadata['tipo_promo'] ?? null, FILTER_SANITIZE_SPECIAL_CHARS);
     $payment_id = (int) $payment->id;
-
-    /* =========================================================
-       BLINDAJE DE CLAVES FORÁNEAS (FALLBACKS PARA SIMULADOR)
-       ========================================================= */
        
-    // 1. Forzar Usuario Verificado (Validar que realmente exista)
     $id_usuario_sis = (int) ($metadata['id_usuario'] ?? 0);
     if ($id_usuario_sis > 0) {
         $stmtUsua = $conn->prepare("SELECT 1 FROM san_usuarios WHERE usua_id_usuario = ? LIMIT 1");
         $stmtUsua->execute([$id_usuario_sis]);
         if (!$stmtUsua->fetchColumn()) {
-            $id_usuario_sis = 0; // Forzar el fallback si no existe en la BD
+            $id_usuario_sis = 0;
         }
     }
     
@@ -512,10 +496,8 @@ function registrar_pago_completo_pdo(PDO $conn, object $payment, array $metadata
         $id_usuario_sis = defined('MP_FALLBACK_USER_ID') ? MP_FALLBACK_USER_ID : 1;
     }
 
-    // 2. Forzar Empresa Verificada (Valor fijo)
     $id_empresa_sis = 1; 
 
-    // 3. Forzar Socio Válido (Evita fk_id_socio_pag)
     $id_socio = (int) ($metadata['id_socio_beneficiario'] ?? 0);
     if ($id_socio > 0) {
         $stmtValidarSocio = $conn->prepare("SELECT 1 FROM san_socios WHERE soc_id_socio = ? LIMIT 1");
@@ -531,7 +513,6 @@ function registrar_pago_completo_pdo(PDO $conn, object $payment, array $metadata
         if (!$id_socio) throw new Exception("Error: No existen socios en la BD.");
     }
 
-    // 4. Forzar Servicio Válido (Evita fk_id_servicio_pag)
     $id_servicio_leido = (int) ($metadata['id_servicio'] ?? 0);
     if ($id_servicio_leido > 0) {
         $stmtValidarServ = $conn->prepare("SELECT 1 FROM san_servicios WHERE ser_id_servicio = ? AND ser_status <> 'D' LIMIT 1");
@@ -548,11 +529,12 @@ function registrar_pago_completo_pdo(PDO $conn, object $payment, array $metadata
 
     $conn->beginTransaction();
     try {
-        // Verificar duplicado DENTRO de la transacción para evitar race condition
         $stmtDupCheck = $conn->prepare("SELECT 1 FROM san_pagos WHERE pag_referencia_mp = ? LIMIT 1");
         $stmtDupCheck->execute([$payment_id]);
         if ($stmtDupCheck->fetchColumn()) {
-            $conn->rollBack();
+            if ($conn->inTransaction()) {
+                $conn->rollBack();
+            }
             log_webhook("ADVERTENCIA: Pago duplicado detectado dentro de transacción (Payment ID: {$payment_id}).");
             return 0;
         }
@@ -565,7 +547,6 @@ function registrar_pago_completo_pdo(PDO $conn, object $payment, array $metadata
                 ->execute([$id_socio, $codigo_usado, $fecha_mov, $id_empresa_sis]);
         }
 
-        // DEPURACIÓN: Verificamos exactamente qué se va a insertar
         log_webhook("DEBUG PRE-INSERT -> Socio: {$id_socio} | Serv: {$id_servicio_leido} | Usua: {$id_usuario_sis} | Emp: {$id_empresa_sis}");
 
         $sql_pago = "INSERT INTO san_pagos (pag_id_socio, pag_fecha_pago, pag_id_servicio, pag_fecha_ini, pag_fecha_fin, pag_importe, pag_tipo_pago, pag_id_usuario, pag_id_empresa, pag_referencia_mp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -587,7 +568,9 @@ function registrar_pago_completo_pdo(PDO $conn, object $payment, array $metadata
         log_webhook("ÉXITO: Pago registrado en san_pagos ID: {$id_pago_principal}");
         return $id_pago_principal;
     } catch (PDOException $e) {
-        $conn->rollBack();
+        if (isset($conn) && $conn->inTransaction()) {
+            $conn->rollBack();
+        }
         if ($e->getCode() == 23000 && strpos($e->getMessage(), '1062') !== false) {
             log_webhook("ADVERTENCIA: Pago duplicado detectado por constraint de BD (Payment ID: {$payment_id}). Ignorado.");
             return 0;
@@ -595,17 +578,21 @@ function registrar_pago_completo_pdo(PDO $conn, object $payment, array $metadata
         log_webhook("ERROR REGISTRO PAGO: " . $e->getMessage());
         throw $e;
     } catch (Exception $e) {
-        $conn->rollBack();
+        if (isset($conn) && $conn->inTransaction()) {
+            $conn->rollBack();
+        }
         log_webhook("ERROR REGISTRO PAGO: " . $e->getMessage());
         throw $e;
     }
 }
 
+/**
+ * Envía la confirmación del pago de membresía por correo
+ */
 function enviar_correo_confirmacion_pdo(PDO $conn, int $id_pago_principal, array $metadata): void
 {
     log_webhook("Iniciando envío de correo para el pago ID: {$id_pago_principal}");
 
-    // 1. Obtener datos del pago y del servicio (Tal como lo espera tu plantilla)
     $stmtPago = $conn->prepare("
         SELECT p.*, s.ser_descripcion, s.ser_clave 
         FROM san_pagos p 
@@ -620,7 +607,6 @@ function enviar_correo_confirmacion_pdo(PDO $conn, int $id_pago_principal, array
         return;
     }
 
-    // 2. Obtener datos del socio basándonos en el pago guardado (Restaurando el arreglo $socio)
     $id_socio_guardado = (int) $pago['pag_id_socio'];
     $stmtSocio = $conn->prepare("
         SELECT CONCAT(soc_nombres, ' ', soc_apepat) AS nombre, soc_correo 
@@ -630,13 +616,11 @@ function enviar_correo_confirmacion_pdo(PDO $conn, int $id_pago_principal, array
     $stmtSocio->execute([$id_socio_guardado]);
     $socio = $stmtSocio->fetch(PDO::FETCH_ASSOC);
 
-    // Si es un ID de prueba o el socio no tiene email, cancelamos el envío
     if (!$socio || empty($socio['soc_correo'])) {
         log_webhook("AVISO EMAIL: El socio ID {$id_socio_guardado} no tiene correo registrado.");
         return;
     }
 
-    // 3. Preparar variables idénticas a la versión original
     $correo = filter_var($socio['soc_correo'], FILTER_SANITIZE_EMAIL);
     if (!filter_var($correo, FILTER_VALIDATE_EMAIL)) {
         log_webhook("AVISO EMAIL: Correo inválido para socio ID {$id_socio_guardado}: {$correo}");
@@ -651,7 +635,6 @@ function enviar_correo_confirmacion_pdo(PDO $conn, int $id_pago_principal, array
     $fecha_fin = $pago['pag_fecha_fin'] ? date('d/m/Y', strtotime($pago['pag_fecha_fin'])) : 'N/A';
     $asunto = "Confirmación de tu pago - Recibo No. {$id_pago_principal}";
 
-    // 4. Inyectar variables en la plantilla
     ob_start();
     include __DIR__ . '/templates/payment_confirmation_email.php';
     $mensaje = ob_get_clean();
@@ -661,7 +644,6 @@ function enviar_correo_confirmacion_pdo(PDO $conn, int $id_pago_principal, array
         return;
     }
 
-    // 5. Enviar e imprimir resultado en el log
     try {
         $resultado = EmailService::send($correo, $nombre, $asunto, $mensaje);
         if ($resultado) {
@@ -673,3 +655,4 @@ function enviar_correo_confirmacion_pdo(PDO $conn, int $id_pago_principal, array
         log_webhook("ERROR EMAIL SERVICE: " . $e->getMessage());
     }
 }
+?>

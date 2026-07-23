@@ -25,9 +25,6 @@ if (!$error_faq && isset($conn)) {
 ?>
 
 <style>
-    /* =========================================
-       VARIABLES GLOBALES
-       ========================================= */
     :root {
         --bg-color: #050505; 
         --input-bg: #1a1a1a; 
@@ -37,12 +34,9 @@ if (!$error_faq && isset($conn)) {
         --text-muted: #888888;
     }
 
-    /* =========================================
-       SECCIÓN PRINCIPAL
-       ========================================= */
     .gym-faq-section {
         background-color: var(--bg-color);
-        padding-top: 140px; /* Homologado con Casos de Éxito */
+        padding-top: 140px;
         padding-bottom: 80px;
         min-height: 80vh;
     }
@@ -52,9 +46,6 @@ if (!$error_faq && isset($conn)) {
         margin: 0 auto;
     }
 
-    /* =========================================
-       ACORDEÓN FAQ (DETALLES)
-       ========================================= */
     .gym-faq-item {
         background: var(--input-bg);
         border: 1px solid #333333;
@@ -89,12 +80,9 @@ if (!$error_faq && isset($conn)) {
     }
 
     .gym-faq-summary::-webkit-details-marker {
-        display: none; /* Oculta la flecha por defecto en Safari/Chrome */
+        display: none;
     }
 
-    /* =========================================
-       ÍCONO Y CONTENIDO
-       ========================================= */
     .gym-faq-icon {
         background-color: var(--bg-color);
         color: var(--accent-orange);
@@ -125,9 +113,6 @@ if (!$error_faq && isset($conn)) {
         font-size: 15px;
     }
 
-    /* =========================================
-       ESTADOS VACÍOS O DE ERROR
-       ========================================= */
     .gym-alert-box {
         background: var(--input-bg);
         border: 1px solid #333333;

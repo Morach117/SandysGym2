@@ -1,20 +1,15 @@
 <?php
 declare(strict_types=1);
 
-// api/procesar_pago.php
-// PASO 1: Calcular precio y crear el link de pago a Mercado Pago (SDK PHP v3).
-
-// Iniciar sesión si no está activa
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Generar CSRF Token seguro si no existe en la sesión actual
 if (empty($_SESSION['csrf_token'])) {
     try {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     } catch (Exception $e) {
-        $_SESSION['csrf_token'] = md5(uniqid(mt_rand(), true)); // Fallback en caso de error de entropía
+        $_SESSION['csrf_token'] = md5((string)mt_rand());
     }
 }
 date_default_timezone_set('America/Mexico_City');
@@ -33,14 +28,14 @@ if (!defined('MP_PROCESSOR_LOG_FILE')) {
     define('MP_PROCESSOR_LOG_FILE', __DIR__ . '/../logs/procesar_pago.log');
 }
 
+/**
+ * Escribe un mensaje en el archivo de registro de pagos
+ */
 function log_processor(string $message): void {
     $ts = date("Y-m-d H:i:s"); 
     @file_put_contents(MP_PROCESSOR_LOG_FILE, "[$ts] [MEMBRESIA] $message" . PHP_EOL, FILE_APPEND);
 }
 
-// =================================================================
-// CONFIGURACIÓN DE CABECERAS Y CORS (Requerido para Producción)
-// =================================================================
 header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
 
@@ -50,13 +45,14 @@ header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-CSRF-Token');
 
-// Interceptar peticiones preflight (OPTIONS) de los navegadores
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit;
 }
 
-/* ================== HELPERS DE BD (PDO) ================== */
+/**
+ * Consulta la información del socio en la base de datos
+ */
 function obtener_datos_socio_pdo(PDO $conexion_pdo, int $id_socio, int $id_empresa) {
     $q = "SELECT * FROM san_socios WHERE soc_id_socio = ? AND soc_id_empresa = ? LIMIT 1";
     $st = $conexion_pdo->prepare($q);
@@ -64,6 +60,9 @@ function obtener_datos_socio_pdo(PDO $conexion_pdo, int $id_socio, int $id_empre
     return $st->fetch(PDO::FETCH_ASSOC);
 }
 
+/**
+ * Obtiene los detalles de un servicio
+ */
 function obtener_servicio_pdo(PDO $conexion_pdo, int $id_servicio, int $id_consorcio, int $id_giro) {
     $q = "SELECT ser_id_servicio AS id_servicio, ser_clave AS clave, ser_descripcion AS descripcion, ROUND(ser_cuota, 2) AS cuota, ser_meses AS meses 
           FROM san_servicios WHERE ser_id_servicio = ? AND ser_id_consorcio = ? AND ser_id_giro = ? AND ser_status <> 'D' LIMIT 1";
@@ -72,6 +71,9 @@ function obtener_servicio_pdo(PDO $conexion_pdo, int $id_servicio, int $id_conso
     return $st->fetch(PDO::FETCH_ASSOC);
 }
 
+/**
+ * Valida si un servicio es elegible para descuentos promocionales
+ */
 function verificar_descuentos_promocionales_pdo(PDO $conexion_pdo, int $id_servicio) {
     if (in_array($id_servicio, [125, 126], true)) return true;
     $q = "SELECT 1 FROM san_descuentos_promociones WHERE id_servicio = ? LIMIT 1";
@@ -80,6 +82,9 @@ function verificar_descuentos_promocionales_pdo(PDO $conexion_pdo, int $id_servi
     return $st->fetch(PDO::FETCH_NUM) !== false;
 }
 
+/**
+ * Valida el código de descuento en la base de datos
+ */
 function validar_codigo_promo_pdo(PDO $conexion_pdo, string $codigo_promocion) {
     $q = "SELECT p.porcentaje_descuento, p.tipo_promocion FROM san_codigos c 
           INNER JOIN san_promociones p ON c.id_promocion = p.id_promocion 
@@ -89,7 +94,6 @@ function validar_codigo_promo_pdo(PDO $conexion_pdo, string $codigo_promocion) {
     return $st->fetch(PDO::FETCH_ASSOC);
 }
 
-// Interceptor para peticiones Fetch con JSON Payload
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($_POST)) {
     $jsonPayload = json_decode(file_get_contents('php://input'), true);
     if (is_array($jsonPayload)) {
@@ -97,15 +101,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($_POST)) {
     }
 }
 
-/* ================== SEGURIDAD ================== */
-
 if (empty($_SESSION['admin']['soc_id_socio'])) {
     http_response_code(401);
     echo json_encode(['status' => 'error', 'message' => 'Sesión no válida o expirada.']);
     exit;
 }
 
-// Validación CSRF
 $headers = getallheaders();
 $csrfToken = $headers['X-CSRF-Token'] ?? $_POST['csrf_token'] ?? '';
 if (empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $csrfToken)) {
@@ -114,8 +115,6 @@ if (empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $csr
     echo json_encode(['status' => 'error', 'message' => 'Token de seguridad inválido. Recarga la página.']);
     exit;
 }
-
-/* ================== ENTRADAS ================== */
 
 $id_socio_pagador = (int)$_SESSION['admin']['soc_id_socio'];
 $id_empresa   = (int)($_SESSION['admin']['id_empresa']   ?? 1);
@@ -128,7 +127,6 @@ $codigo_promocion = filter_input(INPUT_POST, 'codigo_promocion', FILTER_SANITIZE
 $id_socio_benef   = filter_input(INPUT_POST, 'miembro_a_pagar', FILTER_VALIDATE_INT) ?: $id_socio_pagador;
 $accion           = filter_input(INPUT_POST, 'accion', FILTER_SANITIZE_SPECIAL_CHARS) === 'preview' ? 'preview' : 'pagar';
 
-// Validación estricta de formato de fecha (Previene JSON Injection en metadata)
 $fecha_ini_pago = $_POST['fecha_inicio'] ?? null;
 $fecha_fin_pago = $_POST['fecha_fin'] ?? null;
 
@@ -224,7 +222,6 @@ try {
         exit;
     }
 
-    // El external reference DEBE ser único por intento
     $external_reference = 'SOCIO_' . $id_socio_benef . '_' . time();
 
     $item = [
@@ -304,3 +301,4 @@ try {
     http_response_code(500);
     echo json_encode(['status' => 'error', 'message' => 'Error inesperado procesando la solicitud.']);
 }
+?>

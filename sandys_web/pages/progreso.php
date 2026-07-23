@@ -1,11 +1,7 @@
 <?php
-// pages/progreso.php
-
-// --- INCLUDES OBLIGATORIOS ---
 require_once 'conn.php';
 include('./api/select_data.php');
 
-// 1. VALIDACIÓN DE SESIÓN ESTRICTA
 if (empty($selSocioData['soc_id_socio'])) {
     echo "<script>window.location.href='index.php';</script>";
     exit;
@@ -13,7 +9,6 @@ if (empty($selSocioData['soc_id_socio'])) {
 
 $miId = (int)$selSocioData['soc_id_socio'];
 
-// 2. CONSULTA DE HISTORIAL (Optimizada para fechas)
 $queryProgreso = "SELECT 
                     p.pro_id_ejercicio, 
                     p.pro_peso_kg, 
@@ -35,7 +30,6 @@ try {
     $historial = [];
 }
 
-// 3. PROCESAMIENTO DE DATOS Y KPI's
 $estadisticas = [];
 $diasUnicos = [];
 $totalSeries = 0;
@@ -47,7 +41,6 @@ foreach ($historial as $reg) {
     $reps = (int)$reg['pro_repeticiones'];
     $fechaCorta = date('Y-m-d', strtotime($reg['pro_fecha']));
     
-    // Contadores globales
     $diasUnicos[$fechaCorta] = true; 
     $totalSeries++;
     $tonelajeTotal += ($peso * $reps);
@@ -72,12 +65,10 @@ foreach ($historial as $reg) {
 
 $totalDiasEntrenados = count($diasUnicos);
 
-// Ordenar por volumen de series (Top Ejercicios)
 usort($estadisticas, function($a, $b) {
     return $b['total_series'] <=> $a['total_series'];
 });
 
-// 4. PREPARACIÓN DE DATOS PARA CHART.JS (Top 6 ejercicios con progreso)
 $chartLabels = [];
 $chartDataInicio = [];
 $chartDataActual = [];
@@ -97,7 +88,6 @@ foreach ($estadisticas as $stat) {
 <style>
     body { background-color: #050505; color: #e0e0e0; font-family: 'Muli', sans-serif; }
 
-    /* Hero Header Compacto */
     .progress-hero {
         padding: 120px 0 40px;
         background: linear-gradient(180deg, rgba(5,5,5,0.9), #050505), url('./assets/img/hero/hero-progress.jpg');
@@ -105,7 +95,6 @@ foreach ($estadisticas as $stat) {
     }
     .hero-title { font-family: 'Oswald', sans-serif; font-size: 34px; color: #fff; text-transform: uppercase; margin-bottom: 5px; }
 
-    /* Tarjetas KPI Amigables */
     .kpi-wrapper {
         display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: -30px; position: relative; z-index: 2;
     }
@@ -124,7 +113,6 @@ foreach ($estadisticas as $stat) {
     .kpi-value { font-family: 'Oswald', sans-serif; font-size: 26px; color: #fff; font-weight: 700; line-height: 1.2; }
     .kpi-label { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
 
-    /* Contenedor Gráfica y Lista */
     .dashboard-grid {
         display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-top: 40px; margin-bottom: 60px;
     }
@@ -133,7 +121,6 @@ foreach ($estadisticas as $stat) {
     }
     .panel-title { font-family: 'Oswald', sans-serif; font-size: 20px; color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
 
-    /* Lista Estilizada */
     .progress-item {
         display: flex; justify-content: space-between; align-items: center;
         padding: 15px 0; border-bottom: 1px dashed #333;
@@ -238,7 +225,6 @@ document.addEventListener("DOMContentLoaded", function() {
     <?php if ($totalDiasEntrenados > 0): ?>
     const ctx = document.getElementById('fuerzaChart').getContext('2d');
     
-    // Inyección segura de JSON desde PHP
     const labels = <?= json_encode($chartLabels) ?>;
     const dataInicio = <?= json_encode($chartDataInicio) ?>;
     const dataActual = <?= json_encode($chartDataActual) ?>;
@@ -259,7 +245,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 {
                     label: 'Último Peso (kg)',
                     data: dataActual,
-                    backgroundColor: 'rgba(16, 185, 129, 0.8)', // Verde Sandys Gym
+                    backgroundColor: 'rgba(16, 185, 129, 0.8)',
                     borderColor: '#10b981',
                     borderWidth: 1,
                     borderRadius: 4

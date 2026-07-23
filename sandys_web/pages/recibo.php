@@ -1,12 +1,7 @@
 <?php
-// ---------------------------------------------
-//  Recibo de Pago Detallado (Con Cálculo de Descuento)
-// ---------------------------------------------
-
 require_once __DIR__ . '/../conn.php';
-require_once __DIR__ . '/../api/config.php'; // Configuración general
+require_once __DIR__ . '/../api/config.php';
 
-// 1. Obtener ID del pago
 $idPagoInt = $_GET['id_pago'] ?? null;
 $paymentId = $_GET['payment_id'] ?? null;
 
@@ -15,20 +10,18 @@ if (!$idPagoInt && !$paymentId) {
     exit;
 }
 
-// 2. Consulta detallada a la BD
 try {
-    // Consultamos datos del pago, del servicio original y del socio
     $sql = "
         SELECT 
             p.pag_id_pago,
             p.pag_fecha_pago,
-            p.pag_importe,      -- Lo que pagó realmente
+            p.pag_importe,
             p.pag_referencia_mp,
             p.pag_tipo_pago,
             p.pag_fecha_ini,
             p.pag_fecha_fin,
             s.ser_descripcion,
-            s.ser_cuota,        -- Precio original del servicio
+            s.ser_cuota,
             soc.soc_id_socio,
             CONCAT(soc.soc_nombres, ' ', soc.soc_apepat, ' ', soc.soc_apemat) AS nombre_completo,
             soc.soc_correo
@@ -57,24 +50,18 @@ try {
     die("Error de sistema: " . $e->getMessage());
 }
 
-// 3. Cálculos Matemáticos (Descuento)
 $precioLista = (float)$pago['ser_cuota'];
 $totalPagado = (float)$pago['pag_importe'];
 
-// El descuento es la diferencia positiva entre el precio de lista y lo pagado
 $descuento = max(0, $precioLista - $totalPagado);
 
-// Definir el subtotal visual
 if ($totalPagado > $precioLista) {
-    // Caso raro: Recargos (pagó más que la lista) -> Subtotal es lo pagado
     $subtotal = $totalPagado;
     $descuento = 0;
 } else {
-    // Caso normal o con descuento -> Subtotal es el precio de lista
     $subtotal = $precioLista;
 }
 
-// 4. Preparar variables para la vista
 $folio        = str_pad($pago['pag_id_pago'], 6, "0", STR_PAD_LEFT);
 $fechaPago    = date("d/m/Y H:i", strtotime($pago['pag_fecha_pago']));
 $referencia   = $pago['pag_referencia_mp'] ?? 'N/A';
@@ -84,15 +71,12 @@ $socioId      = $pago['soc_id_socio'];
 $concepto     = $pago['ser_descripcion'];
 $vigencia     = date("d/m/Y", strtotime($pago['pag_fecha_ini'])) . " al " . date("d/m/Y", strtotime($pago['pag_fecha_fin']));
 
-// Formatear monedas
 $fmtSubtotal  = number_format($subtotal, 2);
 $fmtDescuento = number_format($descuento, 2);
 $fmtTotal     = number_format($totalPagado, 2);
 
-// URLs
 $urlPdf    = "index.php?page=ticket&id_pago={$pago['pag_id_pago']}&format=pdf";
 $urlVolver = "index.php?page=mis_pagos";
-
 ?>
 
 <style>
@@ -110,7 +94,6 @@ $urlVolver = "index.php?page=mis_pagos";
 
     .receipt-paper {
         background-color: #1e1e1e;
-        /* Dark Mode */
         width: 100%;
         max-width: 700px;
         border-radius: 8px;
@@ -120,7 +103,6 @@ $urlVolver = "index.php?page=mis_pagos";
         border: 1px solid #333;
     }
 
-    /* Cabecera */
     .receipt-header {
         background-color: #252525;
         padding: 30px;
@@ -138,7 +120,6 @@ $urlVolver = "index.php?page=mis_pagos";
         text-transform: uppercase;
         letter-spacing: 1px;
         color: #ef4444;
-        /* Rojo marca */
     }
 
     .company-info p {
@@ -163,12 +144,10 @@ $urlVolver = "index.php?page=mis_pagos";
         color: #aaa;
     }
 
-    /* Cuerpo */
     .receipt-body {
         padding: 30px;
     }
 
-    /* Sección Cliente */
     .client-section {
         margin-bottom: 30px;
         background-color: #252525;
@@ -193,7 +172,6 @@ $urlVolver = "index.php?page=mis_pagos";
         color: #fff;
     }
 
-    /* Tabla de Conceptos */
     .concept-table {
         width: 100%;
         border-collapse: collapse;
@@ -235,7 +213,6 @@ $urlVolver = "index.php?page=mis_pagos";
         margin-top: 4px;
     }
 
-    /* Totales */
     .totals-section {
         display: flex;
         justify-content: flex-end;
@@ -262,7 +239,6 @@ $urlVolver = "index.php?page=mis_pagos";
         color: #22c55e;
     }
 
-    /* Detalles MP */
     .mp-details {
         font-size: 12px;
         color: #666;
@@ -275,7 +251,6 @@ $urlVolver = "index.php?page=mis_pagos";
         color: #888;
     }
 
-    /* Botones */
     .receipt-actions {
         display: flex;
         gap: 15px;

@@ -38,9 +38,7 @@ try {
 } catch (Exception $e) {
     die("<div style='color:red; background:#111; padding:20px;'>Error: " . htmlspecialchars($e->getMessage()) . "</div>");
 }
-?>
-
-<style>
+?><style>
     :root {
         --bg-color: <?= htmlspecialchars($configUI['color_bg']) ?>;
         --input-bg: <?= htmlspecialchars($configUI['color_input']) ?>;
@@ -54,16 +52,12 @@ try {
     @keyframes fadeInUpdate { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
     .rounded-pill { border-radius: 50rem !important; }
 
-    /* ==========================================
-       HERO SLIDER - OPTIMIZADO RESPONSIVE ESTRICTO
-       ========================================== */
     .hero-item-container { 
         position: relative; 
         width: 100%; 
         height: auto;
         overflow: hidden; 
         background-color: var(--bg-color);
-        /* Mantiene la proporción exacta 16:9 de la lona 1920x1080 */
         aspect-ratio: 16 / 9;
     }
     .hero-img-desktop { 
@@ -81,9 +75,6 @@ try {
         object-position: center; 
     }
 
-    /* ==========================================
-       COMPONENTES ADICIONALES DE LA LANDING
-       ========================================== */
     .amenity-card { background: var(--input-bg); border: 1px solid #333; border-radius: 16px; padding: 40px 20px; text-align: center; transition: transform 0.3s ease, border-color 0.3s ease; height: 100%; }
     .amenity-card:hover { transform: translateY(-5px); border-color: var(--accent-orange); }
     .amenity-icon { font-size: 45px; color: var(--accent-orange); margin-bottom: 20px; }
@@ -114,9 +105,6 @@ try {
 
     .cta-bottom-section { background-color: var(--accent-orange); padding: 60px 0; text-align: center; color: var(--bg-color); }
 
-    /* ==========================================
-       MEDIA QUERIES - BREAKPOINT MÓVIL
-       ========================================== */
     @media (max-width: 768px) { 
         .hero-img-desktop { 
             display: none !important; 
@@ -126,7 +114,6 @@ try {
         } 
         .hero-item-container { 
             height: auto !important;
-            /* Se redefine la proporción exacta 2:3 para la lona vertical de 800x1200 */
             aspect-ratio: 2 / 3; 
         }
         .app-image-wrapper { 
@@ -142,7 +129,6 @@ try {
         cursor: pointer !important; 
         position: relative; 
         transition: outline 0.2s;
-        /* Bloqueo estricto de selección de texto */
         -webkit-user-select: none; 
         -moz-user-select: none; 
         -ms-user-select: none; 
@@ -241,11 +227,8 @@ try {
     
     const editMode = <?= isset($_GET['edit_mode']) ? 'true' : 'false' ?>;
 
-// 2. Actualización JS: Limpieza segura y comunicación estricta
 function notificarParent(tipo, data) {
     if (typeof editMode !== 'undefined' && editMode) {
-        
-        // A. Purgar selección del OS con fallback de compatibilidad (Chrome/Edge/Safari vs Firefox)
         let sel = window.getSelection ? window.getSelection() : null;
         if (sel) {
             if (sel.empty) {
@@ -255,9 +238,7 @@ function notificarParent(tipo, data) {
             }
         }
         
-        // B. Validar que estamos dentro de un iFrame y sanitizar el payload
         if (window.parent && window.parent !== window) {
-            // Forzar serialización para destruir cualquier referencia circular/DOM que cause DataCloneError
             let payloadSeguro = data ? JSON.parse(JSON.stringify(data)) : null;
             
             window.parent.postMessage({ 
@@ -272,7 +253,6 @@ function notificarParent(tipo, data) {
 function renderizarHero(heroes) {
     const contenedor = $('#hero-container');
     
-    // 1. Destrucción total y limpieza de instancias previas de Owl Carousel
     if (contenedor.hasClass('owl-loaded')) { 
         contenedor.trigger('destroy.owl.carousel'); 
         contenedor.removeClass('owl-loaded owl-drag owl-hidden');
@@ -296,10 +276,8 @@ function renderizarHero(heroes) {
         html += `<div ${editAttr}><img src="${deskImg}" class="hero-img-desktop" fetchpriority="high"><img src="${mobImg}" class="hero-img-mobile" fetchpriority="high"></div>`;
     });
     
-    // 2. Inyección síncrona en el DOM antes de invocar al plugin
     contenedor.html(html);
     
-    // 3. Inicialización controlada garantizando el recálculo de dimensiones externas
     if ($.fn.owlCarousel && heroes.length > 0) { 
         setTimeout(() => {
             contenedor.owlCarousel({ 
@@ -315,7 +293,6 @@ function renderizarHero(heroes) {
                 autoplay: true,
                 responsiveRefreshRate: 10
             });
-            // Forzar disparo del evento de resize interno para corregir el ancho colapsado
             contenedor.trigger('refresh.owl.carousel');
         }, 50);
     }

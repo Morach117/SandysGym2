@@ -1,13 +1,10 @@
 <?php
-// api/join_plan_session.php
-
 if (session_status() === PHP_SESSION_NONE) session_start();
 date_default_timezone_set('America/Mexico_City'); 
 
 require_once __DIR__ . '/../conn.php';
 header('Content-Type: application/json');
 
-// Validar sesión
 if (!isset($_SESSION['admin']) || !isset($_SESSION['admin']['soc_id_socio'])) {
     http_response_code(401);
     echo json_encode(['success' => false, 'message' => 'Sesión no válida.']);
@@ -27,7 +24,6 @@ if (empty($token) || !$action) {
 }
 
 try {
-    // 0. Validar Token
     $qToken = "SELECT id_invitacion, id_socio_titular FROM san_plan_invitaciones WHERE token_unico = ? AND status = 'pendiente' AND fecha_expiracion >= NOW()";
     $stmtToken = $conn->prepare($qToken);
     $stmtToken->execute([$token]);
@@ -41,7 +37,6 @@ try {
     $hostId = (int)$invitacion['id_socio_titular'];
     $idInvitacion = (int)$invitacion['id_invitacion'];
 
-    // ACCIÓN 1: Verificar el nombre del anfitrión
     if ($action === 'check') {
         $q = "SELECT soc_nombres FROM san_socios WHERE soc_id_socio = ?";
         $stmt = $conn->prepare($q);
@@ -57,11 +52,9 @@ try {
         exit;
     }
 
-    // ACCIÓN 2: Confirmar Vinculación y Asignar Servicio de Integrante
     if ($action === 'confirm') {
         $conn->beginTransaction();
 
-        // Buscamos el plan ACTIVO del Titular con LOCK FOR UPDATE para evitar Race Conditions
         $qPlan = "SELECT pag_id_servicio, pag_fecha_ini, pag_fecha_fin, pag_id_empresa 
                   FROM san_pagos 
                   WHERE pag_id_socio = ? AND pag_status = 'A' AND pag_fecha_fin >= CURDATE() 
@@ -79,8 +72,6 @@ try {
         $id_servicio_titular = (int)$planTitular['pag_id_servicio'];
         $fechaFinTitular = $planTitular['pag_fecha_fin'];
 
-        // 1. Limpieza de beneficiarios de ciclos anteriores (Spotify Model)
-        // Desvincular usuarios cuyo ciclo no coincida con la fecha de fin actual del Titular
         $qLimpiar = "SELECT soc_id_socio FROM san_socios WHERE soc_id_titular_grupo = ?";
         $stmtLimpiar = $conn->prepare($qLimpiar);
         $stmtLimpiar->execute([$hostId]);
@@ -102,43 +93,38 @@ try {
             }
         }
         
-        // Contamos cuántos beneficiarios tiene actualmente el titular (post-limpieza)
         $qCount = "SELECT COUNT(soc_id_socio) FROM san_socios WHERE soc_id_titular_grupo = ?";
         $stmtCount = $conn->prepare($qCount);
         $stmtCount->execute([$hostId]);
         $numBeneficiarios = (int)$stmtCount->fetchColumn();
 
-        // 🧠 LÓGICA DE ASIGNACIÓN DE SERVICIO PARA EL INVITADO 🧠
         $id_servicio_hijo = 0;
 
-        if ($id_servicio_titular == 123) { // Plan 3 integrantes
-            if ($numBeneficiarios == 0) $id_servicio_hijo = 125;      // Integrante 2
-            else if ($numBeneficiarios == 1) $id_servicio_hijo = 126; // Integrante 3
+        if ($id_servicio_titular == 123) {
+            if ($numBeneficiarios == 0) $id_servicio_hijo = 125;
+            else if ($numBeneficiarios == 1) $id_servicio_hijo = 126;
             else {
                 $conn->rollBack();
                 echo json_encode(['success' => false, 'message' => 'El plan ya está lleno (3/3).']);
                 exit;
             }
-        } else if ($id_servicio_titular == 124) { // Plan 4 integrantes
+        } else if ($id_servicio_titular == 124) {
             if ($numBeneficiarios == 0) $id_servicio_hijo = 125; 
             else if ($numBeneficiarios == 1) $id_servicio_hijo = 126;
-            else if ($numBeneficiarios == 2) $id_servicio_hijo = 127; // Integrante 4
+            else if ($numBeneficiarios == 2) $id_servicio_hijo = 127;
             else {
                 $conn->rollBack();
                 echo json_encode(['success' => false, 'message' => 'El plan ya está lleno (4/4).']);
                 exit;
             }
         } else {
-            // Plan parejas u otro por defecto
             $id_servicio_hijo = 125;
         }
 
-        // 1. Vinculamos al usuario actual
         $qLink = "UPDATE san_socios SET soc_id_titular_grupo = ? WHERE soc_id_socio = ?";
         $stmtLink = $conn->prepare($qLink);
         $stmtLink->execute([$hostId, $idUsuarioActual]);
 
-        // 2. Insertamos el pago del integrante con el ID correcto
         $fecha_mov = date('Y-m-d H:i:s');
         $fecha_ini = $planTitular['pag_fecha_ini'];
         $fecha_fin = $planTitular['pag_fecha_fin'];
@@ -164,7 +150,6 @@ try {
             $fecha_ini, $fecha_fin, $id_usuario_logueado, $empresa_pago
         ]);
 
-        // 3. Marcar el token como aceptado
         $stmtUpdateToken = $conn->prepare("UPDATE san_plan_invitaciones SET status = 'aceptado' WHERE id_invitacion = ?");
         $stmtUpdateToken->execute([$idInvitacion]);
 
@@ -178,7 +163,10 @@ try {
     }
 
 } catch (PDOException $e) {
-    if ($conn->inTransaction()) $conn->rollBack();
-    echo json_encode(['success' => false, 'message' => 'ERROR SQL: ' . $e->getMessage()]);
+    if (isset($conn) && $conn->inTransaction()) {
+        $conn->rollBack();
+    }
+    error_log("Error PDO en join_plan_session.php: " . $e->getMessage());
+    echo json_encode(['success' => false, 'message' => 'Ocurrió un error al procesar la vinculación.']);
 }
 ?>

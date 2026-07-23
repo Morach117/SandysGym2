@@ -15,7 +15,6 @@
     </div>
 </section>
 
-<!-- Sección de Calculadora de IMC Inicio -->
 <section class="bmi-calculator-section spad">
     <div class="container">
         <div class="row">
@@ -89,14 +88,12 @@
         </div>
     </div>
 </section>
-<!-- Sección de Calculadora de IMC Fin -->
 
 <script>
-    document.getElementById('bmi-form').addEventListener('submit', function(event) {
-    event.preventDefault(); // Evita el envío del formulario
+document.getElementById('bmi-form').addEventListener('submit', function(event) {
+    event.preventDefault();
 
-    // Obtener los valores de los campos
-    const height = parseFloat(document.getElementById('height').value) / 100; // Convertir cm a metros
+    const height = parseFloat(document.getElementById('height').value) / 100;
     const weight = parseFloat(document.getElementById('weight').value);
     const gender = document.getElementById('gender').value;
 
@@ -105,10 +102,8 @@
         return;
     }
 
-    // Calcular el IMC
     const bmi = weight / (height * height);
 
-    // Determinar el estado del peso
     let bmiCategory = '';
     if (bmi < 18.5) {
         bmiCategory = 'Peso insuficiente';
@@ -120,12 +115,10 @@
         bmiCategory = 'Obeso';
     }
 
-    // Mostrar el resultado
     document.getElementById('result').innerHTML = `
         <h3>Resultado</h3>
         <p>Tu IMC es: ${bmi.toFixed(2)}</p>
         <p>Estado de peso: ${bmiCategory}</p>
     `;
 });
-
 </script>

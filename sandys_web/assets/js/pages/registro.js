@@ -1,9 +1,5 @@
 $(document).ready(function() {
 
-    // ==========================================
-    // 0. AUTO-LLENADO DE REFERIDO POR URL
-    // ==========================================
-    // Si la URL es ...?ref=9191234567, llenamos el input automáticamente
     const urlParams = new URLSearchParams(window.location.search);
     const refCode = urlParams.get('ref');
 
@@ -11,9 +7,6 @@ $(document).ready(function() {
         $('#referral_code').val(refCode).css('border-color', '#22c55e');
     }
 
-    // ==========================================
-    // 1. CONFIGURACIÓN Y SELECTORES
-    // ==========================================
     let isEmailVerified = false;
     
     const UI = {
@@ -28,7 +21,7 @@ $(document).ready(function() {
             telefono: $('#telefono'),
             dobMonth: $('#dob_month'),
             genero: $('#genero'),
-            referral: $('#referral_code') // <--- AGREGADO AQUÍ
+            referral: $('#referral_code')
         },
         buttons: {
             verify: $('#verifyEmailBtn'),
@@ -48,17 +41,12 @@ $(document).ready(function() {
         toggles: $('.toggle-password') 
     };
 
-    // --- VALIDACIÓN EN TIEMPO REAL ---
     UI.inputs.telefono.add(UI.inputs.referral).on('input', function() {
         this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
     });
 
     const REGEX_EMAIL = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
-    // ==========================================
-    // 2. LÓGICA DE CORREO
-    // ==========================================
-    // --- VALIDACIÓN ASÍNCRONA DE CORREO EN SEGUNDO PLANO ---
     let debounceTimer;
     UI.inputs.email.on('input', function() {
         clearTimeout(debounceTimer);
@@ -118,9 +106,6 @@ $(document).ready(function() {
         });
     }
 
-    // ==========================================
-    // 2. LÓGICA DE CORREO
-    // ==========================================
     UI.buttons.verify.on('click', function() {
         const emailVal = UI.inputs.email.val().trim();
         
@@ -146,7 +131,6 @@ $(document).ready(function() {
 
     UI.buttons.changeEmail.on('click', function() {
         isEmailVerified = false;
-        // Sólo pasamos el correo a editable sin afectar el resto del formulario
         UI.inputs.email.prop('readonly', false).prop('disabled', false).focus().select();
         UI.buttons.changeEmail.fadeOut();
     });
@@ -157,9 +141,6 @@ $(document).ready(function() {
             UI.containers.verify.slideUp();
             UI.containers.additional.css({opacity: 0, display: 'block'}).animate({ opacity: 1 }, 400);
             UI.buttons.changeEmail.fadeIn();
-        } else {
-            // Ya no lo usamos para ocultar el formulario adicional, 
-            // solo se usa cuando es true para mostrarlo la primera vez.
         }
     }
 
@@ -173,10 +154,6 @@ $(document).ready(function() {
             UI.inputs.email.css('border-color', '#333');
         }
     }
-
-    // ==========================================
-    // 3. LÓGICA DE PASSWORD
-    // ==========================================
     
     UI.toggles.on('click', function() {
         const icon = $(this);
@@ -217,9 +194,6 @@ $(document).ready(function() {
         }
     }
 
-    // ==========================================
-    // 4. ENVÍO DEL FORMULARIO
-    // ==========================================
     UI.form.on('submit', function(event) {
         event.preventDefault();
 
@@ -228,7 +202,6 @@ $(document).ready(function() {
             return;
         }
 
-        // 1. Validar vacíos
         let hasError = false;
         const requiredFields = [
             UI.inputs.name, UI.inputs.paternal, UI.inputs.telefono, 
@@ -264,7 +237,6 @@ $(document).ready(function() {
             return;
         }
 
-        // 2. PREPARAR DATOS (AQUÍ ESTABA LA MAGIA FALTANTE)
         const formData = {
             name: UI.inputs.name.val(),
             paternal_surname: UI.inputs.paternal.val(),
@@ -274,10 +246,9 @@ $(document).ready(function() {
             password: UI.inputs.password.val(),
             genero: UI.inputs.genero.val(),
             mes_nacimiento: UI.inputs.dobMonth.val(),
-            referral_code: UI.inputs.referral.val() // <--- AGREGADO: Envia el código al PHP
+            referral_code: UI.inputs.referral.val()
         };
 
-        // 3. Enviar
         const btn = UI.buttons.submit;
         const originalText = btn.html();
         setLoading(btn, true, '<i class="fas fa-spinner fa-spin"></i> Registrando...');
@@ -315,7 +286,6 @@ $(document).ready(function() {
         });
     });
 
-    // Utilidades
     function setLoading(btn, isLoading, html) {
         btn.prop('disabled', isLoading).html(html).css('opacity', isLoading ? 0.7 : 1);
     }

@@ -1,7 +1,4 @@
 <?php
-// pages/routine.php
-
-// 1) Parámetros desde la URL
 $level  = isset($_GET['level']) ? (int)$_GET['level'] : 1;
 $gender = isset($_GET['gender']) ? (int)$_GET['gender'] : 1;
 
@@ -15,7 +12,6 @@ $nombreGeneroActual = $generos[$gender] ?? '...';
 <link href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@4/dark.css" rel="stylesheet">
 
 <style>
-    /* --- 1. GENERAL Y LAYOUT --- */
     :root {
         --bg-base: #050505;
         --bg-panel: #1a1a1a;
@@ -38,7 +34,6 @@ $nombreGeneroActual = $generos[$gender] ?? '...';
     .section-title span { color: var(--brand-red); font-weight: bold; text-transform: uppercase; letter-spacing: 2px; }
     .section-title h2 { color: var(--text-main); font-family: 'Oswald', sans-serif; font-size: 38px; text-transform: uppercase; letter-spacing: 1px; }
 
-    /* --- 2. TABS (NAVEGACIÓN DE RUTINAS) --- */
     .nav-tabs { border-bottom: 1px solid #333; margin-bottom: 20px; }
     .nav-tabs .nav-item { margin-bottom: -1px; }
     .nav-tabs .nav-link {
@@ -64,7 +59,6 @@ $nombreGeneroActual = $generos[$gender] ?? '...';
     .tab-content { background: transparent !important; border: none; color: #e0e0e0; }
     .tab-pane { padding: 0; }
 
-    /* --- 3. TARJETA DEL EJERCICIO (CARD) --- */
     .exercise-card {
         padding: 30px;
         background-color: #121212;
@@ -98,7 +92,6 @@ $nombreGeneroActual = $generos[$gender] ?? '...';
         letter-spacing: 1px;
     }
 
-    /* --- 4. ESTADÍSTICAS (Series/Reps) --- */
     .exercise-stats {
         display: flex; justify-content: space-around;
         background-color: #0a0a0a; border: 1px solid #222;
@@ -112,13 +105,11 @@ $nombreGeneroActual = $generos[$gender] ?? '...';
     }
     .stat-item .stat-label { font-size: 11px; color: #888; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; }
 
-    /* --- 5. GUÍA DEL EJERCICIO --- */
     .exercise-guide { font-size: 14px; line-height: 1.6; color: #aaa; text-align: left;}
     .exercise-guide h5 { color: #fff; font-family: 'Oswald', sans-serif; font-size: 18px; text-transform: uppercase; margin: 20px 0 10px; letter-spacing: 0.5px; }
     .exercise-guide h5 i { color: var(--brand-red); margin-right: 10px; width: 20px; text-align: center; }
     .exercise-guide p { margin-bottom: 15px; padding-left: 30px; }
 
-    /* --- 6. MEDIOS --- */
     .media-wrapper {
         position: relative; width: 100%; padding-top: 56.25%;
         background-color: #000; border-radius: 12px; overflow: hidden;
@@ -137,7 +128,6 @@ $nombreGeneroActual = $generos[$gender] ?? '...';
     }
     .vjs-default-skin:hover .vjs-big-play-button { transform: scale(1.1); background: var(--brand-red) !important; }
 
-    /* --- 7. BOTÓN VOLVER --- */
     .btn-return {
         background-color: transparent; border: 2px solid var(--brand-red); color: var(--text-main);
         padding: 14px 40px; border-radius: var(--border-radius-pill); font-family: 'Oswald', sans-serif;
@@ -146,7 +136,6 @@ $nombreGeneroActual = $generos[$gender] ?? '...';
     }
     .btn-return:hover { background-color: var(--brand-red); box-shadow: 0 5px 20px rgba(239, 68, 68, 0.4); color: #fff; text-decoration: none; }
 
-    /* --- 8. GAMIFICACIÓN (Píldoras y Empty State) --- */
     .action-bar { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 25px; }
     .btn-action-pill {
         display: inline-flex; align-items: center; justify-content: center;
@@ -168,7 +157,6 @@ $nombreGeneroActual = $generos[$gender] ?? '...';
     .empty-routine-container h3 { font-family: 'Oswald', sans-serif; color: var(--text-main); font-size: 24px; text-transform: uppercase; margin-bottom: 10px; }
     .empty-routine-container p { color: var(--text-muted); font-size: 15px; margin-bottom: 30px; }
 
-    /* --- 9. TEMPORIZADOR FLOTANTE --- */
     .floating-timer {
         position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
         background-color: var(--bg-panel); border: 2px solid var(--brand-red);
@@ -191,7 +179,6 @@ $nombreGeneroActual = $generos[$gender] ?? '...';
     }
     .btn-timer-adj:hover { background-color: var(--brand-red); color: #fff; transform: translateY(-2px); }
 
-    /* --- RESPONSIVO --- */
     @media (max-width: 991px) { .exercise-card { max-width: 800px; margin-left: auto; margin-right: auto; } }
     @media (max-width: 768px) {
         .class-timetable-section { padding-top: 110px; }
@@ -271,9 +258,6 @@ $nombreGeneroActual = $generos[$gender] ?? '...';
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
 
 <script>
-    // ---------------------------------------------------------
-    // BEEP NATIVO (Sin archivos externos)
-    // ---------------------------------------------------------
     function playNativeBeep() {
         try {
             const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -283,19 +267,15 @@ $nombreGeneroActual = $generos[$gender] ?? '...';
             const oscillator = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
 
-            // Configuración del sonido
-            oscillator.type = 'sine'; // Tono suave
-            oscillator.frequency.setValueAtTime(800, audioCtx.currentTime); // 800 Hz
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
             
-            // Volumen al 15%
             gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime); 
 
-            // Conectar y reproducir
             oscillator.connect(gainNode);
             gainNode.connect(audioCtx.destination);
             oscillator.start();
             
-            // Apagar después de 400 milisegundos
             setTimeout(() => { oscillator.stop(); }, 400);
             
         } catch (e) {
@@ -303,11 +283,8 @@ $nombreGeneroActual = $generos[$gender] ?? '...';
         }
     }
 
-    // ---------------------------------------------------------
-    // LÓGICA DE CRONÓMETRO FLOTANTE (CON AJUSTE MANUAL)
-    // ---------------------------------------------------------
     let timerInterval;
-    let timeLeft = 0; // Variable global para el tiempo restante
+    let timeLeft = 0;
     const restTimerEl = document.getElementById('restTimer');
     const timeDisplayEl = document.getElementById('timeDisplay');
     const closeTimerBtn = document.getElementById('closeTimer');
@@ -330,7 +307,7 @@ $nombreGeneroActual = $generos[$gender] ?? '...';
                 clearInterval(timerInterval);
                 restTimerEl.classList.add('done');
                 timeDisplayEl.innerHTML = "<i class='fa-solid fa-bell fa-shake'></i> ¡A ENTRENAR!";
-                playNativeBeep(); // 🔥 Llama al sonido sintetizado nativo
+                playNativeBeep();
                 setTimeout(() => { restTimerEl.classList.remove('active'); }, 5000);
             }
         }, 1000);
@@ -343,20 +320,19 @@ $nombreGeneroActual = $generos[$gender] ?? '...';
         timeDisplayEl.innerHTML = `<i class="fa-solid fa-stopwatch"></i> Descanso: ${m}:${s}`;
     }
 
-    // Eventos para sumar o restar tiempo en vivo
     addTimeBtn.addEventListener('click', () => {
         if (timeLeft > 0) {
-            timeLeft += 30; // Añade 30 segundos
+            timeLeft += 30;
             updateTimerUI(timeLeft);
         }
     });
 
     subTimeBtn.addEventListener('click', () => {
         if (timeLeft > 30) {
-            timeLeft -= 30; // Resta 30 segundos
+            timeLeft -= 30;
             updateTimerUI(timeLeft);
         } else {
-            timeLeft = 1; // Si resta de más, lo manda directo a 1 segundo para que suene la alarma
+            timeLeft = 1;
         }
     });
 
@@ -365,11 +341,7 @@ $nombreGeneroActual = $generos[$gender] ?? '...';
         restTimerEl.classList.remove('active');
     });
 
-    // ---------------------------------------------------------
-    // DELEGACIÓN DE EVENTOS (Modales Gamificados)
-    // ---------------------------------------------------------
     $(function() {
-        // Modal: Registrar Serie
         $(document).on('click', '.log-progress-btn', function() {
             const idEjercicio = parseInt($(this).attr('data-ejercicio-id'), 10);
             const nombreEjercicio = $(this).attr('data-ejercicio-nombre');
@@ -416,7 +388,7 @@ $nombreGeneroActual = $generos[$gender] ?? '...';
                     .then(res => {
                         if (res.status === 'success') {
                             Swal.fire({ icon: 'success', title: '¡Registrado!', text: 'Iniciando temporizador...', background: '#1a1a1a', color: '#ffffff', showConfirmButton: false, timer: 1500 })
-                            .then(() => { startRestTimer(90); }); // 🔥 Inicia por defecto en 1:30 (90s)
+                            .then(() => { startRestTimer(90); });
                         } else {
                             throw new Error(res.message);
                         }
@@ -428,7 +400,6 @@ $nombreGeneroActual = $generos[$gender] ?? '...';
             });
         });
 
-        // Modal: Calculadora 1RM
         $(document).on('click', '.calc-rm-btn', function() {
             Swal.fire({
                 title: 'Calculadora 1RM',
@@ -467,9 +438,6 @@ $nombreGeneroActual = $generos[$gender] ?? '...';
             });
         });
 
-        // ---------------------------------------------------------
-        // LLAMADA A FUNCIÓN PRINCIPAL (En assets/js/routine.js)
-        // ---------------------------------------------------------
         if(typeof loadRoutine === "function") {
             loadRoutine(<?= $level ?>, <?= $gender ?>);
         } else {

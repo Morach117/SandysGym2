@@ -1,4 +1,3 @@
-<!-- Breadcrumb Section Begin -->
 <section class="breadcrumb-section set-bg" data-setbg="./assets/img/breadcrumb-bg.jpg">
     <div class="container">
         <div class="row">
@@ -14,9 +13,7 @@
         </div>
     </div>
 </section>
-<!-- Breadcrumb Section End -->
 
-<!-- ChoseUs Section Begin -->
 <section class="choseus-section spad">
     <div class="container">
         <div class="row">
@@ -59,9 +56,7 @@
         </div>
     </div>
 </section>
-<!-- ChoseUs Section End -->
 
-<!-- About US Section Begin -->
 <section class="aboutus-section">
     <div class="container-fluid">
         <div class="row">
@@ -113,9 +108,7 @@
         </div>
     </div>
 </section>
-<!-- About US Section End -->
 
-<!-- Team Section Begin -->
 <section class="team-section spad">
     <div class="container">
         <div class="row">
@@ -183,9 +176,7 @@
         </div>
     </div>
 </section>
-<!-- Team Section End -->
 
-<!-- Banner Section Begin -->
 <section class="banner-section set-bg" data-setbg="./assets/img/banner-bg.jpg">
     <div class="container">
         <div class="row">
@@ -199,9 +190,7 @@
         </div>
     </div>
 </section>
-<!-- Banner Section End -->
 
-<!-- Testimonial Section Begin -->
 <section class="testimonial-section spad">
     <div class="container">
         <div class="row">
@@ -256,4 +245,3 @@
         </div>
     </div>
 </section>
-<!-- Testimonial Section End -->

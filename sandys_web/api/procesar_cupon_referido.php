@@ -1,13 +1,7 @@
 <?php
-// api/procesar_cupon_referido.php
-
-// =========================================================================
-// CONFIGURACIÓN DE LA PROMOCIÓN FIJA
-// =========================================================================
 define('TITULO_PROMO_REFERIDOS', 'PROMOCION FIJA DE REFERIDOS');
-define('DESCUENTO_REFERIDOS', 35); // Porcentaje de descuento base a otorgar
+define('DESCUENTO_REFERIDOS', 35);
 
-// 1. INICIAR SESIÓN CON PARÁMETROS SEGUROS
 $domain = isset($_SERVER['HTTP_HOST']) ? preg_replace('/^www\./', '', explode(':', $_SERVER['HTTP_HOST'])[0]) : '';
 session_set_cookie_params([
     'lifetime' => 0,
@@ -19,7 +13,6 @@ session_set_cookie_params([
 ]);
 session_start();
 
-// 2. VALIDAR SESIÓN DE USUARIO
 if (!isset($_SESSION['admin']['soc_id_socio'])) {
     header('Content-Type: application/json');
     http_response_code(401);
@@ -31,15 +24,18 @@ require_once __DIR__ . '/../conn.php';
 
 header('Content-Type: application/json');
 
+/**
+ * Retorna una respuesta JSON y termina la ejecución
+ */
 function json_response($data, $statusCode = 200) {
     http_response_code($statusCode);
     echo json_encode($data);
     exit;
 }
 
-// =========================================================================
-// Función para generar el formato exacto de código
-// =========================================================================
+/**
+ * Genera un código de cupón alfanumérico aleatorio
+ */
 function generar_codigo_promocion()
 {
     $numeros = '0123456789';
@@ -55,11 +51,11 @@ function generar_codigo_promocion()
     return $codigo;
 }
 
-// =========================================================================
-// Helper para construir_insert compatible con PDO
-// =========================================================================
+/**
+ * Inserta dinámicamente un registro usando PDO
+ */
 function construir_insert($tabla, $datos) {
-    global $conn, $conexion; // Declaramos global $conexion por si se requiere en el core, pero usamos PDO $conn
+    global $conn;
     $columnas = implode(", ", array_keys($datos));
     $placeholders = implode(", ", array_fill(0, count($datos), "?"));
     $sql = "INSERT INTO $tabla ($columnas) VALUES ($placeholders)";
@@ -68,9 +64,6 @@ function construir_insert($tabla, $datos) {
     return $conn->lastInsertId();
 }
 
-// =========================================================================
-// Procesamiento de la petición POST
-// =========================================================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['generar_cupon'])) {
     
     $idSocio = (int)$_SESSION['admin']['soc_id_socio'];
@@ -78,7 +71,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['generar_cupon'])) {
     try {
         $conn->beginTransaction();
 
-        // 1. Verificar existencia del socio
         $stmtVal = $conn->prepare("SELECT soc_nombres FROM san_socios WHERE soc_id_socio = ?");
         $stmtVal->execute([$idSocio]);
         $validacion = $stmtVal->fetch(PDO::FETCH_ASSOC);
@@ -88,15 +80,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['generar_cupon'])) {
             json_response(['success' => false, 'message' => 'Socio no válido.'], 400);
         }
             
-        // 2. Buscar o crear la Promoción Base Centralizada (Relación 1 a Muchos)
         $stmtPromo = $conn->prepare("SELECT id_promocion FROM san_promociones WHERE titulo = ? LIMIT 1");
         $stmtPromo->execute([TITULO_PROMO_REFERIDOS]);
         $promoBaseId = $stmtPromo->fetchColumn();
 
         if (!$promoBaseId) {
-            // Persistencia automatizada por primera vez de la promoción fija
             $fechaActual = date('Y-m-d');
-            $vigenciaFinal = date('Y-m-d', strtotime('+10 years')); // Vigencia larga por defecto
+            $vigenciaFinal = date('Y-m-d', strtotime('+10 years'));
             
             $datosPromo = [
                 'titulo' => TITULO_PROMO_REFERIDOS,
@@ -112,14 +102,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['generar_cupon'])) {
             $promoBaseId = construir_insert('san_promociones', $datosPromo);
         }
 
-        // 3. Generar y validar el código único on-demand
         $codigoFinal = '';
         $codigoUnico = false;
         
         do {
             $codigoGenerado = generar_codigo_promocion();
             
-            // Validar existencia en DB para asegurar que es 100% único
             $stmtCheck = $conn->prepare("SELECT COUNT(*) FROM san_codigos WHERE codigo_generado = ?");
             $stmtCheck->execute([$codigoGenerado]);
             $existe = $stmtCheck->fetchColumn();
@@ -130,7 +118,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['generar_cupon'])) {
             }
         } while (!$codigoUnico);
 
-        // 4. Inserción Única en la tabla san_codigos enlazada a la promo fija
         $datosCodigo = [
             'codigo_generado' => $codigoFinal,
             'id_promocion' => $promoBaseId,
@@ -148,10 +135,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['generar_cupon'])) {
         ]);
 
     } catch (Exception $e) {
-        if ($conn->inTransaction()) $conn->rollBack();
+        if (isset($conn) && $conn->inTransaction()) {
+            $conn->rollBack();
+        }
         error_log("Error generando cupón de referido: " . $e->getMessage());
         json_response(['success' => false, 'message' => 'Error de sistema al generar cupón.'], 500);
     }
 } else {
     json_response(['success' => false, 'message' => 'Petición inválida.'], 400);
 }
+?>

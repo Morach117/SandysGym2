@@ -1,16 +1,10 @@
 <?php
-// ---------------------------------------------
-//  Retorno de Mercado Pago (Front UI Dinámico)
-//  Arquitectura: Sandy's Gym - Frontend
-// ---------------------------------------------
-require_once 'conn.php'; // Requiere conexión PDO activa ($conn)
+require_once 'conn.php';
 
-// Sanitización estricta de parámetros GET
 $status      = filter_input(INPUT_GET, 'collection_status', FILTER_SANITIZE_FULL_SPECIAL_CHARS) ?? 'unknown';
 $externalRef = filter_input(INPUT_GET, 'external_reference', FILTER_SANITIZE_FULL_SPECIAL_CHARS) ?? 'N/A';
 $paymentId   = filter_input(INPUT_GET, 'payment_id', FILTER_SANITIZE_NUMBER_INT) ?? 'N/A';
 
-// Derivación de estado
 $isApproved = ($status === 'approved');
 $isPending  = ($status === 'pending' || $status === 'in_process');
 
@@ -29,11 +23,9 @@ switch(strtolower($status)) {
     default: $estadoTraducido = ucfirst($status);
 }
 
-// Variables por defecto
 $tipoOperacion = 'membresia';
 $detallesExtra = [];
 
-// Consulta segura a la base de datos para obtener el contexto de la operación
 try {
     $stmt = $conn->prepare("SELECT metadata_json FROM san_mp_pref WHERE external_reference = :ref LIMIT 1");
     $stmt->execute([':ref' => $externalRef]);
@@ -43,7 +35,6 @@ try {
         $metadata = json_decode($row['metadata_json'], true) ?: [];
         $tipoOperacion = $metadata['tipo_operacion'] ?? 'membresia';
 
-        // Desglose dinámico según la operación
         if ($tipoOperacion === 'recarga_monedero') {
             $detallesExtra['Tipo de Operación'] = 'Recarga de Monedero';
             $detallesExtra['Monto Base'] = '$' . number_format((float)($metadata['importe_recarga'] ?? 0), 2);
@@ -62,11 +53,9 @@ try {
         }
     }
 } catch (PDOException $e) {
-    // Fallback silencioso en UI si falla la base de datos
     error_log("Error Frontend Fetch Metadata: " . $e->getMessage());
 }
 
-// UI Data Dinámica
 $titulo     = $isApproved ? '¡Pago Aprobado!' : ($isPending ? 'Pago Pendiente' : 'Estado del Pago');
 $subTitulo  = $isApproved ? '¡Gracias por tu preferencia!' : ($isPending ? 'Estamos procesando tu pago' : 'Revisemos lo ocurrido');
 
@@ -99,7 +88,6 @@ $urlPagos    = 'index.php?page=mis_pagos';
 $urlRecibo   = $isApproved ? "index.php?page=recibo&payment_id={$paymentId}" : '#';
 ?>
 <style>
-    /* variables y reset local */
     .gracias-container {
       --bg-base: #050505;
       --bg-panel: #1a1a1a;

@@ -1,15 +1,11 @@
 <?php
-// api/registration_process.php
-
-// 1. CONFIGURACIÓN
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-ini_set('display_errors', 1); // Solo para desarrollo
+ini_set('display_errors', 0);
 error_reporting(E_ALL);
 header('Content-Type: application/json');
 
-// Carga de PHPMailer
 if (!class_exists('PHPMailer\PHPMailer\PHPMailer')) {
     $ruta_base_phpmailer = '../phpmailer/src/';
     if (file_exists($ruta_base_phpmailer . 'PHPMailer.php')) {
@@ -24,6 +20,9 @@ require_once 'config.php';
 require_once 'lib/UserService.php';
 require_once 'lib/EmailService.php';
 
+/**
+ * Retorna una respuesta JSON y termina la ejecución
+ */
 function json_response($data, $statusCode = 200) {
     http_response_code($statusCode);
     echo json_encode($data);
@@ -34,7 +33,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     json_response(['success' => false, 'message' => 'Método no permitido.'], 405);
 }
 
-// 2. RECIBIR DATOS
 $name               = trim($_POST['name'] ?? '');
 $paternal_surname   = trim($_POST['paternal_surname'] ?? '');
 $maternal_surname   = trim($_POST['maternal_surname'] ?? '');
@@ -42,18 +40,14 @@ $email              = trim($_POST['email'] ?? '');
 $password           = trim($_POST['password'] ?? '');
 $telefono           = trim($_POST['telefono'] ?? '');
 $genero             = trim($_POST['genero'] ?? '');
-// Fecha (Soporte doble nombre)
 $mes_input          = trim($_POST['mes_nacimiento'] ?? $_POST['dob_month'] ?? '');
-// Código de Referido (NUEVO)
 $referral_code      = trim($_POST['referral_code'] ?? ''); 
 
-// Construir Fecha
 $fecha_nacimiento_sql = '';
 if (!empty($mes_input)) {
     $fecha_nacimiento_sql = "2000-" . str_pad($mes_input, 2, "0", STR_PAD_LEFT) . "-01";
 }
 
-// Validar Obligatorios
 if (empty($name) || empty($email) || empty($password) || empty($telefono) || empty($genero) || empty($fecha_nacimiento_sql)) {
     json_response([
         'success' => false, 
@@ -68,9 +62,7 @@ if (!empty($referral_code) && !preg_match('/^[0-9]{10}$/', $referral_code)) {
     ], 400);
 }
 
-// 3. PROCESAR
 try {
-    // 3.1 VALIDAR SI EL CORREO YA EXISTE
     $stmtCheck = $conn->prepare("SELECT soc_id_socio, soc_correo_status FROM san_socios WHERE soc_correo = :email LIMIT 1");
     $stmtCheck->bindParam(':email', $email, PDO::PARAM_STR);
     $stmtCheck->execute();
@@ -119,7 +111,6 @@ try {
 
     $userService = new UserService($conn);
     
-    // Llamada con el nuevo parámetro $referral_code al final
     $validation_code = $userService->registerOrUpdate(
         $name, 
         $paternal_surname, 
@@ -129,7 +120,7 @@ try {
         $telefono,
         $genero,
         $fecha_nacimiento_sql,
-        $referral_code // <--- AQUÍ SE PASA EL CÓDIGO
+        $referral_code
     );
 
     if ($validation_code === false) {
@@ -137,7 +128,6 @@ try {
         json_response(['success' => false, 'message' => 'Error al registrar. Verifica tus datos.'], 500);
     }
 
-    // 4. CORREO
     $asunto = "Bienvenido a Sandys Gym - Valida tu cuenta";
     ob_start();
     if(file_exists('templates/validation_email.php')) {
@@ -159,8 +149,10 @@ try {
     }
 
 } catch (Exception $e) {
-    if ($conn->inTransaction()) $conn->rollBack();
+    if (isset($conn) && $conn->inTransaction()) {
+        $conn->rollBack();
+    }
     error_log("Error Registro: " . $e->getMessage());
-    json_response(['success' => false, 'message' => 'Error del servidor: ' . $e->getMessage()], 500);
+    json_response(['success' => false, 'message' => 'Error interno al procesar el registro.'], 500);
 }
 ?>

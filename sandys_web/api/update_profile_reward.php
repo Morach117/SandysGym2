@@ -1,11 +1,7 @@
 <?php
-// api/update_profile_reward.php
-
 ob_start();
 ini_set('display_errors', 0); 
 error_reporting(E_ALL);
-
-// Incrementar límite de memoria a 512M para decodificar fotos de celulares de gama alta (>48MP)
 ini_set('memory_limit', '512M'); 
 
 require_once __DIR__ . '/../conn.php'; 
@@ -24,7 +20,6 @@ try {
     if (empty($_SESSION['admin']['soc_id_socio'])) {
         throw new Exception("Acceso denegado. Inicie sesión para actualizar su perfil.");
     }
-    // Mitigación IDOR: Se fuerza el ID del socio a partir de la sesión activa
     $idSocio = (int)$_SESSION['admin']['soc_id_socio'];
     
     $nombres        = strtoupper(trim($_POST['nombres'] ?? ''));
@@ -41,26 +36,21 @@ try {
 
     if ($idSocio <= 0) throw new Exception("ID de socio inválido.");
 
-    // Se define fuera del IF para que esté disponible durante el unlink()
     $directorioDestino = __DIR__ . '/../../imagenes/avatar/';
     $nombreArchivoFinal = null;
 
-    // ---------------------------------------------------------
-    // PROCESAR FOTO Y CONVERTIR A JPG CON REDIMENSIONAMIENTO
-    // ---------------------------------------------------------
     if (isset($_FILES['foto_perfil']) && $_FILES['foto_perfil']['error'] !== UPLOAD_ERR_NO_FILE) {
-        
         $uploadError = $_FILES['foto_perfil']['error'];
         
         if ($uploadError !== UPLOAD_ERR_OK) {
             $erroresUpload = [
-                UPLOAD_ERR_INI_SIZE   => 'La foto es demasiado pesada y supera el límite del servidor.',
+                UPLOAD_ERR_INI_SIZE   => 'La foto es demasiado pesada.',
                 UPLOAD_ERR_FORM_SIZE  => 'La foto es demasiado pesada.',
-                UPLOAD_ERR_PARTIAL    => 'El archivo se subió a medias. Intenta de nuevo.',
-                UPLOAD_ERR_NO_TMP_DIR => 'Falta la carpeta temporal en el servidor.',
-                UPLOAD_ERR_CANT_WRITE => 'Error de permisos al escribir la foto en el disco.'
+                UPLOAD_ERR_PARTIAL    => 'El archivo se subió a medias.',
+                UPLOAD_ERR_NO_TMP_DIR => 'Falta la carpeta temporal.',
+                UPLOAD_ERR_CANT_WRITE => 'Error de escritura en el disco.'
             ];
-            $mensajeError = $erroresUpload[$uploadError] ?? 'Error desconocido al subir la foto.';
+            $mensajeError = $erroresUpload[$uploadError] ?? 'Error al subir la foto.';
             throw new Exception($mensajeError);
         }
 
@@ -97,7 +87,7 @@ try {
             default: $imgRes = false;
         }
 
-        if (!$imgRes) throw new Exception("Error al procesar la imagen nativa.");
+        if (!$imgRes) throw new Exception("Error al procesar la imagen.");
 
         if ($orientation != 1) {
             $deg = 0;
@@ -128,10 +118,8 @@ try {
         }
 
         $resizedImg = imagecreatetruecolor($newWidth, $newHeight);
-        
         $white = imagecolorallocate($resizedImg, 255, 255, 255);
         imagefill($resizedImg, 0, 0, $white);
-        
         imagecopyresampled($resizedImg, $imgRes, 0, 0, 0, 0, $newWidth, $newHeight, $origWidth, $origHeight);
 
         $nombreArchivoFinal = $idSocio . "_" . time() . ".jpg"; 
@@ -145,16 +133,12 @@ try {
         imagedestroy($resizedImg);
     }
 
-    // ---------------------------------------------------------
-    // LÓGICA DE RECOMPENSA Y ACTUALIZACIÓN
-    // ---------------------------------------------------------
     $estanTodosLosDatos = (
         !empty($nombres) && !empty($apPaterno) && !empty($genero) &&
         !empty($mesNac) && !empty($telCel) && !empty($direccion) && 
         !empty($emerNombres) && !empty($emerTel) && !empty($emerParentesco)
     );
 
-    // Se agrega soc_imagen a la consulta para saber qué borrar
     $checkQuery = "SELECT soc_mon_saldo, perfil_completado_reward, soc_tel_cel, soc_fecha_nacimiento, soc_imagen FROM san_socios WHERE soc_id_socio = :id";
     $stmtCheck = $conn->prepare($checkQuery);
     $stmtCheck->bindParam(':id', $idSocio);
@@ -208,13 +192,10 @@ try {
 
     $conn->commit();
 
-    // ---------------------------------------------------------
-    // LIMPIEZA DE IMAGEN ANTERIOR (Ejecutar solo tras commit exitoso)
-    // ---------------------------------------------------------
     if ($nombreArchivoFinal && $imagenAnterior !== 'noavatar.jpg' && !empty($imagenAnterior)) {
         $rutaAnterior = $directorioDestino . $imagenAnterior;
         if (file_exists($rutaAnterior)) {
-            @unlink($rutaAnterior); // Silenciador de errores por si hay bloqueo de IO
+            @unlink($rutaAnterior);
         }
     }
 
@@ -226,8 +207,12 @@ try {
     ];
 
 } catch (Throwable $e) { 
-    if (isset($conn) && $conn->inTransaction()) $conn->rollBack();
-    $response = ['status' => 'error', 'message' => $e->getMessage()];
+    if (isset($conn) && $conn->inTransaction()) {
+        $conn->rollBack();
+    }
+    error_log("Error in update_profile_reward.php: " . $e->getMessage());
+    $message = ($e instanceof PDOException) ? "Error al procesar la actualización en la base de datos." : $e->getMessage();
+    $response = ['status' => 'error', 'message' => $message];
 }
 
 ob_clean();

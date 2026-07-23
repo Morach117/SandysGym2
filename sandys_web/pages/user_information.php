@@ -1,5 +1,4 @@
 <?php
-// --- INCLUDES Y LÓGICA DE LA VISTA (HTML) ---
 include_once('conn.php');
 include_once('./api/select_data.php');
 
@@ -40,7 +39,6 @@ if ($foto_bd !== '') {
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-/* --- Base --- */
 body {
     background-color: #050505;
     color: #e0e0e0;
@@ -52,7 +50,6 @@ body {
     min-height: 100vh;
 }
 
-/* --- Encabezado --- */
 .page-header-custom {
     display: flex;
     justify-content: space-between;
@@ -96,7 +93,6 @@ body {
     color: #fff;
 }
 
-/* --- Foto de Perfil --- */
 .foto-container {
     position: relative;
     width: 120px;
@@ -135,7 +131,6 @@ body {
     transform: scale(1.1);
 }
 
-/* --- Tarjetas --- */
 .profile-card {
     background-color: #121212;
     border: 1px solid #2a2a2a;
@@ -171,7 +166,6 @@ body {
     padding: 25px;
 }
 
-/* --- Inputs --- */
 .form-group label {
     color: #aaa;
     font-size: 12px;
@@ -214,7 +208,6 @@ body {
     line-height: 1.4;
 }
 
-/* Botón Guardar */
 .save-btn {
     background-color: #ef4444;
     color: #fff;

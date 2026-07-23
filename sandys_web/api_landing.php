@@ -1,12 +1,8 @@
 <?php
-// Deshabilitar salida de errores HTML que corrompan el JSON
 error_reporting(0);
 header('Content-Type: application/json; charset=utf-8');
 
-// Ajusta la ruta a tu archivo conn.php según tu estructura real.
-// Si conn.php está en la misma carpeta que este archivo:
 require_once("conn.php"); 
-// Si conn.php está una carpeta atrás (en /gym/): require_once("../conn.php");
 
 try {
     if (!isset($conn)) {
@@ -23,6 +19,7 @@ try {
         $plan['beneficios'] = json_decode($plan['beneficios_json'], true) ?: [];
         unset($plan['beneficios_json']);
     }
+    unset($plan);
 
     $stmtG = $conn->query("SELECT imagen_url, es_wide FROM san_landing_galeria WHERE estado = 1 ORDER BY id_galeria DESC");
     $galeria = $stmtG->fetchAll(PDO::FETCH_ASSOC);

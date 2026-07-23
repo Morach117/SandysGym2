@@ -45,10 +45,8 @@ if (isset($_GET['email']) && isset($_GET['code'])) {
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-    /* --- 1. GENERAL --- */
     body { background-color: #050505; color: #e0e0e0; font-family: 'Muli', sans-serif; }
 
-    /* --- 2. LAYOUT --- */
     .login_box_area {
         padding-top: 140px; padding-bottom: 80px; min-height: 100vh;
         display: flex; align-items: center; justify-content: center; box-sizing: border-box;
@@ -60,7 +58,6 @@ if (isset($_GET['email']) && isset($_GET['code'])) {
         border: 1px solid #2a2a2a; overflow: hidden;
     }
 
-    /* --- 3. COLUMNA IZQUIERDA --- */
     .login_box_img {
         position: relative; width: 45%;
         background: linear-gradient(135deg, rgba(34, 10, 10, 0.85) 0%, rgba(0, 0, 0, 0.95) 100%), url('./assets/img/login.jpg');
@@ -71,13 +68,11 @@ if (isset($_GET['email']) && isset($_GET['code'])) {
     .img-overlay h4 { font-family: 'Oswald', sans-serif; font-size: 32px; color: #fff; margin-bottom: 15px; text-transform: uppercase; }
     .img-overlay p { color: #aaa; margin-bottom: 25px; font-size: 15px; line-height: 1.6; }
 
-    /* --- 4. FORMULARIO DERECHA --- */
     .login_form_inner { width: 55%; padding: 50px 40px; background-color: #121212; display: flex; flex-direction: column; justify-content: center; }
     .login_form_inner h3 { font-family: 'Oswald', sans-serif; font-size: 28px; color: #fff; text-transform: uppercase; margin-bottom: 5px; }
     .welcome-text { margin-bottom: 30px; color: #888; font-size: 14px; text-align: left; }
     #userEmail { color: #e0e0e0; }
 
-    /* --- 5. INPUTS DE VALIDACIÓN --- */
     .code-inputs-container {
         display: flex;
         justify-content: center;
@@ -106,7 +101,6 @@ if (isset($_GET['email']) && isset($_GET['code'])) {
         outline: none;
     }
 
-    /* --- 6. BOTONES Y OPCIONES --- */
     .form-options { display: flex; justify-content: center; align-items: center; margin-top: 25px; font-size: 14px; color: #aaa; }
     .form-options a { color: #ef4444; text-decoration: none; font-weight: 600; transition: 0.3s; }
     .form-options a:hover { color: #ff6b6b; }
@@ -118,7 +112,6 @@ if (isset($_GET['email']) && isset($_GET['code'])) {
     }
     .primary-btn:hover { background-color: #d12f2f; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3); }
 
-    /* 🔥 OVERRIDE GLOBAL PARA FORZAR SWEETALERT EN MODO OSCURO 🔥 */
     div.swal2-popup {
         background-color: #1a1a1a !important;
         color: #ffffff !important;
@@ -134,7 +127,6 @@ if (isset($_GET['email']) && isset($_GET['code'])) {
     .swal2-icon.swal2-success .swal2-success-ring { border-color: rgba(16, 185, 129, 0.3) !important; }
     .swal2-confirm { background-color: #ef4444 !important; color: white !important; font-weight: bold !important; border-radius: 8px !important; }
 
-    /* --- RESPONSIVE --- */
     @media (max-width: 991px) {
         .login_box_img { display: none !important; }
         .login-container { max-width: 450px; flex-direction: column; }

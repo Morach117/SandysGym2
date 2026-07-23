@@ -1,20 +1,15 @@
 <?php
-// 1. OBLIGATORIO: Llama a tu archivo de conexión ANTES de procesar el formulario.
-// Quita el comentario y asegúrate de que la ruta sea la correcta hacia tu archivo.
 require_once 'conn.php'; 
 
-$alert_script = ""; // Variable para inyectar la alerta
+$alert_script = ""; 
 
-// Procesamiento del formulario
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_contact'])) {
     try {
-        // Sanitización de entradas
         $nombre = htmlspecialchars(strip_tags(trim($_POST['nombre'])));
         $correo = filter_var(trim($_POST['correo']), FILTER_SANITIZE_EMAIL);
         $telefono = htmlspecialchars(strip_tags(trim($_POST['telefono'])));
         $mensaje = htmlspecialchars(strip_tags(trim($_POST['mensaje'])));
 
-        // Validaciones
         if(empty($nombre) || empty($correo) || empty($mensaje)) {
             throw new Exception("Por favor, completa todos los campos obligatorios.");
         }
@@ -22,10 +17,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_contact'])) {
             throw new Exception("El formato del correo no es válido.");
         }
 
-        // 2. CORRECCIÓN: Cambiamos $pdo por $conn
         $sql = "INSERT INTO san_contactos (nombre, correo, telefono, mensaje) VALUES (:nombre, :correo, :telefono, :mensaje)";
-        
-        // AQUÍ ESTABA EL ERROR. Ahora usamos la variable $conn que viene de tu archivo de conexión
         $stmt = $conn->prepare($sql); 
         
         $stmt->execute([
@@ -35,7 +27,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_contact'])) {
             ':mensaje' => $mensaje
         ]);
 
-        // Alerta de éxito generada en PHP para ser renderizada en JS
         $alert_script = "
             Swal.fire({
                 title: '¡Mensaje Enviado!',

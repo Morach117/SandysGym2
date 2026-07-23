@@ -1,11 +1,7 @@
 $(document).ready(function () {
 
-    // =======================================================================
-    // #1: MANEJADOR DEL FORMULARIO DE LOGIN PRINCIPAL
-    // =======================================================================
-    // This uses event delegation which is efficient.
     $(document).on("submit", "#adminLoginFrm", function (event) {
-        event.preventDefault(); // Prevents the default form submission (page reload)
+        event.preventDefault();
 
         $.post("./api/login.php", $(this).serialize(), function (data) {
             if (data.res == "invalid_email") {
@@ -37,11 +33,10 @@ $(document).ready(function () {
                     confirmButtonColor: '#F28123'
                 });
             } else if (data.res == "success") {
-                // Optional: Show a success message before redirecting
                 Swal.fire({
                     title: '¡Bienvenido!',
                     icon: 'success',
-                    timer: 1500, // Auto-close after 1.5 seconds
+                    timer: 1500,
                     showConfirmButton: false
                 }).then(() => {
                     $('body').fadeOut(400, function () {
@@ -52,14 +47,7 @@ $(document).ready(function () {
         }, 'json');
     });
 
-    // =======================================================================
-    // #2: FUNCIONALIDAD DEL "OJO" (CORREGIDA)
-    // =======================================================================
-    // Usamos el selector de CLASE ('.toggle-password') para ser consistentes
-    // con tu página de registro.
     $('.toggle-password').on('click', function () {
-        
-        // Buscamos el input que es "hermano" del ícono en el que se hizo clic
         const passwordField = $(this).siblings('input'); 
         const passwordFieldType = passwordField.attr('type');
 
@@ -72,14 +60,11 @@ $(document).ready(function () {
         }
     });
 
-    // =======================================================================
-    // #3: MANEJADOR DEL FORMULARIO PARA RECUPERAR CONTRASEÑA (MODAL)
-    // =======================================================================
     $('#passwordResetRequestFrm').on('submit', function (event) {
         event.preventDefault();
         
         let btnReset = $(this).find('button[type="submit"]');
-        if (btnReset.prop('disabled')) return; // Evitar doble envío (doble clic)
+        if (btnReset.prop('disabled')) return;
         
         let originalResetText = btnReset.html();
         btnReset.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> Enviando...');
@@ -91,27 +76,21 @@ $(document).ready(function () {
             method: 'POST',
             data: { email: email },
             success: function (response) {
-                btnReset.prop('disabled', false).html(originalResetText); // Restaurar botón
-                
-                // 1. Close the Bootstrap modal.
+                btnReset.prop('disabled', false).html(originalResetText);
                 $('#forgotPasswordModal').modal('hide');
 
-                // 2. Show the SweetAlert confirmation.
                 Swal.fire({
                     title: '¡Revisa tu correo!',
                     text: 'Si tu correo electrónico está registrado, recibirás un enlace para restablecer tu contraseña.',
                     icon: 'success',
                     confirmButtonColor: '#F28123'
                 }).then((result) => {
-                    // 3. Force-clean the screen to prevent it from freezing.
                     $('.modal-backdrop').remove();
                     $('body').removeClass('modal-open').css('padding-right', '');
                 });
             },
             error: function () {
-                btnReset.prop('disabled', false).html(originalResetText); // Restaurar botón
-                
-                // If there's an error, also make sure to clean up the screen.
+                btnReset.prop('disabled', false).html(originalResetText);
                 $('.modal-backdrop').remove();
                 $('body').removeClass('modal-open').css('padding-right', '');
 

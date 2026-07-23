@@ -1,13 +1,7 @@
 <?php
-// api/generar_reactivacion.php
-
-// =========================================================================
-// CONFIGURACIÓN DE LA PROMOCIÓN FIJA
-// =========================================================================
 define('TITULO_PROMO_REACTIVACION', 'PROMOCION FIJA DE REACTIVACION');
-define('DESCUENTO_REACTIVACION', 35); // Porcentaje de descuento base a otorgar
+define('DESCUENTO_REACTIVACION', 35);
 
-// 1. INICIAR SESIÓN CON PARÁMETROS SEGUROS
 $domain = isset($_SERVER['HTTP_HOST']) ? preg_replace('/^www\./', '', explode(':', $_SERVER['HTTP_HOST'])[0]) : '';
 session_set_cookie_params([
     'lifetime' => 0,
@@ -21,7 +15,6 @@ session_start();
 
 header('Content-Type: application/json');
 
-// 2. VALIDAR SESIÓN DE USUARIO
 if (!isset($_SESSION['admin']['soc_id_socio'])) {
     http_response_code(401);
     echo json_encode(['success' => false, 'message' => 'Sesión expirada o no válida. Por favor, inicia sesión nuevamente.']);
@@ -30,9 +23,9 @@ if (!isset($_SESSION['admin']['soc_id_socio'])) {
 
 require_once '../conn.php';
 
-// =========================================================================
-// Función para generar el formato exacto de código
-// =========================================================================
+/**
+ * Genera un código de cupón aleatorio con formato alfanumérico
+ */
 function generar_codigo_promocion()
 {
     $numeros = '0123456789';
@@ -48,11 +41,11 @@ function generar_codigo_promocion()
     return $codigo;
 }
 
-// =========================================================================
-// Helper para construir_insert compatible con PDO
-// =========================================================================
+/**
+ * Inserta un registro en una tabla de forma dinámica usando PDO
+ */
 function construir_insert($tabla, $datos) {
-    global $conn, $conexion; // Declaramos global $conexion por si se requiere en el core, pero usamos PDO $conn
+    global $conn;
     $columnas = implode(", ", array_keys($datos));
     $placeholders = implode(", ", array_fill(0, count($datos), "?"));
     $sql = "INSERT INTO $tabla ($columnas) VALUES ($placeholders)";
@@ -61,7 +54,6 @@ function construir_insert($tabla, $datos) {
     return $conn->lastInsertId();
 }
 
-// Obtener ID del socio desde la sesión
 $idSocioPost = (int)$_SESSION['admin']['soc_id_socio'];
 
 if ($idSocioPost <= 0) {
@@ -72,7 +64,6 @@ if ($idSocioPost <= 0) {
 try {
     $conn->beginTransaction();
     
-    // 1. Validar si el usuario YA generó un cupón asociado a esta promoción base
     $stmtVal = $conn->prepare("
         SELECT c.codigo_generado 
         FROM san_codigos c
@@ -86,7 +77,6 @@ try {
         exit;
     }
     
-    // 2. Verificar si cumple los requisitos (30 días de vencimiento)
     $stmtPago = $conn->prepare("SELECT pag_fecha_fin FROM san_pagos WHERE pag_id_socio = ? AND pag_status = 'A' ORDER BY pag_fecha_fin DESC LIMIT 1");
     $stmtPago->execute([$idSocioPost]);
     $pago = $stmtPago->fetch(PDO::FETCH_ASSOC);
@@ -108,13 +98,11 @@ try {
         exit;
     }
     
-    // 3. Buscar o crear la Promoción Fija Base (Relación 1 a Muchos)
     $stmtPromo = $conn->prepare("SELECT id_promocion FROM san_promociones WHERE titulo = ? LIMIT 1");
     $stmtPromo->execute([TITULO_PROMO_REACTIVACION]);
     $promoBaseId = $stmtPromo->fetchColumn();
     
     if (!$promoBaseId) {
-        // Persistencia automatizada por primera vez
         $fechaActual = date('Y-m-d');
         $vigenciaFinal = date('Y-m-d', strtotime('+10 years'));
         
@@ -131,14 +119,12 @@ try {
         
         $promoBaseId = construir_insert('san_promociones', $datosPromo);
         
-        // Agregar registro en san_descuentos_promociones asociado a la promoción
         construir_insert('san_descuentos_promociones', [
             'id_promocion' => $promoBaseId,
             'id_servicio' => '1-1'
         ]);
     }
     
-    // 4. Generar y validar el código único on-demand
     $codigoFinal = '';
     $codigoUnico = false;
     
@@ -155,7 +141,6 @@ try {
         }
     } while (!$codigoUnico);
     
-    // 5. Inserción Única en la tabla san_codigos enlazada a la promo fija
     $datosCodigo = [
         'codigo_generado' => $codigoFinal,
         'id_promocion' => $promoBaseId,
@@ -168,7 +153,7 @@ try {
     echo json_encode(['success' => true, 'codigo' => $codigoFinal, 'message' => 'Cupón generado exitosamente.']);
 
 } catch (PDOException $e) {
-    if ($conn->inTransaction()) {
+    if (isset($conn) && $conn->inTransaction()) {
         $conn->rollBack();
     }
     error_log("Error PDO en generar_reactivacion.php: " . $e->getMessage());
@@ -178,7 +163,7 @@ try {
         'message' => 'Error de base de datos al procesar la solicitud. Por favor intenta nuevamente.'
     ]);
 } catch (Exception $e) {
-    if ($conn->inTransaction()) {
+    if (isset($conn) && $conn->inTransaction()) {
         $conn->rollBack();
     }
     error_log("Error General en generar_reactivacion.php: " . $e->getMessage());
@@ -188,3 +173,4 @@ try {
         'message' => 'Ocurrió un error inesperado al generar el cupón.'
     ]);
 }
+?>

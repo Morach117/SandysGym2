@@ -1,8 +1,4 @@
 <?php
-// ---------------------------------------------
-//  Mis Pagos - Historial del Socio (Dark Mode + Card View Responsive)
-// ---------------------------------------------
-
 require_once __DIR__ . '/../conn.php';
 
 $idSocio = $_SESSION['admin']['soc_id_socio'] ?? 0;
@@ -41,18 +37,15 @@ try {
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
 
 <style>
-    /* --- 1. FONDO Y CONTENEDOR --- */
     .payments-wrapper {
         background-color: #050505;
         min-height: 100vh;
-        /* 🔥 SOLUCIÓN: Padding superior de 140px para esquivar el navbar flotante 🔥 */
         padding: 140px 20px 60px; 
         font-family: 'Muli', sans-serif;
         color: #e0e0e0;
     }
     .payments-container { max-width: 1100px; margin: 0 auto; }
 
-    /* --- 2. HEADER Y BOTÓN NUEVO --- */
     .page-header {
         display: flex; justify-content: space-between; align-items: center;
         margin-bottom: 25px; flex-wrap: wrap; gap: 15px;
@@ -68,24 +61,20 @@ try {
     }
     .btn-new-payment:hover { background-color: #dc2626; transform: translateY(-2px); color: #fff; text-decoration: none; }
 
-    /* --- 3. TARJETA DE LA TABLA --- */
     .table-card {
         background-color: #121212; border: 1px solid #2a2a2a;
         border-radius: 16px; padding: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.6);
     }
 
-    /* --- 4. PERSONALIZACIÓN PROFUNDA DE DATATABLES --- */
     table.dataTable.no-footer { border-bottom: none !important; }
     table.dataTable { border-collapse: collapse !important; width: 100% !important; }
 
-    /* Cabecera de la Tabla */
     table.dataTable thead th {
         background-color: #0a0a0a !important; color: #aaa !important;
         font-size: 12px; text-transform: uppercase; letter-spacing: 1px;
         border-bottom: 2px solid #333 !important; padding: 18px 15px !important; font-weight: 700;
     }
 
-    /* Filas de la Tabla */
     table.dataTable tbody td {
         padding: 20px 15px !important; font-size: 14px; color: #fff !important;
         border-bottom: 1px solid #222 !important; vertical-align: middle;
@@ -93,13 +82,11 @@ try {
     }
     table.dataTable tbody tr:hover td { background-color: #1a1a1a !important; }
 
-    /* --- 5. CONTROLES (BUSCADOR Y PAGINACIÓN) --- */
     .dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter, 
     .dataTables_wrapper .dataTables_info, .dataTables_wrapper .dataTables_processing {
         color: #aaa !important; font-size: 13px; margin-bottom: 20px;
     }
 
-    /* Buscador corregido */
     .dataTables_wrapper .dataTables_filter input,
     .dataTables_wrapper .dataTables_length select {
         background-color: #1a1a1a !important; border: 1px solid #444 !important;
@@ -109,7 +96,6 @@ try {
     .dataTables_wrapper .dataTables_filter input:focus,
     .dataTables_wrapper .dataTables_length select:focus { border-color: #ef4444 !important; }
 
-    /* Paginación */
     .dataTables_wrapper .dataTables_paginate { margin-top: 20px !important; padding-top: 10px !important; }
     .dataTables_wrapper .dataTables_paginate .paginate_button {
         color: #fff !important; background: #1a1a1a !important; border: 1px solid #333 !important;
@@ -123,7 +109,6 @@ try {
         background: #ef4444 !important; color: #fff !important; border-color: #ef4444 !important; font-weight: bold;
     }
 
-    /* --- 6. ELEMENTOS INTERNOS DE CELDAS --- */
     .col-date span { display: block; }
     .date-main { font-weight: 700; color: #fff; font-size: 15px; }
     .date-sub { font-size: 12px; color: #888; margin-top: 3px; }
@@ -136,14 +121,12 @@ try {
 
     .amount-text { font-family: 'Oswald', sans-serif; font-size: 18px; color: #10b981; letter-spacing: 0.5px; font-weight: 500;}
 
-    /* Badge de estado */
     .badge-status { 
         padding: 6px 12px; border-radius: 30px; font-size: 11px; 
         font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; 
     }
     .badge-paid { background-color: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
 
-    /* Botón de Ojo (PDF) */
     .action-btn { 
         display: inline-flex; width: 40px; height: 40px; border-radius: 8px; 
         background-color: #1a1a1a; color: #ef4444; align-items: center; justify-content: center; 
@@ -151,25 +134,22 @@ try {
     }
     .action-btn:hover { background-color: #ef4444; color: white; border-color: #ef4444; }
 
-    /* Empty State */
     .empty-state { text-align: center; padding: 50px 20px; }
     .empty-state i { font-size: 50px; color: #333; margin-bottom: 20px; }
     .empty-state h3 { color: #fff; font-family: 'Oswald', sans-serif; margin-bottom: 10px; }
     .empty-state p { color: #888; }
 
-    /* 🔥 7. MAGIA RESPONSIVA (CARD VIEW) PARA MÓVILES 🔥 */
     @media (max-width: 768px) {
-        .payments-wrapper { padding: 120px 15px 40px; } /* Ajuste de cabecera móvil */
+        .payments-wrapper { padding: 120px 15px 40px; } 
         .page-header { flex-direction: column; align-items: flex-start; }
         .btn-new-payment { width: 100%; justify-content: center; padding: 15px; }
         .table-card { padding: 15px; background-color: transparent; border: none; box-shadow: none; }
         
         .dataTables_wrapper .dataTables_filter input { width: 100%; margin: 10px 0 0 0 !important; }
         .dataTables_wrapper .dataTables_filter label { display: block; text-align: left; }
-        .dataTables_wrapper .dataTables_length { display: none; } /* Ocultar "Mostrar X registros" en móvil */
+        .dataTables_wrapper .dataTables_length { display: none; } 
 
-        /* Transformar la tabla en tarjetas */
-        table.dataTable thead { display: none; } /* Ocultar cabeceras */
+        table.dataTable thead { display: none; } 
         table.dataTable tbody tr {
             display: block;
             background-color: #121212 !important;
@@ -190,7 +170,6 @@ try {
         }
         table.dataTable tbody td:last-child { border-bottom: none !important; padding-bottom: 0 !important; }
         
-        /* Crear "falsas cabeceras" para cada dato en móvil */
         table.dataTable tbody td::before {
             content: attr(data-label);
             font-weight: 700;
@@ -202,7 +181,6 @@ try {
             margin-right: auto;
         }
 
-        /* Ajustes internos para las tarjetas */
         .col-date, .service-name { text-align: right; }
         .date-main { font-size: 14px; }
         .service-dates { margin-top: 4px; }
@@ -236,7 +214,6 @@ try {
         margin-right: 10px;
     }
 
-    /* Ajuste para que en móvil no se pegue al borde */
     @media (max-width: 768px) {
         .btn-back {
             margin-bottom: 20px;

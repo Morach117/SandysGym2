@@ -1,25 +1,30 @@
 <?php
-// api/get_routine.php
 error_reporting(0);
 ini_set('display_errors', 0);
 header('Content-Type: application/json; charset=utf-8');
 
 require_once '../conn.php';
-session_start();
 
-$response = ['success' => false, 'message' => 'Error desconocido.'];
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-$selSocioData = $_SESSION['admin'] ?? ['soc_genero' => 'M', 'soc_id_socio' => 1, 'soc_nombres' => 'Socio'];
-$socioId = $selSocioData['soc_id_socio'] ?? null;
-
-if (!isset($conn) || !$conn instanceof PDO || !$socioId) {
-    error_log("Fallo crítico en get_routine.php: No hay conexión a BD o falta socioId.");
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Error interno del servidor [Code: DB_CONN].']);
+if (!isset($_SESSION['admin']) || !isset($_SESSION['admin']['soc_id_socio'])) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Sesión no válida.']);
     exit;
 }
 
-date_default_timezone_set('America/Mexico_City'); // o America/Merida
+$socioId = (int)$_SESSION['admin']['soc_id_socio'];
+
+if (!isset($conn) || !$conn instanceof PDO) {
+    error_log("Fallo crítico en get_routine.php: No hay conexión a BD.");
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Error interno del servidor.']);
+    exit;
+}
+
+date_default_timezone_set('America/Mexico_City');
 $currentDate = new DateTime();
 $miembroActivo = false;
 
@@ -35,7 +40,7 @@ try {
         if ($currentDate <= $fechaFinDate) $miembroActivo = true;
     }
 } catch (PDOException $e) {
-    error_log("Error DB al verificar membresía (get_routine.php): " . $e->getMessage());
+    error_log("Error DB al verificar membresía: " . $e->getMessage());
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Error al verificar el estado de tu membresía.']);
     exit;
@@ -49,15 +54,14 @@ if (!$miembroActivo) {
 
 $nivelActual = isset($_GET['level']) ? (int)$_GET['level'] : 1;
 $generoActual = isset($_GET['gender']) ? (int)$_GET['gender'] : 1;
-if (!in_array($nivelActual, [1,2,3], true)) $nivelActual = 1;
-if (!in_array($generoActual, [1,2], true)) $generoActual = 1;
+if (!in_array($nivelActual, [1, 2, 3], true)) $nivelActual = 1;
+if (!in_array($generoActual, [1, 2], true)) $generoActual = 1;
 
 $nombresNiveles = [1 => 'Principiante', 2 => 'Intermedio', 3 => 'Avanzado'];
 $nombresGeneros = [1 => 'Hombre', 2 => 'Mujer'];
 $rutinaPorGrupo = [];
 
 try {
-    // 🔥 CORRECCIÓN: Se agregó e.id_ejercicio a la selección
     $sql = "SELECT
                 gm.id_grupo, gm.nombre_grupo,
                 re.orden_ejercicio, re.series, re.repeticiones, re.descanso_seg,
@@ -84,7 +88,7 @@ try {
             ];
         }
         $rutinaPorGrupo[$idGrupo]['ejercicios'][] = [
-            'id_ejercicio' => $fila['id_ejercicio'], // 🔥 CORRECCIÓN: Ahora pasamos el ID al JSON
+            'id_ejercicio' => $fila['id_ejercicio'],
             'nombre' => $fila['nombre_ejercicio'],
             'descripcion' => $fila['descripcion'],
             'video_url' => $fila['video_url'],
@@ -104,9 +108,9 @@ try {
         'rutinaPorGrupo' => array_values($rutinaPorGrupo)
     ]);
 } catch (PDOException $e) {
-    error_log("Error DB al obtener rutina (get_routine.php): " . $e->getMessage());
+    error_log("Error DB al obtener rutina: " . $e->getMessage());
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Error al consultar la rutina desde la base de datos.']);
-} finally {
     $conn = null;
 }
+?>

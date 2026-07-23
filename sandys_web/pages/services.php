@@ -1,4 +1,3 @@
-<!-- Breadcrumb Section Begin -->
 <section class="breadcrumb-section set-bg" data-setbg="./assets/img/breadcrumb-bg.jpg">
     <div class="container">
         <div class="row">
@@ -14,9 +13,7 @@
         </div>
     </div>
 </section>
-<!-- Breadcrumb Section End -->
 
-<!-- Services Section Begin -->
 <section class="services-section spad">
     <div class="container">
         <div class="row">
@@ -79,9 +76,7 @@
         </div>
     </div>
 </section>
-<!-- Services Section End -->
 
-<!-- Banner Section Begin -->
 <section class="banner-section set-bg" data-setbg="./assets/img/banner-bg.jpg">
     <div class="container">
         <div class="row">
@@ -95,9 +90,7 @@
         </div>
     </div>
 </section>
-<!-- Banner Section End -->
 
-<!-- Pricing Section Begin -->
 <section class="pricing-section service-pricing spad">
     <div class="container">
         <div class="row">
@@ -169,5 +162,3 @@
         </div>
     </div>
 </section>
-
-<!-- Pricing Section End -->

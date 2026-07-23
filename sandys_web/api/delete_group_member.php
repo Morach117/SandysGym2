@@ -1,6 +1,4 @@
 <?php
-// api/delete_group_member.php
-
 if (session_status() === PHP_SESSION_NONE) session_start();
 require_once __DIR__ . '/../conn.php';
 require_once 'config.php';
@@ -24,7 +22,6 @@ if (!$idBeneficiario) {
 try {
     $conn->beginTransaction();
 
-    // 1. Verificar que el beneficiario pertenece a este titular
     $stmtCheck = $conn->prepare("SELECT soc_id_socio, soc_nombres FROM san_socios WHERE soc_id_socio = ? AND soc_id_titular_grupo = ? FOR UPDATE");
     $stmtCheck->execute([$idBeneficiario, $idTitular]);
     $beneficiario = $stmtCheck->fetch(PDO::FETCH_ASSOC);
@@ -35,11 +32,9 @@ try {
         exit;
     }
 
-    // 2. Desvincular al beneficiario
     $stmtUnlink = $conn->prepare("UPDATE san_socios SET soc_id_titular_grupo = 0 WHERE soc_id_socio = ?");
     $stmtUnlink->execute([$idBeneficiario]);
 
-    // 3. Cancelar su pago actual (poniendo la fecha de fin a hoy o status = 'C')
     $stmtCancelPago = $conn->prepare("
         UPDATE san_pagos 
         SET pag_status = 'C', pag_fecha_fin = CURDATE() 
@@ -52,7 +47,10 @@ try {
     echo json_encode(['success' => true, 'message' => 'Miembro eliminado con éxito.']);
 
 } catch (PDOException $e) {
-    $conn->rollBack();
-    echo json_encode(['success' => false, 'message' => 'ERROR SQL: ' . $e->getMessage()]);
+    if (isset($conn) && $conn->inTransaction()) {
+        $conn->rollBack();
+    }
+    error_log("Error PDO en delete_group_member.php: " . $e->getMessage());
+    echo json_encode(['success' => false, 'message' => 'Error al procesar la solicitud.']);
 }
 ?>

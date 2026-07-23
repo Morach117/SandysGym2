@@ -66,7 +66,6 @@ $(document).ready(function () {
             dataType: 'json'
         }).done(function (response) {
             if (response.success) {
-                // Si la validación es exitosa, limpiamos el email del storage
                 localStorage.removeItem('email');
                 Swal.fire({
                     icon: 'success',
@@ -75,7 +74,6 @@ $(document).ready(function () {
                     timer: 2500,
                     showConfirmButton: false
                 }).then(() => {
-                    // Redirigimos al usuario a la página de inicio de sesión
                     window.location.href = 'index.php?page=login';
                 });
             } else {
@@ -88,29 +86,25 @@ $(document).ready(function () {
         });
     });
 
-    // --- CAMBIO AQUÍ: FUNCIONALIDAD DE REENVIAR CÓDIGO AÑADIDA ---
     $('#resendCodeLink').click(function (e) {
         e.preventDefault();
         
-        // 1. Intentamos obtener el email del input oculto, de la URL o del localStorage
         var fallbackEmail = $('#resend_email_fallback').val();
         var currentEmail = fallbackEmail || email;
 
         if (!currentEmail) {
-            console.error("Error: Correo no encontrado en la sesión, URL ni localStorage.");
+            console.error("Error: Correo no encontrado.");
             Swal.fire('Error', 'No se pudo encontrar tu correo. Por favor, regresa y vuelve a registrarte.', 'error');
             return;
         }
 
         var link = $(this);
-        // Deshabilitamos el link temporalmente
         link.css('pointer-events', 'none').text('Reenviando...');
 
-        // 2. Llamada AJAX a tu nuevo script resend_code.php
         $.ajax({
             type: 'POST',
-            url: './api/resend_code_process.php', // Apunta a tu nuevo archivo PHP
-            data: { email: currentEmail },      // Envía el correo
+            url: './api/resend_code_process.php',
+            data: { email: currentEmail },
             dataType: 'json'
         }).done(function (response) {
             if (response.success) {
@@ -121,7 +115,6 @@ $(document).ready(function () {
         }).fail(function () {
             Swal.fire('Error de Conexión', 'No se pudo comunicar con el servidor. Inténtalo de nuevo.', 'error');
         }).always(function () {
-            // Volvemos a habilitar el link
             link.css('pointer-events', 'auto').text('¿No recibiste el código? Reenviar');
         });
     });

@@ -1,14 +1,9 @@
 <?php
-// --- INCLUDES ---
 require_once __DIR__ . '/../conn.php';
 include('./api/select_data.php');
 
-
-
-// --- CONFIGURACIÓN ---
 date_default_timezone_set('America/Mexico_City');
 
-// 1. Inicializar variables
 $mensajeAlerta = '';
 $estadoMembresia = '';
 $fechaVencimientoTexto = '';
@@ -18,9 +13,8 @@ $miembroActivo = false;
 $mostrarAdminPlan = false;
 $nombreSocio = htmlspecialchars(explode(' ', trim($selSocioData['soc_nombres']))[0]);
 
-// 2. Consultar el último pago ACTIVO del socio y configuración del consorcio (Referidos)
 $socioId = $selSocioData['soc_id_socio'];
-$idConsorcio = $_SESSION['id_empresa'] ?? $selSocioData['soc_id_consorcio'] ?? 1; // Adaptable al contexto
+$idConsorcio = $_SESSION['id_empresa'] ?? $selSocioData['soc_id_consorcio'] ?? 1;
 
 $query = "SELECT 
             c.con_referidos, 
@@ -42,14 +36,12 @@ $fechaFin = $pagoData['pag_fecha_fin'] ?? null;
 $idServicioActivo = $pagoData['pag_id_servicio'] ?? 0;
 $gananciaPorReferido = $pagoData['con_referidos'] ?? 35.00;
 
-// 3. VALIDACIÓN ESTRICTA PARA MOSTRAR "ADMINISTRAR PLAN" Y ESTADO ACTIVO
 $serviciosPlanFamiliar = [123, 124, 125, 126, 127, 167];
 $serviciosBeneficiarios = [125, 126, 127];
 
 if (in_array($idServicioActivo, $serviciosPlanFamiliar)) {
     $mostrarAdminPlan = true;
     
-    // Si es beneficiario, validar que siga vinculado a un titular y que el titular esté vigente
     if (in_array($idServicioActivo, $serviciosBeneficiarios)) {
         $stmtTit = $conn->prepare("
             SELECT t.pag_fecha_fin 
@@ -63,7 +55,7 @@ if (in_array($idServicioActivo, $serviciosPlanFamiliar)) {
         
         if (!$titularActivo) {
             $mostrarAdminPlan = false;
-            $miembroActivo = false; // Ya no goza de los beneficios del plan
+            $miembroActivo = false;
             $mensajeAlerta = "El plan de tu titular ha expirado o has sido desvinculado.";
             $estadoMembresia = "Sin membresía activa";
             $claseEstado = "status-inactive";
@@ -74,7 +66,7 @@ if (in_array($idServicioActivo, $serviciosPlanFamiliar)) {
             $claseEstado = "status-active";
             $iconoEstado = "fa-check-circle";
             $estadoMembresia = "Membresía Activa";
-            $mensajeAlerta = ""; // Sincroniza la Alerta de Mensajes
+            $mensajeAlerta = "";
             if ($fechaFin) {
                 $fechaFinDate = new DateTime($fechaFin);
                 $fechaVencimientoTexto = "Vigente hasta el " . $fechaFinDate->format('d/m/Y');
@@ -83,7 +75,6 @@ if (in_array($idServicioActivo, $serviciosPlanFamiliar)) {
     }
 }
 
-// 4. CALCULAR ESTADO DE VIGENCIA (solo si no fue definido por validación de plan activo)
 if (!$miembroActivo && empty($mensajeAlerta)) {
     if ($fechaFin) {
         $currentDate = new DateTime();
@@ -127,9 +118,6 @@ if (!$miembroActivo && empty($mensajeAlerta)) {
     }
 }
 
-// =========================================================================
-// --- LÓGICA DE REFERIDOS (VERIFICAR SI TIENE PADRINO Y CUPÓN) ---
-// =========================================================================
 $stmtRef = $conn->prepare("SELECT soc_id_referido_por FROM san_socios WHERE soc_id_socio = ?");
 $stmtRef->execute([$socioId]);
 $idPadrino = $stmtRef->fetchColumn();
@@ -149,13 +137,9 @@ if ($idPadrino > 0) {
     if ($cuponData) {
         $cuponGenerado = $cuponData['codigo_generado'];
         $cuponUsado = (bool)$cuponData['utilizado'];
+    }
 }
-}
-// =========================================================================
 
-// =========================================================================
-// --- LÓGICA DE CUPÓN DE REACTIVACIÓN (> 30 DÍAS) ---
-// =========================================================================
 $diasVencido = 0;
 $puedeGenerarReactivacion = false;
 $btnReactivacionDeshabilitado = true;
@@ -202,18 +186,15 @@ if ($cuponReactData) {
         $leyendaReactivacion = "";
     }
 }
-// =========================================================================
 ?>
 
 <style>
-    /* --- Base --- */
     body {
         background-color: #050505 !important;
         color: #e0e0e0 !important;
         font-family: 'Muli', sans-serif !important;
     }
 
-    /* --- Hero Dashboard --- */
     .dashboard-header {
         padding: 130px 0 30px !important;
         background: linear-gradient(180deg, rgba(239, 68, 68, 0.05) 0%, #050505 100%) !important;
@@ -234,7 +215,6 @@ if ($cuponReactData) {
         color: #ef4444 !important;
     }
 
-    /* --- Píldoras de Estado Modernas --- */
     .status-pill-container {
         display: inline-flex !important;
         flex-direction: column !important;
@@ -309,7 +289,6 @@ if ($cuponReactData) {
         letter-spacing: 0.5px !important;
     }
 
-    /* Alertas */
     .alert-custom {
         background: rgba(239, 68, 68, 0.1) !important;
         border: 1px solid rgba(239, 68, 68, 0.3) !important;
@@ -325,7 +304,6 @@ if ($cuponReactData) {
         margin: 0 auto !important;
     }
 
-    /* --- BANNER DE REFERIDO (CUPÓN) --- */
     .referral-banner {
         background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, #121212 100%) !important;
         border: 1px solid rgba(59, 130, 246, 0.3) !important;
@@ -390,10 +368,8 @@ if ($cuponReactData) {
         box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4) !important;
     }
 
-    /* --- Grid de Apps (Opciones) --- */
     .dashboard-grid {
         display: grid !important;
-        /* ESCRITORIO: Tarjetas más anchas para layout horizontal */
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
         gap: 20px !important;
         padding: 30px 0 50px !important;
@@ -406,7 +382,6 @@ if ($cuponReactData) {
         padding: 20px 25px !important;
         text-decoration: none !important;
         transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
-        /* ESCRITORIO: Flex Horizontal (Icono izquierda, Texto derecha) */
         display: flex !important;
         flex-direction: row !important;
         align-items: center !important;
@@ -433,7 +408,6 @@ if ($cuponReactData) {
         justify-content: center !important;
         margin-bottom: 0 !important;
         margin-right: 20px !important;
-        /* Separación horizontal en escritorio */
         transition: all 0.3s !important;
         border: 1px solid rgba(239, 68, 68, 0.1) !important;
         flex-shrink: 0 !important;
@@ -455,7 +429,6 @@ if ($cuponReactData) {
         color: #ffffff !important;
     }
 
-    /* Forzar texto blanco puro y grueso */
     .app-title {
         font-family: 'Oswald', sans-serif !important;
         font-size: 18px !important;
@@ -476,7 +449,6 @@ if ($cuponReactData) {
         filter: grayscale(100%) !important;
     }
 
-    /* --- Accesos Rápidos --- */
     .help-card {
         background: linear-gradient(135deg, #121212 0%, #1a1a1a 100%) !important;
         border-radius: 16px !important;
@@ -513,7 +485,6 @@ if ($cuponReactData) {
         transform: translateY(-2px) !important;
     }
 
-    /* 🔥 OVERRIDE GLOBAL PARA FORZAR SWEETALERT EN MODO OSCURO 🔥 */
     div.swal2-popup {
         background-color: #1a1a1a !important;
         color: #ffffff !important;
@@ -554,7 +525,6 @@ if ($cuponReactData) {
         font-family: 'Muli', sans-serif;
     }
 
-    /* --- Responsive Móvil --- */
     @media (max-width: 768px) {
         .dashboard-header {
             padding-top: 110px !important;
@@ -565,7 +535,6 @@ if ($cuponReactData) {
             font-size: 32px !important;
         }
 
-        /* Grid 2x2 más compacto */
         .dashboard-grid {
             grid-template-columns: repeat(2, 1fr) !important;
             gap: 12px !important;
@@ -574,10 +543,8 @@ if ($cuponReactData) {
 
         .app-card {
             flex-direction: column !important;
-            /* Vuelve a apilar verticalmente en móvil */
             text-align: center !important;
             padding: 20px 15px !important;
-            /* Tarjetas menos altas */
         }
 
         .app-icon {
@@ -593,7 +560,6 @@ if ($cuponReactData) {
 
         .app-title {
             font-size: 15px !important;
-            /* Más legible en móvil */
             font-weight: 600 !important;
         }
     }
@@ -744,7 +710,6 @@ if ($cuponReactData) {
 $(document).ready(function () {
     const socioId = <?php echo json_encode($socioId); ?>;
 
-    // --- BANNER DISMISSABLE LOGIC ---
     const banner = $('#referralBanner');
     if (banner.length > 0) {
         if (!localStorage.getItem(`hide_welcome_banner_${socioId}`)) {
@@ -757,7 +722,6 @@ $(document).ready(function () {
         });
     }
 
-    // --- AJAX CUPON GENERATION ---
     $(document).on('submit', '#form-generar-cupon', function (e) {
         e.preventDefault();
         const $btn = $(this).find('button[type="submit"]');
@@ -808,7 +772,6 @@ $(document).ready(function () {
         });
     });
 
-    // --- FETCH API CUPON REACTIVACION ---
     $(document).on('submit', '#form-generar-reactivacion', function (e) {
         e.preventDefault();
         const $btn = $(this).find('button[type="submit"]');
@@ -856,7 +819,6 @@ $(document).ready(function () {
         });
     });
 
-    // --- DETECTOR DE INVITACIONES MÁGICAS ---
     const pendingToken = <?php echo json_encode($_COOKIE['gym_invite_token'] ?? null); ?>;
     
     if (pendingToken) {

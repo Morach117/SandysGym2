@@ -1,14 +1,10 @@
 <?php
-// pages/user_admin_plan.php
-
 if (session_status() === PHP_SESSION_NONE) session_start();
 require_once __DIR__ . '/../conn.php';
 
-// Interceptor para verificar la existencia del correo antes de enviar invitación
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'check_email_exists') {
     header('Content-Type: application/json');
     
-    // Verificación de sesión
     if (!isset($_SESSION['admin']) || !isset($_SESSION['admin']['soc_id_socio'])) {
         echo json_encode(['success' => false, 'message' => 'Acceso denegado. Sesión no iniciada.']);
         exit;
@@ -48,22 +44,16 @@ if (!isset($_SESSION['admin']) || !isset($_SESSION['admin']['soc_id_socio'])) {
 }
 $idUsuarioLogueado = $_SESSION['admin']['soc_id_socio'];
 
-// =======================================================
-// ⚙️ DEFINIR SOLO LOS PLANES TITULARES 
-// (Los hijos 125, 126, 127 no van aquí)
-// =======================================================
 $planesTitulares = [
-    123 => 3,  // Plan Grupal 3 (Titular)
-    124 => 4,  // Plan Grupal 4 (Titular)
-    167 => 2   // Plan Parejas (Titular)
+    123 => 3,
+    124 => 4,
+    167 => 2
 ];
-// =======================================================
 
 try {
     $esTitular = false;
     $idTitularReal = 0;
 
-    // 1. Verificamos si soy el Titular de un plan Padre
     $stmtPago = $conn->prepare("SELECT pag_id_servicio FROM san_pagos WHERE pag_id_socio = ? AND pag_status = 'A' AND pag_fecha_fin >= CURDATE() ORDER BY pag_id_pago DESC LIMIT 1");
     $stmtPago->execute([$idUsuarioLogueado]);
     $miPago = $stmtPago->fetch(PDO::FETCH_ASSOC);
@@ -72,7 +62,6 @@ try {
         $esTitular = true;
         $idTitularReal = $idUsuarioLogueado;
     } else {
-        // 2. Si no soy titular, busco a mi Padrino (Titular Real)
         $stmtRef = $conn->prepare("SELECT soc_id_titular_grupo FROM san_socios WHERE soc_id_socio = ?");
         $stmtRef->execute([$idUsuarioLogueado]);
         $resRef = $stmtRef->fetch(PDO::FETCH_ASSOC);
@@ -86,7 +75,6 @@ try {
         }
     }
 
-    // 3. Obtenemos los datos del Titular Real y su Plan
     $stmtPlan = $conn->prepare("
         SELECT s.soc_nombres, s.soc_imagen, sv.ser_descripcion, pg.pag_id_servicio, pg.pag_fecha_fin 
         FROM san_socios s
@@ -101,7 +89,6 @@ try {
     $idServicio = $planActual['pag_id_servicio'] ?? 0;
     
     if (!$planActual || !array_key_exists($idServicio, $planesTitulares)) {
-        // Si el plan caducó o cambió, desvinculamos a todos sus referidos (Spotify model)
         $stmtDesv = $conn->prepare("UPDATE san_socios SET soc_id_titular_grupo = 0 WHERE soc_id_titular_grupo = ?");
         $stmtDesv->execute([$idTitularReal]);
         mostrarError("El plan grupal ha expirado o el titular ya no está activo.");
@@ -114,7 +101,6 @@ try {
     $nombreTitular = explode(' ', trim($planActual['soc_nombres']))[0];
     $fechaFinTitular = $planActual['pag_fecha_fin'];
 
-    // 4. Obtenemos a los hermanos (beneficiarios) y validamos su ciclo
     $stmtMiembros = $conn->prepare("SELECT soc_id_socio, soc_nombres, soc_imagen FROM san_socios WHERE soc_id_titular_grupo = ?");
     $stmtMiembros->execute([$idTitularReal]);
     $posiblesBeneficiarios = $stmtMiembros->fetchAll(PDO::FETCH_ASSOC);
@@ -130,7 +116,6 @@ try {
         $qCheck->execute([$b['soc_id_socio']]);
         $pagoBen = $qCheck->fetch(PDO::FETCH_ASSOC);
 
-        // Si el beneficiario es de un ciclo anterior (diferente fecha de fin) o su plan expiró, se desvincula.
         if (!$pagoBen || $pagoBen['pag_fecha_fin'] < date('Y-m-d') || $pagoBen['pag_fecha_fin'] != $fechaFinTitular) {
             $stmtDesv = $conn->prepare("UPDATE san_socios SET soc_id_titular_grupo = 0 WHERE soc_id_socio = ?");
             $stmtDesv->execute([$b['soc_id_socio']]);
@@ -144,7 +129,6 @@ try {
         }
     }
 
-    // 5. Armamos la lista (El Titular siempre es el primero)
     $miembros = [];
     $miembros[] = [
         'id' => $idTitularReal, 
@@ -154,7 +138,6 @@ try {
         'es_yo' => ($idTitularReal == $idUsuarioLogueado)
     ];
     
-    // Agregamos a los hermanos/invitados que siguen vigentes
     foreach($beneficiarios as $b) {
         if (count($miembros) < $totalSlots) {
             $miembros[] = [
@@ -175,12 +158,9 @@ function mostrarError($msg) {
     echo '<div style="background:#0f0f0f; min-height:80vh; padding-top:100px; display:flex; align-items:center; justify-content:center; color:white;"><div class="text-center p-4 border border-secondary rounded"><h3 class="text-danger">Aviso</h3><p>'.$msg.'</p><a href="index.php?page=user_home" class="btn btn-outline-light mt-3">Volver al Home</a></div></div>';
 }
 
-// El enlace se generará dinámicamente vía AJAX usando tokens
 $linkInvitacion = "";
 ?>
-
 <style>
-    /* Estilos del Administrador de Plan */
     .admin-plan-wrapper { background-color: #050505; color: #e0e0e0; font-family: 'Muli', sans-serif; padding-top: 120px; padding-bottom: 80px; min-height: 100vh; }
     
     .plan-header-card { 
@@ -190,20 +170,17 @@ $linkInvitacion = "";
         box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
     }
     
-    /* Tarjeta Base */
     .slot-card { 
         background-color: #121212; border: 1px solid #2a2a2a; border-radius: 16px; 
         padding: 30px 20px; text-align: center; height: 100%; transition: all 0.3s ease; 
         display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; 
     }
     
-    /* Tarjeta Ocupada */
     .slot-card.occupied:hover { 
         border-color: #ef4444; transform: translateY(-5px); 
         box-shadow: 0 8px 25px rgba(239, 68, 68, 0.15); 
     }
     
-    /* Tarjeta Vacía (Dashed) */
     .slot-card.empty-slot {
         background-color: transparent; border: 2px dashed #333; cursor: pointer;
     }
@@ -211,7 +188,6 @@ $linkInvitacion = "";
         border-color: #ef4444; background-color: rgba(239, 68, 68, 0.05); transform: translateY(-3px);
     }
 
-    /* Avatares */
     .avatar-circle { 
         width: 80px; height: 80px; border-radius: 50%; background: #1a1a1a; 
         border: 2px solid #333; display: flex; align-items: center; justify-content: center; 
@@ -220,18 +196,15 @@ $linkInvitacion = "";
     .slot-card.occupied .avatar-circle { border-color: #ef4444; }
     .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
     
-    /* Avatares Vacíos */
     .avatar-circle.empty { border: none; background: #222; color: #ef4444; font-size: 28px; transition: 0.3s; }
     .slot-card.empty-slot:hover .avatar-circle.empty { background: #ef4444; color: #fff; transform: scale(1.1); }
 
-    /* Botón Eliminar Moderno */
     .btn-delete { 
         position: absolute; top: 15px; right: 15px; background: transparent; 
         border: none; color: #555; width: 30px; height: 30px; border-radius: 50%; 
         transition: 0.3s; cursor: pointer; display: flex; align-items: center; justify-content: center; 
     }
     .btn-delete:hover { background: #ef4444; color: white; }
-    /* Botón de Regresar Estilo Frontend */
     .btn-back {
         display: inline-flex;
         align-items: center;
@@ -239,7 +212,7 @@ $linkInvitacion = "";
         color: #fff;
         border: 1px solid #333;
         padding: 8px 20px;
-        border-radius: 50px; /* Estilo píldora según manual */
+        border-radius: 50px;
         text-decoration: none;
         transition: all 0.3s ease;
         margin-bottom: 20px;
@@ -248,7 +221,7 @@ $linkInvitacion = "";
     }
 
     .btn-back:hover {
-        background: #ef4444; /* Acento rojo */
+        background: #ef4444;
         color: #fff;
         border-color: #ef4444;
         transform: translateX(-5px);
@@ -259,7 +232,6 @@ $linkInvitacion = "";
         margin-right: 8px;
     }
 
-    /* Corrección estética: Input de correo oscuro al escribir */
     #inviteEmail {
         background-color: #1a1a1a !important;
         color: #ffffff !important;
@@ -392,15 +364,15 @@ $linkInvitacion = "";
                 </div>
 
                 <hr style="border-color: #333;">
-<div class="mt-4 text-left">
-    <label class="text-muted small font-weight-bold">O enviar por correo electrónico:</label>
-    <div class="input-group">
-        <input type="email" class="form-control text-white border-secondary" id="inviteEmail" placeholder="correo@ejemplo.com" style="background-color: #1a1a1a !important; color: #fff !important; border-top-left-radius: 50px; border-bottom-left-radius: 50px;">
-        <div class="input-group-append">
-            <button class="btn btn-danger px-4 font-weight-bold" type="button" onclick="enviarPorEmail()" id="btnEmail" style="border-top-right-radius: 50px; border-bottom-right-radius: 50px;" disabled>Enviar</button>
-        </div>
-    </div>
-</div>
+                <div class="mt-4 text-left">
+                    <label class="text-muted small font-weight-bold">O enviar por correo electrónico:</label>
+                    <div class="input-group">
+                        <input type="email" class="form-control text-white border-secondary" id="inviteEmail" placeholder="correo@ejemplo.com" style="background-color: #1a1a1a !important; color: #fff !important; border-top-left-radius: 50px; border-bottom-left-radius: 50px;">
+                        <div class="input-group-append">
+                            <button class="btn btn-danger px-4 font-weight-bold" type="button" onclick="enviarPorEmail()" id="btnEmail" style="border-top-right-radius: 50px; border-bottom-right-radius: 50px;" disabled>Enviar</button>
+                        </div>
+                    </div>
+                </div>
 
             </div>
         </div>
@@ -416,7 +388,6 @@ $linkInvitacion = "";
         $('#linkSpinner').show();
         $('#btnWp, #btnCopy, #btnEmail').prop('disabled', true);
         
-        // Fetch new token
         $.ajax({
             url: 'api/generate_invite_token.php',
             type: 'POST',
@@ -468,7 +439,6 @@ $linkInvitacion = "";
         
         $('#btnEmail').html('<i class="fas fa-spinner fa-spin"></i>').prop('disabled', true);
         
-        // Primero verificamos si el correo pertenece a un miembro registrado del gimnasio
         $.ajax({
             url: 'pages/user_admin_plan.php',
             type: 'POST',
@@ -490,7 +460,6 @@ $linkInvitacion = "";
                     return;
                 }
                 
-                // Si el correo sí existe, procedemos con el envío del correo de invitación original
                 $.ajax({
                     url: 'api/send_invitation_email.php',
                     type: 'POST',
@@ -551,11 +520,9 @@ $linkInvitacion = "";
                     success: function(res) {
                         if(res.success) {
                             Swal.close();
-                            // Manipulación del DOM para reactividad
                             const slot = $('#slot_' + idSocio);
                             const parentCol = slot.parent();
                             
-                            // Transformar la tarjeta en una vacía
                             const emptyCardHtml = `
                                 <div class="slot-card empty-slot" onclick="abrirModalInvitacion()">
                                     <div class="avatar-circle empty">
@@ -566,13 +533,11 @@ $linkInvitacion = "";
                                 </div>
                             `;
                             
-                            // Animación suave de desaparición y aparición
                             slot.fadeOut(300, function() {
                                 parentCol.html(emptyCardHtml);
                                 parentCol.find('.empty-slot').hide().fadeIn(300);
                             });
                             
-                            // Actualizar contador
                             let countText = $('.plan-header-card p strong').text();
                             let parts = countText.split(' / ');
                             if(parts.length == 2) {

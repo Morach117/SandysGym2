@@ -1,31 +1,16 @@
-// assets/js/routine.js
-// -----------------------------------------
-// Optimizado para:
-//  - Lazy-load real (IntersectionObserver): no descarga el video hasta que se ve
-//  - Init idempotente de Video.js
-//  - Pausa (no dispose) al cambiar de pestaña
-//  - Dispose solo al re-render completo (cambio de nivel/género)
-//  - Cola con concurrencia limitada para inicializaciones simultáneas
-//  - Gamificación: Inyección de botones "Registrar Serie" y "1RM"
-// -----------------------------------------
-
-/* ================== Config ================== */
-const LAZY_ROOT_MARGIN = '200px 0px';     // comienza a preparar videos cerca del viewport
+const LAZY_ROOT_MARGIN = '200px 0px';
 const LAZY_THRESHOLD = 0.01;
-const MAX_CONCURRENT_INITS = 2;           // <- limita inicializaciones simultáneas de Video.js
-const INIT_DEBOUNCE_MS = 75;              // debounce tras cambiar de pestaña
-const FIRST_INIT_DELAY = 50;              // delay inicial para que el DOM estabilice
+const MAX_CONCURRENT_INITS = 2;
+const INIT_DEBOUNCE_MS = 75;
+const FIRST_INIT_DELAY = 50;
 
-/* ================== Estado global ================== */
-var videoPlayers = {};        // id -> player
-var vjsObserver = null;       // IntersectionObserver único
-var tabInitTimer = null;      // debounce para cambio de pestaña
+var videoPlayers = {};
+var vjsObserver = null;
+var tabInitTimer = null;
 
-// Cola simple para limitar inicializaciones simultáneas
-var initQueue = [];           // [{el, resolve, reject}]
+var initQueue = [];
 var activeInits = 0;
 
-/* ================== Utilidades ================== */
 function escapeHtml(unsafe) {
     if (unsafe === null || unsafe === undefined) return '';
     return unsafe.toString()
@@ -43,7 +28,6 @@ function spinnerHTML() {
     </div>`;
 }
 
-/* ============ Cola de inicialización (concurrencia limitada) ============ */
 function enqueueInit(el) {
     return new Promise((resolve, reject) => {
         initQueue.push({ el, resolve, reject });
@@ -64,11 +48,9 @@ function drainQueue() {
 function doInit(videoEl) {
     return new Promise((resolve, reject) => {
         try {
-            // Ya inicializado
             if (videoEl.dataset.initialized === '1' || (window.videojs && videojs.players && videojs.players[videoEl.id])) {
                 return resolve(videoPlayers[videoEl.id] || null);
             }
-            // Inyecta <source> si aún no lo hicimos (lazy real)
             if (!videoEl.dataset.srcLoaded) {
                 const src = videoEl.getAttribute('data-src');
                 const type = videoEl.getAttribute('data-type') || 'video/mp4';
@@ -103,15 +85,12 @@ function doInit(videoEl) {
     });
 }
 
-/* ================== Video.js lifecycle ================== */
-// Pausa todos (para cambio de pestaña)
 function pauseAllPlayers() {
     Object.values(videoPlayers).forEach(p => {
         if (p && typeof p.pause === 'function') { try { p.pause(); } catch (_) { } }
     });
 }
 
-// Destruye todos (para re-render completo)
 function destroyVideoPlayers() {
     Object.keys(videoPlayers).forEach(id => {
         const p = videoPlayers[id];
@@ -122,7 +101,6 @@ function destroyVideoPlayers() {
     videoPlayers = {};
 }
 
-/* ================== Lazy observer ================== */
 function ensureObserver() {
     if (vjsObserver) return vjsObserver;
 
@@ -131,10 +109,8 @@ function ensureObserver() {
             const el = entry.target;
             if (!entry.isIntersecting) return;
 
-            // Encolar inicialización (respetando concurrencia limitada)
-            enqueueInit(el).catch(() => { /* swallow errors */ });
+            enqueueInit(el).catch(() => { });
 
-            // deja de observar este video
             vjsObserver.unobserve(el);
         });
     }, { rootMargin: LAZY_ROOT_MARGIN, threshold: LAZY_THRESHOLD });
@@ -142,10 +118,6 @@ function ensureObserver() {
     return vjsObserver;
 }
 
-/**
- * Idempotente: no inicializa de golpe, solo OBSERVA para lazy-load
- * scope: nodo contenedor (tab actual) o documento
- */
 function initializeVideoPlayers(scope) {
     const root = scope || document;
     const obs = ensureObserver();
@@ -157,7 +129,6 @@ function initializeVideoPlayers(scope) {
     });
 }
 
-/* ================== Render de UI ================== */
 function renderVideoPlayer(videoUrl, exerciseName, posterUrl, videoId) {
     if (!videoUrl) return '<p class="text-muted">Video no disponible.</p>';
 
@@ -166,7 +137,6 @@ function renderVideoPlayer(videoUrl, exerciseName, posterUrl, videoId) {
     const fullVideoPath = /^https?:\/\//i.test(videoUrl) ? videoUrl : (videoBasePath + videoUrl);
     const fullPosterPath = posterUrl ? (/^https?:\/\//i.test(posterUrl) ? posterUrl : (posterBasePath + posterUrl)) : '';
 
-    // Lazy real: no source inmediato, usamos data-src y data-type
     const type = /\.m3u8(\?|$)/i.test(fullVideoPath) ? 'application/x-mpegURL' : 'video/mp4';
 
     return `
@@ -207,9 +177,6 @@ function renderExercises(grupo) {
         ${ejercicio.recomendaciones ? `<h5><i class="fas fa-check-circle"></i> Recomendaciones</h5><p>${escapeHtml(ejercicio.recomendaciones)}</p>` : ''}
       </div>`;
 
-        // =====================================
-        // 🔥 MAGIA AQUÍ: Atrapa el ID sin importar cómo se llame en la BD
-        // =====================================
         const idCorrecto = ejercicio.id_ejercicio || ejercicio.id || '';
 
         const actionBar = `
@@ -269,22 +236,18 @@ function renderRoutineTabs(rutinaPorGrupo, container) {
         container.innerHTML = tabLinksHtml + tabContentHtml;
     }
 
-    // Inicializa observadores de la pestaña activa (lazy)
     setTimeout(() => {
         const activePane = document.querySelector('.tab-pane.active');
         initializeVideoPlayers(activePane || document);
     }, FIRST_INIT_DELAY);
 
-    // Manejo de tabs (Bootstrap 4)
     if (typeof $ === 'function') {
         $('#gruposMuscularesTab a[data-toggle="tab"]').off('shown.bs.tab').on('shown.bs.tab', function (e) {
-            const targetSelector = $(e.target).attr('href'); // #content-grupo-X
+            const targetSelector = $(e.target).attr('href');
             const targetPane = document.querySelector(targetSelector);
 
-            // Pausar todo lo que esté sonando (no destruir)
             pauseAllPlayers();
 
-            // (Re)observar solo los videos de la pestaña activa (idempotente)
             clearTimeout(tabInitTimer);
             tabInitTimer = setTimeout(() => {
                 initializeVideoPlayers(targetPane);
@@ -298,7 +261,6 @@ function renderRoutineTabs(rutinaPorGrupo, container) {
     }
 }
 
-/* ================== Carga de datos ================== */
 function loadRoutine(level, gender) {
     const routineContainer = document.getElementById('routineContainer');
     const routineTitle = document.getElementById('routineTitle');
@@ -311,9 +273,7 @@ function loadRoutine(level, gender) {
     routineContainer.innerHTML = spinnerHTML();
     routineTitle.textContent = 'Cargando Rutina...';
 
-    // Re-render global: destruir players previos
     destroyVideoPlayers();
-    // Reiniciar cola
     initQueue = [];
     activeInits = 0;
 
@@ -330,7 +290,6 @@ function loadRoutine(level, gender) {
             return data;
         })
         .then((data) => {
-            // 🔥 Ocultar el spinner estático del HTML
             const loaderState = document.getElementById('loaderState');
             if (loaderState) loaderState.style.display = 'none';
 

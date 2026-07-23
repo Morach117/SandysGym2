@@ -1,6 +1,4 @@
 <?php
-// /api/lib/UserService.php
-
 require_once __DIR__ . '/EmailService.php';
 
 class UserService {
@@ -10,7 +8,6 @@ class UserService {
         $this->conn = $conn;
     }
 
-    // --- FUNCIONES DE BÚSQUEDA ---
     private function findUserByEmail($email) {
         $stmt = $this->conn->prepare("SELECT soc_id_socio FROM san_socios WHERE soc_correo = ?");
         $stmt->execute([$email]);
@@ -42,18 +39,15 @@ class UserService {
     }
 
     /**
-     * REGISTRO PRINCIPAL
+     * Registra un nuevo socio o actualiza sus datos de validación
      */
     public function registerOrUpdate($name, $paternal, $maternal, $email, $rawPassword, $telefono, $genero, $fecha_nacimiento_sql, $referral_code = null) {
-        
         $password = password_hash($rawPassword, PASSWORD_DEFAULT);
-        // Generar un código de validación seguro de 6 dígitos
         $val_code = str_pad((string)random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
         $fecha = date("Y-m-d H:i:s");
         
-        // 1. LÓGICA REFERIDO (SOLO VINCULACIÓN, SIN DINERO INICIAL)
         $idPadrino = 0;
-        $saldoInicial = 0.00; // El nuevo usuario siempre entra con $0 en el monedero
+        $saldoInicial = 0.00;
 
         if (!empty($referral_code)) {
             $ref_clean = preg_replace('/[^0-9]/', '', $referral_code);
@@ -62,8 +56,6 @@ class UserService {
             if ($ref_clean !== $tel_clean) {
                 $datosPadrino = $this->findPadrino($ref_clean);
                 if ($datosPadrino) {
-                    // Guardamos el ID del padrino para saber quién lo invitó.
-                    // Nadie recibe dinero en este punto.
                     $idPadrino = $datosPadrino['soc_id_socio'];
                 }
             }
@@ -74,10 +66,8 @@ class UserService {
 
         try {
             if ($userByEmail) {
-                // Lanzar excepción para evitar secuestro de cuentas
                 throw new Exception("Correo ya existe, favor de introducir uno diferente");
             } else {
-                // INSERT NUEVO
                 $query = "INSERT INTO san_socios (
                             soc_nombres, soc_apepat, soc_apemat, soc_correo, san_password, 
                             soc_fecha_captura, soc_fecha_nacimiento, soc_genero, 
@@ -99,9 +89,6 @@ class UserService {
                     $val_code, $telefono,
                     $idPadrino, $saldoInicial 
                 ]);
-                
-                // Ya NO llamamos a darRecompensaPadrino() aquí.
-                // Queda pendiente para cuando pague en caja.
             }
             return $val_code;
 
@@ -110,8 +97,6 @@ class UserService {
             return false;
         }
     }
-
-    // --- FUNCIONES PRIVADAS (Y PUBLICAS PARA LA CAJA) ---
 
     private function registrarHistorial($idSocio, $monto, $concepto, $idSistema) {
         $fecha = date('Y-m-d H:i:s');
@@ -124,33 +109,24 @@ class UserService {
     }
 
     /**
-     * Esta función debe ser llamada desde tu script de VENTAS/CAJA
-     * cuando el nuevo socio pague su primera mensualidad.
+     * Otorga la recompensa de referido al socio padrino
      */
     public function darRecompensaPadrino($idPadrino, $padrinoData, $nombreNuevoSocio) {
         $idSistema = 1; 
-        
-        // Obtenemos el monto dinámico desde la configuración de la base de datos
         $monto = $this->getMontoReferido();
 
-        if ($monto <= 0) return; // Si la configuración está en 0, no damos bono
+        if ($monto <= 0) return;
 
         try {
-            // 1. Update Saldo
             $this->conn->prepare("UPDATE san_socios SET soc_mon_saldo = soc_mon_saldo + ? WHERE soc_id_socio = ?")->execute([$monto, $idPadrino]);
             
-            // 2. Historial
             $this->registrarHistorial($idPadrino, $monto, "Referido: $nombreNuevoSocio", $idSistema);
 
-            // 3. Email (Lógica con Plantilla)
             if (!empty($padrinoData['soc_correo'])) {
-                
-                // Obtenemos el nuevo saldo REAL de la base de datos para mostrarlo en el correo
                 $stmtSaldo = $this->conn->prepare("SELECT soc_mon_saldo FROM san_socios WHERE soc_id_socio = ?");
                 $stmtSaldo->execute([$idPadrino]);
                 $nuevoSaldo = $stmtSaldo->fetchColumn();
 
-                // Variables para la plantilla
                 $nombrePadrino = $padrinoData['soc_nombres'];
                 $asunto = "¡Ganaste $" . number_format($monto, 0) . " MXN! 💰";
 
@@ -172,12 +148,8 @@ class UserService {
         }
     }
 
-    /**
-     * Obtiene dinámicamente el monto para referidos de la base de datos
-     */
     private function getMontoReferido() {
         try {
-            // Consultamos la tabla consorcios asumiendo el ID 1 
             $stmt = $this->conn->prepare("SELECT con_referidos FROM san_consorcios WHERE con_id_consorcio = 1 LIMIT 1");
             $stmt->execute();
             $monto = $stmt->fetchColumn();

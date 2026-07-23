@@ -1,19 +1,14 @@
 <?php
-// --- Lógica para obtener datos y estado de la membresía ---
 include_once(__DIR__ . '/../conn.php');
-include_once(__DIR__ . '/../api/select_data.php'); // Restaurado para garantizar la inyección de $selSocioData
+include_once(__DIR__ . '/../api/select_data.php');
 
 date_default_timezone_set('America/Mexico_City');
 $currentDate = new DateTime();
 $socioId = $selSocioData['soc_id_socio'];
 
-// Procesamiento simplificado y robusto de URL de imagen
 $fotoPerfil = null;
 if (!empty($selSocioData['soc_imagen'])) {
-    // Aislar exclusivamente el nombre del archivo (Ej: "5857.jpg") 
     $nombreArchivo = basename($selSocioData['soc_imagen']);
-    
-    // Construir ruta relativa estándar desde /sandys_web/ hacia /imagenes/avatar/
     $fotoPerfil = '../imagenes/avatar/' . $nombreArchivo;
 }
 

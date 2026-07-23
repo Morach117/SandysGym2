@@ -1,18 +1,15 @@
 <?php
 declare(strict_types=1);
 
-// api/procesar_recarga_monedero.php
-// --- 1. INICIAR SESIÓN (SOLO SI NO ESTÁ ACTIVA) ---
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// --- 1.1 GENERAR CSRF TOKEN ---
 if (empty($_SESSION['csrf_token'])) {
     try {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     } catch (Exception $e) {
-        $_SESSION['csrf_token'] = md5(uniqid(mt_rand(), true));
+        $_SESSION['csrf_token'] = md5((string)mt_rand());
     }
 }
 date_default_timezone_set('America/Mexico_City');
@@ -31,6 +28,9 @@ if (!defined('MP_PROCESSOR_LOG_FILE')) {
     define('MP_PROCESSOR_LOG_FILE', __DIR__ . '/../logs/procesar_pago.log');
 }
 
+/**
+ * Escribe un mensaje en el archivo de registro de pagos
+ */
 function log_processor(string $message): void {
     $ts = date("Y-m-d H:i:s"); 
     @file_put_contents(MP_PROCESSOR_LOG_FILE, "[$ts] [MONEDERO] $message" . PHP_EOL, FILE_APPEND);
@@ -39,14 +39,12 @@ function log_processor(string $message): void {
 header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
 
-// 1. Validación estricta de Sesión
 if (empty($_SESSION['admin']['soc_id_socio'])) {
     http_response_code(401);
     echo json_encode(['status' => 'error', 'message' => 'Sesión no válida o expirada.']);
     exit;
 }
 
-// 2. Validación CSRF (Requiere que el Front envíe el token en la cabecera o POST)
 $csrfToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['csrf_token'] ?? '';
 
 if (empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], (string)$csrfToken)) {
@@ -57,17 +55,13 @@ if (empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], (str
 }
 
 try {
-    // 3. Mitigación IDOR: El ID del socio SIEMPRE se toma de la sesión confiable, NUNCA del POST
     $id_socio = (int)$_SESSION['admin']['soc_id_socio'];
-    
-    // Sanitización y validación del importe
     $importe_recarga = filter_input(INPUT_POST, 'importe', FILTER_VALIDATE_FLOAT);
     
     $id_empresa = (int)($_SESSION['admin']['id_empresa'] ?? 1);
     $id_usuario = (int)($_SESSION['admin']['id_usuario'] ?? 99);
     $id_consorcio = (int)($_SESSION['admin']['id_consorcio'] ?? 1);
 
-    // Validación de límites lógicos para prevenir overflows o recargas nulas
     if ($importe_recarga === false || $importe_recarga < 50.00 || $importe_recarga > 20000.00) {
         throw new InvalidArgumentException("El importe es inválido. Debe ser entre $50.00 y $20,000.00 MXN.");
     }
@@ -106,7 +100,6 @@ try {
     $client = new PreferenceClient();
     $preference = $client->create($request);
 
-    // 5. Cache de Metadata
     $sql = "INSERT INTO san_mp_pref (pref_id, external_reference, metadata_json, created_at) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE metadata_json = VALUES(metadata_json)";
     $stmt = $conn->prepare($sql);
     $stmt->execute([
@@ -121,7 +114,6 @@ try {
     echo json_encode(['status' => 'success', 'url' => $preference->init_point]);
 
 } catch (InvalidArgumentException $e) {
-    // Excepciones controladas de negocio sí se muestran al cliente
     http_response_code(400);
     echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
 } catch (MPApiException $e) {
@@ -148,3 +140,4 @@ try {
     http_response_code(500);
     echo json_encode(['status' => 'error', 'message' => 'Error inesperado. Intente más tarde.']);
 }
+?>

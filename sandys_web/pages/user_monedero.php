@@ -1,10 +1,8 @@
 <?php
-// --- 1. INICIAR SESIÓN (SOLO SI NO ESTÁ ACTIVA) ---
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Generar CSRF Token seguro si no existe en la sesión actual
 if (empty($_SESSION['csrf_token'])) {
     try {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -13,22 +11,18 @@ if (empty($_SESSION['csrf_token'])) {
     }
 }
 
-// --- 2. VERIFICAR ACCESO ---
 if (!isset($_SESSION['admin']) || !isset($_SESSION['admin']['soc_id_socio'])) {
     header('Location: index.php?page=login&error=session_expired');
     exit;
 }
 
-// --- 3. INCLUIR CONEXIÓN A BD ---
 if (!isset($conn) || !$conn instanceof PDO) {
     die("<div style='color:white; text-align:center; padding:50px;'>Error crítico: No se pudo establecer la conexión con la base de datos.</div>");
 }
 
-// --- 4. OBTENER ID DEL SOCIO DE LA SESIÓN ---
 $id_socio = (int) $_SESSION['admin']['soc_id_socio'];
 $id_empresa = 1;
 
-// --- 5. OBTENER DATOS DEL MONEDERO DEL SOCIO ---
 function obtener_prepago_pdo($conexion_pdo, $id_socio, $id_empresa)
 {
     try {
@@ -67,7 +61,6 @@ if (!$prepago) {
 <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap4.min.css">
 
 <style>
-    /* Base */
     body {
         background-color: #050505 !important;
         color: #e0e0e0;
@@ -79,7 +72,6 @@ if (!$prepago) {
         min-height: 100vh;
     }
 
-    /* 🔥 Títulos (Corrección Móvil) 🔥 */
     .page-title {
         font-family: 'Oswald', sans-serif;
         font-size: 32px;
@@ -90,7 +82,6 @@ if (!$prepago) {
         word-wrap: break-word;
         overflow-wrap: break-word;
         line-height: 1.2;
-        /* Evita que las letras se encimen */
     }
 
     .page-subtitle {
@@ -99,7 +90,6 @@ if (!$prepago) {
         margin-bottom: 30px;
     }
 
-    /* Tarjetas */
     .payment-card,
     .summary-card,
     .history-card {
@@ -121,7 +111,6 @@ if (!$prepago) {
         padding-bottom: 12px;
     }
 
-    /* 🔥 Inputs (Corrección Textos Largos) 🔥 */
     .form-label {
         color: #bbb;
         font-size: 13px;
@@ -151,7 +140,6 @@ if (!$prepago) {
         outline: none;
     }
 
-    /* Elipsis para que "URIBE xd xd..." no rompa la pantalla */
     .form-control[readonly] {
         background-color: #0a0a0a !important;
         color: #888888 !important;
@@ -168,7 +156,6 @@ if (!$prepago) {
         font-size: 18px !important;
     }
 
-    /* Botones */
     .primary-btn {
         background-color: #ef4444;
         color: #fff;
@@ -196,7 +183,6 @@ if (!$prepago) {
         color: #fff;
     }
 
-    /* Resumen y Seguridad */
     .list-group-item {
         background-color: transparent !important;
         border-color: #333 !important;
@@ -234,7 +220,6 @@ if (!$prepago) {
         line-height: 1.3;
     }
 
-    /* DATATABLES DARK MODE OVERRIDES */
     table.dataTable {
         border-collapse: collapse !important;
         width: 100% !important;
@@ -348,7 +333,6 @@ if (!$prepago) {
         }
     }
 
-    /* Botón de Regresar Estilo Frontend (Dark Mode) */
     .btn-back {
         display: inline-flex;
         align-items: center;
@@ -367,7 +351,6 @@ if (!$prepago) {
 
     .btn-back:hover {
         background: #ef4444;
-        /* Rojo Sandy's */
         color: #fff;
         border-color: #ef4444;
         transform: translateX(-5px);
@@ -400,9 +383,9 @@ if (!$prepago) {
     .input-saldo-resaltado {
         background: transparent !important;
         border: none !important;
-        color: #10b981 !important; /* Verde Neón Sandy's */
+        color: #10b981 !important;
         font-family: 'Oswald', sans-serif;
-        font-size: 42px !important; /* Tamaño aumentado considerablemente */
+        font-size: 42px !important;
         font-weight: 700 !important;
         text-align: center !important;
         width: 100%;
@@ -412,7 +395,6 @@ if (!$prepago) {
         text-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
     }
 
-    /* Quitar el borde azul de enfoque en este campo específico */
     .input-saldo-resaltado:focus {
         box-shadow: none !important;
         outline: none !important;
@@ -532,13 +514,11 @@ if (!$prepago) {
 
 <script>
     (function () {
-        // --- Interceptar Token CSRF y Configurar Headers Globales ---
         var csrfToken = document.getElementById('csrf_token') ? document.getElementById('csrf_token').value : '';
         
         if (window.jQuery) {
             setupAjax();
         } else {
-            // Si jQuery aún no carga, esperamos
             var waitJq = setInterval(function() {
                 if (window.jQuery) {
                     clearInterval(waitJq);
@@ -555,7 +535,6 @@ if (!$prepago) {
             });
         }
 
-        // --- Lógica del Resumen visual ---
         window.actualizarResumen = function () {
             const importeInput = document.getElementById('prep_importe').value;
             const totalElement = document.getElementById('previewTotal');
@@ -567,7 +546,6 @@ if (!$prepago) {
             totalElement.textContent = formatoMoneda;
         };
 
-        // --- Lógica del Botón (PAGO) ---
         function inicializarEventos() {
             $('#btn-generar-pago').on('click', function (e) {
                 e.preventDefault(); 
@@ -586,7 +564,6 @@ if (!$prepago) {
                 $btn.html('Generando... <i class="fas fa-spinner fa-spin ml-2"></i>');
                 $btn.prop('disabled', true);
 
-                // El token viaja en el header y explícitamente en POST como fallback
                 $.ajax({
                     type: "POST",
                     url: "api/procesar_recarga_monedero.php",
@@ -620,7 +597,6 @@ if (!$prepago) {
             });
         }
 
-        // --- Lógica de DataTables ---
         function iniciarTabla() {
             $('#historial-prepago').DataTable({
                 "processing": true,
@@ -637,7 +613,7 @@ if (!$prepago) {
                     },
                     "data": function (d) {
                         d.id_socio = $('#id_socio').val();
-                        d.csrf_token = csrfToken; // Inyección de CSRF al backend de DT
+                        d.csrf_token = csrfToken;
                     }
                 },
                 "columns": [
@@ -695,7 +671,6 @@ if (!$prepago) {
             });
         }
 
-        // Vigilamos hasta que jQuery despierte
         var intentos = 0;
         var checkJquery = setInterval(function () {
             if (window.jQuery) {

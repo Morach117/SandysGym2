@@ -1,12 +1,11 @@
 <?php
-$domain = isset($_SERVER['HTTP_HOST']) ? preg_replace('/^www\./', '', explode(':', $_SERVER['HTTP_HOST'])[0]) : '';
+$isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
 session_set_cookie_params([
     'lifetime' => 0,
     'path' => '/',
-    'domain' => $domain,
-    'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+    'secure' => $isSecure,
     'httponly' => true,
-    'samesite' => 'Lax'
+    'samesite' => $isSecure ? 'None' : 'Lax'
 ]);
 session_start();
 

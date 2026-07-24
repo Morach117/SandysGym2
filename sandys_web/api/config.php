@@ -12,8 +12,8 @@ $current_year_month = date('Y-m');
 define('MAIL_SUCCESS_LOG_FILE', LOGS_DIR . 'mail_success_' . $current_year_month . '.log');
 define('MAIL_ERROR_LOG_FILE', LOGS_DIR . 'mail_error_' . $current_year_month . '.log');
 
-define('MP_ACCESS_TOKEN', getenv('MP_ACCESS_TOKEN') ?: '');
-define('MP_WEBHOOK_SECRET', getenv('MP_WEBHOOK_SECRET') ?: '');
+define('MP_ACCESS_TOKEN', $_ENV['MP_ACCESS_TOKEN'] ?? $_SERVER['MP_ACCESS_TOKEN'] ?? getenv('MP_ACCESS_TOKEN') ?: '');
+define('MP_WEBHOOK_SECRET', $_ENV['MP_WEBHOOK_SECRET'] ?? $_SERVER['MP_WEBHOOK_SECRET'] ?? getenv('MP_WEBHOOK_SECRET') ?: '');
 define('MP_WEBHOOK_LOG_FILE', LOGS_DIR . 'webhook' . $current_year_month . '.log');
 
 if (isset($_SERVER['HTTP_HOST'])) {

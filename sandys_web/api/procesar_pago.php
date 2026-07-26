@@ -2,7 +2,29 @@
 declare(strict_types=1);
 
 if (session_status() === PHP_SESSION_NONE) {
+    $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') 
+             || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)
+             || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+    
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/',
+        'secure' => $isSecure,
+        'httponly' => true,
+        'samesite' => $isSecure ? 'None' : 'Lax'
+    ]);
     session_start();
+}
+
+// Ensure the cookie is forcefully updated in the browser in case it was created with Lax earlier
+if (isset($isSecure) && $isSecure) {
+    setcookie(session_name(), session_id(), [
+        'expires' => 0,
+        'path' => '/',
+        'secure' => true,
+        'httponly' => true,
+        'samesite' => 'None'
+    ]);
 }
 
 if (empty($_SESSION['csrf_token'])) {
@@ -34,6 +56,14 @@ if (!defined('MP_PROCESSOR_LOG_FILE')) {
 function log_processor(string $message): void {
     $ts = date("Y-m-d H:i:s"); 
     @file_put_contents(MP_PROCESSOR_LOG_FILE, "[$ts] [MEMBRESIA] $message" . PHP_EOL, FILE_APPEND);
+}
+
+// LOG DE DIAGNÓSTICO: Registrar inicio de pago y estado de cookies
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $sid = session_id();
+    $cookies = implode(', ', array_keys($_COOKIE));
+    $ua = $_SERVER['HTTP_USER_AGENT'] ?? 'UNKNOWN';
+    log_processor("Inicio Procesar Pago. SessionID: $sid | Cookies recibidas: [$cookies] | UA: $ua");
 }
 
 header('Content-Type: application/json; charset=utf-8');
@@ -142,7 +172,10 @@ if ($accion === 'pagar') {
 if (defined('BASE_URL_APP') && BASE_URL_APP) {
     $baseUrl = rtrim(BASE_URL_APP, '/');
 } else {
-    $scheme  = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $is_https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') 
+             || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)
+             || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+    $scheme  = $is_https ? 'https' : 'http';
     $host    = $_SERVER['HTTP_HOST'] ?? 'localhost';
     $root    = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\');
     $baseUrl = $scheme . '://' . $host . preg_replace('#/api$#', '', $root);

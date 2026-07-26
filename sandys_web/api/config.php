@@ -17,7 +17,10 @@ define('MP_WEBHOOK_SECRET', $_ENV['MP_WEBHOOK_SECRET'] ?? $_SERVER['MP_WEBHOOK_S
 define('MP_WEBHOOK_LOG_FILE', LOGS_DIR . 'webhook' . $current_year_month . '.log');
 
 if (isset($_SERVER['HTTP_HOST'])) {
-    $protocol = ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)) ? "https://" : "http://";
+    $is_https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') 
+             || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)
+             || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+    $protocol = $is_https ? "https://" : "http://";
     define('BASE_URL_APP', $protocol . $_SERVER['HTTP_HOST']);
 } else {
     define('BASE_URL_APP', 'https://sandysgym.com');

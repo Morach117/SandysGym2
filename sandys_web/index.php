@@ -26,17 +26,31 @@ $page = isset($_GET['page']) ? htmlspecialchars($_GET['page']) : 'home';
 $loggedIn = isset($_SESSION['admin']);
 
 if (in_array($page, $privatePages) && !$loggedIn) {
-    // LOG DE DIAGNÓSTICO: Detectar si se perdió la sesión al regresar de Mercado Pago
+    // LOG DE DIAGNÓSTICO Y MITIGACIÓN ITP: Detectar si se perdió la sesión al regresar de Mercado Pago
     if (in_array($page, ['gracias', 'pago_fallido']) && (isset($_GET['payment_id']) || isset($_GET['external_reference']))) {
         $logFile = __DIR__ . '/logs/mp_returns.log';
         $timestamp = date("Y-m-d H:i:s");
-        $payment_id = $_GET['payment_id'] ?? 'N/A';
-        $ext_ref = $_GET['external_reference'] ?? 'N/A';
-        $ip = $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN';
-        $ua = $_SERVER['HTTP_USER_AGENT'] ?? 'UNKNOWN';
-        $sid = session_id();
-        $cookies = implode(', ', array_keys($_COOKIE));
-        @file_put_contents($logFile, "[$timestamp] [ERROR] Sesión perdida al regresar de MP. IP: $ip | Ref: $ext_ref | Payment: $payment_id | SID: $sid | Cookies: [$cookies] | UA: $ua\n", FILE_APPEND);
+        
+        if (!isset($_GET['restored'])) {
+            $currentUrl = $_SERVER['REQUEST_URI'];
+            $restoreUrl = $currentUrl . (strpos($currentUrl, '?') !== false ? '&' : '?') . 'restored=1';
+            
+            @file_put_contents($logFile, "[$timestamp] [WARNING] Posible bloqueo ITP de Safari. Aplicando JS Reload para restaurar cookies: $restoreUrl\n", FILE_APPEND);
+            
+            echo "<!DOCTYPE html><html><head><meta charset='utf-8'><title>Procesando...</title></head><body style='background:#121212; color:#fff; text-align:center; padding-top:50px; font-family:sans-serif;'>";
+            echo "<h2>Confirmando transacción...</h2><p>Por favor espera un momento, estamos validando tu sesión.</p>";
+            echo "<script>window.location.replace('" . htmlspecialchars($restoreUrl, ENT_QUOTES, 'UTF-8') . "');</script>";
+            echo "</body></html>";
+            exit;
+        } else {
+            $payment_id = $_GET['payment_id'] ?? 'N/A';
+            $ext_ref = $_GET['external_reference'] ?? 'N/A';
+            $ip = $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN';
+            $ua = $_SERVER['HTTP_USER_AGENT'] ?? 'UNKNOWN';
+            $sid = session_id();
+            $cookies = implode(', ', array_keys($_COOKIE));
+            @file_put_contents($logFile, "[$timestamp] [ERROR] Sesión perdida permanentemente tras JS Reload. IP: $ip | Ref: $ext_ref | Payment: $payment_id | SID: $sid | Cookies: [$cookies] | UA: $ua\n", FILE_APPEND);
+        }
     }
     
     header("Location: index.php?page=login");

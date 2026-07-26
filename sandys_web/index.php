@@ -9,6 +9,8 @@ session_set_cookie_params([
     'httponly' => true,
     'samesite' => $isSecure ? 'None' : 'Lax'
 ]);
+
+date_default_timezone_set('America/Mexico_City');
 session_start();
 
 $publicPages = [
@@ -30,15 +32,19 @@ $loggedIn = isset($_SESSION['admin']);
 
 // LOG DE DIAGNÓSTICO Y MITIGACIÓN ITP: Detectar si se perdió la sesión al regresar de Mercado Pago
 if (in_array($page, ['gracias', 'pago_fallido']) && !$loggedIn && (isset($_GET['payment_id']) || isset($_GET['external_reference']))) {
+    $logFile = __DIR__ . '/logs/mp_returns.log';
+    $timestamp = date("Y-m-d H:i:s");
+    
     if (!isset($_GET['restored'])) {
-        $logFile = __DIR__ . '/logs/mp_returns.log';
-        $timestamp = date("Y-m-d H:i:s");
         $currentUrl = $_SERVER['REQUEST_URI'];
         $restoreUrl = $currentUrl . (strpos($currentUrl, '?') !== false ? '&' : '?') . 'restored=1';
         
-        @file_put_contents($logFile, "[$timestamp] [WARNING] Posible bloqueo ITP de Safari. Aplicando JS Reload para restaurar cookies: $restoreUrl\n", FILE_APPEND);
-        ?>
-<!DOCTYPE html>
+        $getParams = json_encode($_GET);
+        $serverInfo = "PHP: " . phpversion() . " | UA: " . ($_SERVER['HTTP_USER_AGENT'] ?? 'N/A') . " | Referer: " . ($_SERVER['HTTP_REFERER'] ?? 'N/A');
+        @file_put_contents($logFile, "[$timestamp] [DEBUG] Paso 1: Iniciando validacion ITP.\n   - GET: $getParams\n   - SERVER: $serverInfo\n   - TARGET URL: $restoreUrl\n", FILE_APPEND);
+        
+        try {
+            echo "<!DOCTYPE html>
 <html lang='es'>
 <head>
     <meta charset='utf-8'>
@@ -98,24 +104,32 @@ if (in_array($page, ['gracias', 'pago_fallido']) && !$loggedIn && (isset($_GET['
         <p>Estamos validando tu transacción de forma segura con el servidor.</p>
     </div>
     <script>
+        console.log('Ejecutando JS Reload hacia:', '" . $restoreUrl . "');
         setTimeout(function() {
-            window.location.replace('<?php echo htmlspecialchars($restoreUrl, ENT_QUOTES, 'UTF-8'); ?>');
+            window.location.replace('" . $restoreUrl . "');
         }, 300); // Pequeño retraso para que la transición no sea brusca
     </script>
 </body>
-</html>
-        <?php
-        exit;
-        } else {
-            $payment_id = $_GET['payment_id'] ?? 'N/A';
-            $ext_ref = $_GET['external_reference'] ?? 'N/A';
-            $ip = $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN';
-            $ua = $_SERVER['HTTP_USER_AGENT'] ?? 'UNKNOWN';
-            $sid = session_id();
-            $cookies = implode(', ', array_keys($_COOKIE));
-            @file_put_contents($logFile, "[$timestamp] [ERROR] Sesión perdida permanentemente tras JS Reload. IP: $ip | Ref: $ext_ref | Payment: $payment_id | SID: $sid | Cookies: [$cookies] | UA: $ua\n", FILE_APPEND);
+</html>";
+            @file_put_contents($logFile, "[$timestamp] [DEBUG] Paso 2: HTML impreso correctamente. Saliendo de PHP.\n", FILE_APPEND);
+        } catch (Throwable $e) {
+            $err = $e->getMessage() . " en " . $e->getFile() . ":" . $e->getLine();
+            @file_put_contents($logFile, "[$timestamp] [FATAL] Crash en Paso 1 (Generando HTML): $err\n", FILE_APPEND);
         }
+        exit;
+    } else {
+        $getParams = json_encode($_GET);
+        @file_put_contents($logFile, "[$timestamp] [DEBUG] Paso 3: JS Reload completado (restored=1 detectado).\n   - GET RECIBIDO: $getParams\n", FILE_APPEND);
+        $payment_id = $_GET['payment_id'] ?? 'N/A';
+        $ext_ref = $_GET['external_reference'] ?? 'N/A';
+        $ip = $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN';
+        $ua = $_SERVER['HTTP_USER_AGENT'] ?? 'UNKNOWN';
+        $sid = session_id();
+        $cookies = implode(', ', array_keys($_COOKIE));
+        @file_put_contents($logFile, "[$timestamp] [INFO] Sesión no restaurada tras JS Reload. Renderizando vista pública.\n   - Ref: $ext_ref | Payment: $payment_id | SID: $sid | Cookies: [$cookies]\n", FILE_APPEND);
+    }
 }
+
 
 // Redirect to login only if trying to access a strictly private page while logged out
 if (in_array($page, $privatePages) && !$loggedIn) {

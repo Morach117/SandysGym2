@@ -13,31 +13,32 @@ session_start();
 
 $publicPages = [
     'home', 'team', 'services', 'contact', 'classes', 'about_us',
-    'login', 'registration', 'validate', 'reset_password', 'registro', 'success_stories', 'faq', 'accept_invite'
+    'login', 'registration', 'validate', 'reset_password', 'registro', 'success_stories', 'faq', 'accept_invite',
+    'gracias', 'pago_fallido'
 ];
 
 $privatePages = [
     'user_home', 'user_information', 'user_rutina',
     'user_calculator', 'user_pago_membresia', 'routine',
-    'gracias', 'pago_fallido', 'recibo', 'mis_pagos', 'user_admin_plan', 'user_referidos', 'user_monedero', 'progreso'
+    'recibo', 'mis_pagos', 'user_admin_plan', 'user_referidos', 'user_monedero', 'progreso'
 ];
+
+$userPanelPages = array_merge($privatePages, ['gracias', 'pago_fallido']);
 
 $page = isset($_GET['page']) ? htmlspecialchars($_GET['page']) : 'home';
 $loggedIn = isset($_SESSION['admin']);
 
-if (in_array($page, $privatePages) && !$loggedIn) {
-    // LOG DE DIAGNÓSTICO Y MITIGACIÓN ITP: Detectar si se perdió la sesión al regresar de Mercado Pago
-    if (in_array($page, ['gracias', 'pago_fallido']) && (isset($_GET['payment_id']) || isset($_GET['external_reference']))) {
+// LOG DE DIAGNÓSTICO Y MITIGACIÓN ITP: Detectar si se perdió la sesión al regresar de Mercado Pago
+if (in_array($page, ['gracias', 'pago_fallido']) && !$loggedIn && (isset($_GET['payment_id']) || isset($_GET['external_reference']))) {
+    if (!isset($_GET['restored'])) {
         $logFile = __DIR__ . '/logs/mp_returns.log';
         $timestamp = date("Y-m-d H:i:s");
+        $currentUrl = $_SERVER['REQUEST_URI'];
+        $restoreUrl = $currentUrl . (strpos($currentUrl, '?') !== false ? '&' : '?') . 'restored=1';
         
-        if (!isset($_GET['restored'])) {
-            $currentUrl = $_SERVER['REQUEST_URI'];
-            $restoreUrl = $currentUrl . (strpos($currentUrl, '?') !== false ? '&' : '?') . 'restored=1';
-            
-            @file_put_contents($logFile, "[$timestamp] [WARNING] Posible bloqueo ITP de Safari. Aplicando JS Reload para restaurar cookies: $restoreUrl\n", FILE_APPEND);
-            
-            echo "<!DOCTYPE html>
+        @file_put_contents($logFile, "[$timestamp] [WARNING] Posible bloqueo ITP de Safari. Aplicando JS Reload para restaurar cookies: $restoreUrl\n", FILE_APPEND);
+        ?>
+<!DOCTYPE html>
 <html lang='es'>
 <head>
     <meta charset='utf-8'>
@@ -98,12 +99,13 @@ if (in_array($page, $privatePages) && !$loggedIn) {
     </div>
     <script>
         setTimeout(function() {
-            window.location.replace('" . htmlspecialchars($restoreUrl, ENT_QUOTES, 'UTF-8') . "');
+            window.location.replace('<?php echo htmlspecialchars($restoreUrl, ENT_QUOTES, 'UTF-8'); ?>');
         }, 300); // Pequeño retraso para que la transición no sea brusca
     </script>
 </body>
-</html>";
-            exit;
+</html>
+        <?php
+        exit;
         } else {
             $payment_id = $_GET['payment_id'] ?? 'N/A';
             $ext_ref = $_GET['external_reference'] ?? 'N/A';
@@ -113,13 +115,15 @@ if (in_array($page, $privatePages) && !$loggedIn) {
             $cookies = implode(', ', array_keys($_COOKIE));
             @file_put_contents($logFile, "[$timestamp] [ERROR] Sesión perdida permanentemente tras JS Reload. IP: $ip | Ref: $ext_ref | Payment: $payment_id | SID: $sid | Cookies: [$cookies] | UA: $ua\n", FILE_APPEND);
         }
-    }
-    
+}
+
+// Redirect to login only if trying to access a strictly private page while logged out
+if (in_array($page, $privatePages) && !$loggedIn) {
     header("Location: index.php?page=login");
     exit;
 }
 
-if ($loggedIn && in_array($page, $privatePages)) {
+if ($loggedIn && in_array($page, $userPanelPages)) {
     include('includes/user_panel_header.php'); 
 } else {
     include('includes/public_header.php');

@@ -1,5 +1,5 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) session_start();
+if (session_status() === PHP_SESSION_NONE) require_once __DIR__ . '/../config/session.php';
 date_default_timezone_set('America/Mexico_City'); 
 
 require_once __DIR__ . '/../conn.php';

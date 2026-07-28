@@ -8,6 +8,51 @@ $paymentId   = filter_input(INPUT_GET, 'payment_id', FILTER_SANITIZE_NUMBER_INT)
 $isApproved = ($status === 'approved');
 $isPending  = ($status === 'pending' || $status === 'in_process');
 
+// =========================================================================
+// ESTRATEGIA DE RESTAURACIÓN DE IDENTIDAD (TRIPLE FALLBACK ANTI-ITP)
+// =========================================================================
+$fallback_usado = 'Ninguno (Sesión Normal)';
+if (empty($_SESSION['admin']['soc_id_socio']) && $externalRef !== 'N/A') {
+    if (!isset($_SESSION['admin'])) {
+        $_SESSION['admin'] = [];
+    }
+    
+    // Nivel 2: Regex Fallback (Safari bloqueó la cookie, pero tenemos el GET)
+    // El external_reference de procesar_pago.php es 'SOCIO_' . $id . '_' . time();
+    if (preg_match('/^SOCIO_(\d+)_/', $externalRef, $matches)) {
+        $_SESSION['admin']['soc_id_socio'] = (int)$matches[1];
+        $fallback_usado = 'Nivel 2 (Regex URL)';
+    }
+    
+    // Nivel 3: Base de Datos (Fallback consultando san_mp_pref)
+    if (empty($_SESSION['admin']['soc_id_socio'])) {
+        try {
+            $stmtFb = $conn->prepare("SELECT metadata_json FROM san_mp_pref WHERE external_reference = :ref LIMIT 1");
+            $stmtFb->execute([':ref' => $externalRef]);
+            $rowFb = $stmtFb->fetch(PDO::FETCH_ASSOC);
+            if ($rowFb && !empty($rowFb['metadata_json'])) {
+                $metaFb = json_decode($rowFb['metadata_json'], true) ?: [];
+                if (!empty($metaFb['id_socio_beneficiario'])) {
+                    $_SESSION['admin']['soc_id_socio'] = (int)$metaFb['id_socio_beneficiario'];
+                    $fallback_usado = 'Nivel 3 (BD - Beneficiario)';
+                } elseif (!empty($metaFb['id_socio_pagador'])) {
+                    $_SESSION['admin']['soc_id_socio'] = (int)$metaFb['id_socio_pagador'];
+                    $fallback_usado = 'Nivel 3 (BD - Pagador)';
+                }
+            }
+        } catch (Exception $e) {
+            error_log("Error en DB Fallback (gracias.php): " . $e->getMessage());
+        }
+    }
+    
+    // Guardar en el log si el salvavidas funcionó
+    if (!empty($_SESSION['admin']['soc_id_socio'])) {
+        $logF = __DIR__ . '/../logs/mp_returns.log';
+        $ts = date("Y-m-d H:i:s");
+        @file_put_contents($logF, "[$ts] [ANTI-ITP SUCCESS] 🛡️ Sesión rescatada exitosamente usando: $fallback_usado. Socio ID recuperado: {$_SESSION['admin']['soc_id_socio']}\n", FILE_APPEND);
+    }
+}
+
 // LOG DE DIAGNÓSTICO: Registrar retorno exitoso
 $logFile = __DIR__ . '/../logs/mp_returns.log';
 $timestamp = date("Y-m-d H:i:s");

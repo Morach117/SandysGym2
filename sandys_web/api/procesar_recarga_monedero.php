@@ -1,31 +1,7 @@
 <?php
 declare(strict_types=1);
 
-if (session_status() === PHP_SESSION_NONE) {
-    $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') 
-             || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)
-             || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
-    
-    session_set_cookie_params([
-        'lifetime' => 0,
-        'path' => '/',
-        'secure' => $isSecure,
-        'httponly' => true,
-        'samesite' => $isSecure ? 'None' : 'Lax'
-    ]);
-    session_start();
-}
-
-// Ensure the cookie is forcefully updated in the browser in case it was created with Lax earlier
-if (isset($isSecure) && $isSecure) {
-    setcookie(session_name(), session_id(), [
-        'expires' => 0,
-        'path' => '/',
-        'secure' => true,
-        'httponly' => true,
-        'samesite' => 'None'
-    ]);
-}
+require_once __DIR__ . '/../config/session.php';
 
 if (empty($_SESSION['csrf_token'])) {
     try {

@@ -3,7 +3,7 @@ ob_start();
 header('Content-Type: application/json; charset=utf-8');
 
 if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+    require_once __DIR__ . '/../config/session.php';
 }
 
 require_once __DIR__ . '/../conn.php';

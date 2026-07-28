@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
-    session_start();
+    require_once __DIR__ . '/../config/session.php';
     if (empty($_SESSION['admin']['soc_id_socio'])) {
         throw new Exception("Acceso denegado. Inicie sesión para actualizar su perfil.");
     }

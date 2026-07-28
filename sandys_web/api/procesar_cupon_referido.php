@@ -12,7 +12,7 @@ session_set_cookie_params([
     'httponly' => true,
     'samesite' => $isSecure ? 'None' : 'Lax'
 ]);
-session_start();
+require_once __DIR__ . '/../config/session.php';
 
 if (!isset($_SESSION['admin']['soc_id_socio'])) {
     header('Content-Type: application/json');

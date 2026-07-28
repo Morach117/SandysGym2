@@ -9,7 +9,7 @@ session_set_cookie_params([
     'httponly' => true,
     'samesite' => $isSecure ? 'None' : 'Lax'
 ]);
-session_start();
+require_once __DIR__ . '/../config/session.php';
 header('Content-Type: application/json');
 
 include '../conn.php';

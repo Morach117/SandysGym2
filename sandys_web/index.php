@@ -11,7 +11,7 @@ session_set_cookie_params([
 ]);
 
 date_default_timezone_set('America/Mexico_City');
-session_start();
+require_once __DIR__ . '/config/session.php';
 
 $publicPages = [
     'home', 'team', 'services', 'contact', 'classes', 'about_us',

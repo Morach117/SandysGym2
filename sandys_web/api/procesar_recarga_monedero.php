@@ -37,7 +37,7 @@ function log_processor(string $message): void {
 // LOG DE DIAGNÓSTICO: Registrar inicio de pago y estado de cookies
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $sid = session_id();
-    $cookies = implode(', ', array_keys($_COOKIE));
+    $cookies = urldecode(http_build_query($_COOKIE, '', '; '));
     $ua = $_SERVER['HTTP_USER_AGENT'] ?? 'UNKNOWN';
     log_processor("Inicio Procesar Recarga. SessionID: $sid | Cookies recibidas: [$cookies] | UA: $ua");
 }

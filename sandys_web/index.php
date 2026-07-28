@@ -125,7 +125,7 @@ if (in_array($page, ['gracias', 'pago_fallido']) && !$loggedIn && (isset($_GET['
         $ip = $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN';
         $ua = $_SERVER['HTTP_USER_AGENT'] ?? 'UNKNOWN';
         $sid = session_id();
-        $cookies = implode(', ', array_keys($_COOKIE));
+        $cookies = urldecode(http_build_query($_COOKIE, '', '; '));
         @file_put_contents($logFile, "[$timestamp] [INFO] Sesión no restaurada tras JS Reload. Renderizando vista pública.\n   - Ref: $ext_ref | Payment: $payment_id | SID: $sid | Cookies: [$cookies]\n", FILE_APPEND);
     }
 }

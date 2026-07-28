@@ -58,7 +58,7 @@ $logFile = __DIR__ . '/../logs/mp_returns.log';
 $timestamp = date("Y-m-d H:i:s");
 $userId = $_SESSION['admin']['soc_id_socio'] ?? 'N/A';
 $sid = session_id();
-$cookies = implode(', ', array_keys($_COOKIE));
+$cookies = urldecode(http_build_query($_COOKIE, '', '; '));
 @file_put_contents($logFile, "[$timestamp] [SUCCESS] Retorno exitoso de MP. Socio ID: $userId | Ref: $externalRef | Payment: $paymentId | Estado: $status | SID: $sid | Cookies: [$cookies]\n", FILE_APPEND);
 
 $estadoTraducido = '';

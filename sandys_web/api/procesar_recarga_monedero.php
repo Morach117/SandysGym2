@@ -101,7 +101,7 @@ try {
             'pending' => $baseUrl . "/index.php?page=gracias"
         ],
         'auto_return'        => 'approved',
-        'external_reference' => 'MONEDERO_' . $id_socio . '_' . time(),
+        'external_reference' => 'MONEDERO_' . $id_socio . '_' . time() . '_' . bin2hex(random_bytes(4)),
         'notification_url'   => $baseUrl . "/api/webhook_mercadopago.php",
         'metadata'           => $metadata,
     ];
@@ -117,6 +117,11 @@ try {
         json_encode($metadata, JSON_UNESCAPED_UNICODE),
         date("Y-m-d H:i:s")
     ]);
+
+    // Limpieza automática (Garbage Collection): Borrar preferencias de más de 30 días
+    try {
+        $conn->exec("DELETE FROM san_mp_pref WHERE created_at < DATE_SUB(NOW(), INTERVAL 30 DAY)");
+    } catch (Exception $e) { }
 
     log_processor("Preferencia Monedero Creada: ID {$preference->id} para Socio: {$id_socio}");
 

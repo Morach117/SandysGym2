@@ -231,7 +231,7 @@ try {
         exit;
     }
 
-    $external_reference = 'SOCIO_' . $id_socio_benef . '_' . time();
+    $external_reference = 'SOCIO_' . $id_socio_benef . '_' . time() . '_' . bin2hex(random_bytes(4));
 
     $item = [
         'title'       => $servicio['descripcion'],
@@ -276,10 +276,15 @@ try {
     $stmt = $conn->prepare($sql);
     $stmt->execute([
         $preference->id,
-        $external_reference,
+        $request['external_reference'],
         json_encode($metadata, JSON_UNESCAPED_UNICODE),
         date("Y-m-d H:i:s")
     ]);
+
+    // Limpieza automática (Garbage Collection): Borrar preferencias de más de 30 días para no saturar la BD
+    try {
+        $conn->exec("DELETE FROM san_mp_pref WHERE created_at < DATE_SUB(NOW(), INTERVAL 30 DAY)");
+    } catch (Exception $e) { }
 
     echo json_encode(['status' => 'success', 'url' => $preference->init_point]);
 

@@ -17,39 +17,53 @@ if (empty($_SESSION['admin']['soc_id_socio']) && $externalRef !== 'N/A') {
         $_SESSION['admin'] = [];
     }
     
-    // Nivel 2: Regex Fallback (Safari bloqueó la cookie, pero tenemos el GET)
-    // El external_reference de procesar_pago.php es 'SOCIO_' . $id . '_' . time();
-    if (preg_match('/^SOCIO_(\d+)_/', $externalRef, $matches)) {
-        $_SESSION['admin']['soc_id_socio'] = (int)$matches[1];
-        $fallback_usado = 'Nivel 2 (Regex URL)';
-    }
-    
-    // Nivel 3: Base de Datos (Fallback consultando san_mp_pref)
-    if (empty($_SESSION['admin']['soc_id_socio'])) {
-        try {
-            $stmtFb = $conn->prepare("SELECT metadata_json FROM san_mp_pref WHERE external_reference = :ref LIMIT 1");
-            $stmtFb->execute([':ref' => $externalRef]);
-            $rowFb = $stmtFb->fetch(PDO::FETCH_ASSOC);
-            if ($rowFb && !empty($rowFb['metadata_json'])) {
-                $metaFb = json_decode($rowFb['metadata_json'], true) ?: [];
-                if (!empty($metaFb['id_socio_beneficiario'])) {
-                    $_SESSION['admin']['soc_id_socio'] = (int)$metaFb['id_socio_beneficiario'];
-                    $fallback_usado = 'Nivel 3 (BD - Beneficiario)';
-                } elseif (!empty($metaFb['id_socio_pagador'])) {
-                    $_SESSION['admin']['soc_id_socio'] = (int)$metaFb['id_socio_pagador'];
-                    $fallback_usado = 'Nivel 3 (BD - Pagador)';
+    // Nivel Seguro: Base de Datos (Validar contra san_mp_pref)
+    try {
+        $stmtFb = $conn->prepare("SELECT metadata_json FROM san_mp_pref WHERE external_reference = :ref LIMIT 1");
+        $stmtFb->execute([':ref' => $externalRef]);
+        $rowFb = $stmtFb->fetch(PDO::FETCH_ASSOC);
+        
+        if ($rowFb && !empty($rowFb['metadata_json'])) {
+            $metaFb = json_decode($rowFb['metadata_json'], true) ?: [];
+            $temp_id = null;
+            
+            if (!empty($metaFb['id_socio_beneficiario'])) {
+                $temp_id = (int)$metaFb['id_socio_beneficiario'];
+                $fallback_usado = 'Base de Datos (Beneficiario)';
+            } elseif (!empty($metaFb['id_socio_pagador'])) {
+                $temp_id = (int)$metaFb['id_socio_pagador'];
+                $fallback_usado = 'Base de Datos (Pagador)';
+            }
+            
+            // Si validamos que el pago existe, restauramos la sesión completa desde san_socios
+            if ($temp_id) {
+                $stmtSoc = $conn->prepare("SELECT soc_id_socio, soc_correo FROM san_socios WHERE soc_id_socio = :id LIMIT 1");
+                $stmtSoc->execute([':id' => $temp_id]);
+                $socioData = $stmtSoc->fetch(PDO::FETCH_ASSOC);
+                
+                if ($socioData) {
+                    $_SESSION['admin'] = [
+                        'soc_id_socio' => $socioData['soc_id_socio'],
+                        'soc_correo' => $socioData['soc_correo'],
+                        'adminnakalogin' => true
+                    ];
                 }
             }
-        } catch (Exception $e) {
-            error_log("Error en DB Fallback (gracias.php): " . $e->getMessage());
         }
+    } catch (Exception $e) {
+        error_log("Error en DB Fallback (gracias.php): " . $e->getMessage());
     }
     
     // Guardar en el log si el salvavidas funcionó
     if (!empty($_SESSION['admin']['soc_id_socio'])) {
+        $_SESSION['admin']['adminnakalogin'] = true;
         $logF = __DIR__ . '/../logs/mp_returns.log';
         $ts = date("Y-m-d H:i:s");
         @file_put_contents($logF, "[$ts] [ANTI-ITP SUCCESS] 🛡️ Sesión rescatada exitosamente usando: $fallback_usado. Socio ID recuperado: {$_SESSION['admin']['soc_id_socio']}\n", FILE_APPEND);
+        
+        // Forzar una recarga rápida para que index.php evalúe el $loggedIn correctamente y cargue el Panel Privado
+        echo "<script>window.location.reload();</script>";
+        exit;
     }
 }
 

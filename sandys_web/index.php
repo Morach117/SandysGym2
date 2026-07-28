@@ -137,6 +137,12 @@ if (in_array($page, $privatePages) && !$loggedIn) {
     exit;
 }
 
+// Evitar que usuarios ya logueados entren a login o registro
+if ($loggedIn && in_array($page, ['login', 'registration', 'registro', 'reset_password'])) {
+    header("Location: index.php?page=user_home");
+    exit;
+}
+
 if ($loggedIn && in_array($page, $userPanelPages)) {
     include('includes/user_panel_header.php'); 
 } else {

@@ -1,0 +1,21 @@
+{
+  "name": "Sandy's Gym",
+  "short_name": "Sandys Gym",
+  "start_url": "./index.php?page=user_home",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#ef4444",
+  "description": "Aplicación de Sandy's Gym",
+  "icons": [
+    {
+      "src": "./assets/img/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./assets/img/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

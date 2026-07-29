@@ -37,6 +37,20 @@ try {
     $hostId = (int)$invitacion['id_socio_titular'];
     $idInvitacion = (int)$invitacion['id_invitacion'];
 
+    if ($idUsuarioActual === $hostId) {
+        echo json_encode(['success' => false, 'message' => 'Eres el titular de este plan. No puedes unirte a tu propia invitación.']);
+        exit;
+    }
+
+    $stmtCheckBen = $conn->prepare("SELECT soc_id_titular_grupo FROM san_socios WHERE soc_id_socio = ?");
+    $stmtCheckBen->execute([$idUsuarioActual]);
+    $currentTitular = (int)$stmtCheckBen->fetchColumn();
+
+    if ($currentTitular === $hostId) {
+        echo json_encode(['success' => false, 'message' => 'Ya estás vinculado a este plan familiar.']);
+        exit;
+    }
+
     if ($action === 'check') {
         $q = "SELECT soc_nombres FROM san_socios WHERE soc_id_socio = ?";
         $stmt = $conn->prepare($q);

@@ -61,6 +61,7 @@
     border-radius: 12px;
     text-decoration: none;
     transition: all 0.3s ease;
+    height: 100%;
 }
 
 .contact-item:hover {
@@ -160,7 +161,7 @@
                         <div class="ci-icon"><i class="fa-solid fa-location-dot"></i></div>
                         <div class="ci-text">
                             <span>Nuestra Ubicación</span>
-                            <p>Av. Miguel Hidalgo #308, Bienestar Social</p>
+                            <p>Av. Miguel Hidalgo #308, Bienestar Social<br>C.P.: 29077, Tuxtla Gutiérrez, Chiapas</p>
                         </div>
                     </a>
 
@@ -187,6 +188,10 @@
 
         <div class="footer-bottom text-center">
             <p>&copy; <?php echo date('Y'); ?> Sandy's Gym. Todos los derechos reservados.</p>
+            <p style="margin-top: 8px; font-size: 13px;">
+                <a href="#" onclick="showTerms(); return false;" style="color: #9ca3af; margin-right: 20px; text-decoration: underline; transition: 0.3s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#9ca3af'">Términos y Condiciones</a>
+                <a href="#" onclick="showPrivacy(); return false;" style="color: #9ca3af; text-decoration: underline; transition: 0.3s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#9ca3af'">Aviso de Privacidad</a>
+            </p>
         </div>
     </div>
 </footer>
@@ -219,6 +224,60 @@ if (file_exists($pageScript)) {
     echo '<script src="' . $pageScript . '"></script>';
 }
 ?>
+
+<script>
+function showTerms() {
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'Términos y Condiciones',
+            html: `<div style="text-align: left; font-size: 14px; line-height: 1.6; max-height: 350px; overflow-y: auto; padding-right: 10px; color: #fff;">
+                    <strong>1. Aceptación de los Términos</strong><br>
+                    Al acceder y utilizar los servicios y la plataforma web de Sandy's Gym, usted acepta estar sujeto a estos Términos y Condiciones. Si no está de acuerdo, por favor no utilice la aplicación ni los servicios del gimnasio.<br><br>
+                    <strong>2. Membresías y Pagos</strong><br>
+                    Las membresías son personales e intransferibles. Los pagos realizados no son reembolsables ni transferibles. Las tarifas y promociones publicadas están sujetas a cambios sin previo aviso.<br><br>
+                    <strong>3. Uso de Instalaciones y Equipo</strong><br>
+                    Los socios deben respetar las normas de conducta del gimnasio, utilizar vestimenta deportiva adecuada, toalla de mano y limpiar el equipo después de su uso. Es obligatorio regresar los pesos y mancuernas a sus estantes correspondientes.<br><br>
+                    <strong>4. Responsabilidad y Salud</strong><br>
+                    El usuario declara encontrarse en condiciones físicas y de salud óptimas para realizar ejercicio físico. Sandy's Gym no se hace responsable por lesiones derivadas del mal uso del equipo, imprudencia o negligencia médica preexistente.<br><br>
+                    <strong>5. Códigos y Promociones</strong><br>
+                    Los códigos de descuento por referido o reactivación son válidos exclusivamente bajo las condiciones y vigencias asignadas. Sandy's Gym se reserva el derecho de cancelar cupones generados con datos falsos o cuentas duplicadas.<br><br>
+                    <strong>6. Modificaciones</strong><br>
+                    Nos reservamos el derecho de modificar estos términos en cualquier momento. El uso continuo del sistema implicará la aceptación de los nuevos términos y condiciones.
+                   </div>`,
+            icon: 'info',
+            background: '#1a1a1a',
+            color: '#ffffff',
+            confirmButtonColor: '#ef4444',
+            confirmButtonText: 'Cerrar'
+        });
+    } else {
+        alert("Términos y Condiciones:\\n\\n1. Las membresías son personales e intransferibles.\\n2. Los pagos realizados no son reembolsables.\\n3. El usuario declara encontrarse en óptimas condiciones de salud para realizar ejercicio físico.");
+    }
+}
+
+function showPrivacy() {
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'Aviso de Privacidad',
+            html: `<div style="text-align: left; font-size: 14px; line-height: 1.6; max-height: 350px; overflow-y: auto; padding-right: 10px; color: #fff;">
+                    Sandy's Gym, con domicilio en Av. Miguel Hidalgo #308, Bienestar Social, C.P. 29077, Tuxtla Gutiérrez, Chiapas, es responsable de recabar sus datos personales, del uso que se le dé a los mismos y de su protección.<br><br>
+                    <strong>Datos Personales Recabados:</strong> Nombres completos, número de teléfono celular (WhatsApp), correo electrónico, fecha de nacimiento (mes), fotos de perfil e información de contacto de emergencia.<br><br>
+                    <strong>Finalidad del Tratamiento:</strong> 
+                    Los datos recopilados serán utilizados exclusivamente para el control de accesos al gimnasio, procesamiento y validación segura de mensualidades, aplicación de promociones y descuentos, comunicación de avisos importantes y contacto inmediato en caso de emergencias médicas.<br><br>
+                    <strong>Derechos ARCO:</strong> 
+                    Usted tiene derecho a acceder, rectificar y cancelar sus datos personales, así como a oponerse al tratamiento de los mismos (Derechos ARCO), enviando su solicitud directamente al correo de contacto oficial: <strong>Sandysgym@hotmail.com</strong>.
+                   </div>`,
+            icon: 'info',
+            background: '#1a1a1a',
+            color: '#ffffff',
+            confirmButtonColor: '#ef4444',
+            confirmButtonText: 'Cerrar'
+        });
+    } else {
+        alert("Aviso de Privacidad:\\n\\nSandy's Gym recopila tus datos personales únicamente para fines de control de acceso, mensualidades y contacto en caso de emergencia. Puedes solicitar su rectificación o eliminación en Sandysgym@hotmail.com.");
+    }
+}
+</script>
 
 </body>
 

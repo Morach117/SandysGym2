@@ -398,83 +398,116 @@ function lista_socios()
     }
     
     function subir_fotografia()
-{
-    global $conexion, $id_empresa;
-    
-    $id_socio          = request_var('id_socio', 0);
-    $id_socio_seguro   = (int)$id_socio;
-    $id_empresa_seguro = (int)$id_empresa;
-    
-    $dir_ponencias     = "../imagenes/avatar/";
-    $extenciones       = "/^\.(jpg){1}$/i";
-    $tamaño_maximo     = 2 * 1024 * 1024;
-    $exito             = array();
-    
-    if (isset($_FILES['avatar']) && $_FILES['avatar']['name'] && $id_socio_seguro > 0) {
-        $extencion_archivo = tipo_archivo($_FILES['avatar']['type']);
+    {
+        global $conexion, $id_empresa;
         
-        // El archivo físico y el de la base de datos deben usar EXACTAMENTE esta variable
-        $nombre_archivo    = $id_socio_seguro . $extencion_archivo;
+        $id_socio          = request_var('id_socio', 0);
+        $id_socio_seguro   = (int)$id_socio;
+        $id_empresa_seguro = (int)$id_empresa;
         
-        $valido            = is_uploaded_file($_FILES['avatar']['tmp_name']); 
+        $dir_ponencias     = "../imagenes/avatar/";
+        $extenciones       = "/^\.(jpg|jpeg|png)$/i";
+        $tamaño_maximo     = 5 * 1024 * 1024;
+        $exito             = array();
         
-        if ($valido) {
-            $safe_filename = preg_replace(array("/\s+/", "/[^-\.\w]+/"), array("_", ""), trim($_FILES['avatar']['name']));
+        if (isset($_FILES['avatar']) && !empty($_FILES['avatar']['name']) && $id_socio_seguro > 0) {
+            $extencion_archivo = tipo_archivo($_FILES['avatar']['type']);
+            if (empty($extencion_archivo)) {
+                $ext = strtolower(pathinfo($_FILES['avatar']['name'], PATHINFO_EXTENSION));
+                if (in_array($ext, ['jpg', 'jpeg', 'png'])) {
+                    $extencion_archivo = '.' . ($ext === 'jpeg' ? 'jpg' : $ext);
+                }
+            }
             
-            if ($extencion_archivo && $_FILES['avatar']['size'] <= $tamaño_maximo && preg_match($extenciones, strrchr($safe_filename, '.'))) {
+            $nombre_archivo = $id_socio_seguro . $extencion_archivo;
+            $valido         = is_uploaded_file($_FILES['avatar']['tmp_name']); 
+            
+            if ($valido) {
+                $safe_filename = preg_replace(array("/\s+/", "/[^-\.\w]+/"), array("_", ""), trim($_FILES['avatar']['name']));
                 
-                // Mueve el archivo físico con el nombre estandarizado (Ej: 15.jpg)
-                if (move_uploaded_file($_FILES['avatar']['tmp_name'], $dir_ponencias . $nombre_archivo)) {
+                if ($extencion_archivo && $_FILES['avatar']['size'] <= $tamaño_maximo && preg_match($extenciones, strrchr($safe_filename, '.'))) {
                     
-                    // Verificar que el socio realmente existe en esta empresa
-                    $query = "SELECT soc_id_socio FROM san_socios WHERE soc_id_socio = $id_socio_seguro AND soc_id_empresa = $id_empresa_seguro LIMIT 1";
-                    $resultado = mysqli_query($conexion, $query);
-                    
-                    if ($resultado && mysqli_num_rows($resultado) > 0) {
-                        // ACTUALIZACIÓN CORREGIDA: Se guarda $nombre_archivo en BD, NO el nombre original de subida.
-                        $query_update = "UPDATE san_socios SET soc_imagen = '$nombre_archivo' WHERE soc_id_socio = $id_socio_seguro AND soc_id_empresa = $id_empresa_seguro";
-                        $resultado_update = mysqli_query($conexion, $query_update);
+                    if (move_uploaded_file($_FILES['avatar']['tmp_name'], $dir_ponencias . $nombre_archivo)) {
                         
-                        if ($resultado_update) {
-                            $exito['num'] = 1;
-                            $exito['msj'] = 'Fotografía guardada y enlazada correctamente.';
+                        $query = "SELECT soc_id_socio FROM san_socios WHERE soc_id_socio = $id_socio_seguro LIMIT 1";
+                        $resultado = mysqli_query($conexion, $query);
+                        
+                        if ($resultado && mysqli_num_rows($resultado) > 0) {
+                            $query_update = "UPDATE san_socios SET soc_imagen = '$nombre_archivo' WHERE soc_id_socio = $id_socio_seguro";
+                            $resultado_update = mysqli_query($conexion, $query_update);
+                            
+                            if ($resultado_update) {
+                                $exito['num'] = 1;
+                                $exito['msj'] = 'Fotografía guardada y enlazada correctamente.';
+                            } else {
+                                $exito['num'] = 6;
+                                $exito['msj'] = 'Error al actualizar el registro en la base de datos.';
+                            }
                         } else {
-                            $exito['num'] = 6;
-                            $exito['msj'] = 'Error al actualizar el registro en la base de datos.';
+                            $exito['num'] = 7;
+                            $exito['msj'] = 'El socio no existe en la base de datos.';
                         }
                     } else {
-                        $exito['num'] = 7;
-                        $exito['msj'] = 'El socio no existe o no pertenece a esta sucursal.';
+                        $exito['num'] = 5;
+                        $exito['msj'] = 'La fotografía no se ha guardado físicamente en el servidor.<br/>';
                     }
                 } else {
-                    $exito['num'] = 5;
-                    $exito['msj'] = 'La fotografía no se ha guardado físicamente en el servidor.<br/>';
+                    $exito['num'] = 4;
+                    $exito['msj'] = 'La fotografía no es del tipo solicitado (JPG, PNG) o excede el tamaño permitido.';
                 }
             } else {
-                $exito['num'] = 4;
-                $exito['msj'] = 'La fotografía no es del tipo solicitado o excede el tamaño permitido.';
+                $exito['num'] = 3;
+                $exito['msj'] = 'No es archivo válido.';
             }
         } else {
-            $exito['num'] = 3;
-            $exito['msj'] = 'No es archivo válido.';
+            $exito['num'] = 2;
+            $exito['msj'] = 'No se seleccionó un archivo para la Fotografía o ID de socio inválido.';
         }
-    } else {
-        $exito['num'] = 2;
-        $exito['msj'] = 'No se seleccionó un archivo para la Fotografía o ID de socio inválido.';
+        
+        return $exito;
     }
-    
-    return $exito;
-}
-    
+        
     function eliminar_fotografia()
     {
-        global $id_socio;
+        global $conexion, $id_socio;
         
-        if( file_exists( "../imagenes/avatar/$id_socio.jpg" ) )
-            if( unlink( "../imagenes/avatar/$id_socio.jpg" ) )
-                return true;
+        $id_socio_get = request_var('id_socio', 0);
+        $id_socio_seguro = $id_socio_get ? (int)$id_socio_get : (int)$id_socio;
         
-        return false;
+        if ($id_socio_seguro <= 0) {
+            return false;
+        }
+        
+        // 1. Consultar la imagen en BD
+        $sql = "SELECT soc_imagen FROM san_socios WHERE soc_id_socio = $id_socio_seguro LIMIT 1";
+        $res = mysqli_query($conexion, $sql);
+        $nombre_archivo_db = '';
+        if ($res && mysqli_num_rows($res) > 0) {
+            $fila = mysqli_fetch_assoc($res);
+            $nombre_archivo_db = $fila['soc_imagen'];
+        }
+        
+        // 2. Archivos físicos a borrar
+        $dir = "../imagenes/avatar/";
+        $archivos_posibles = [
+            $dir . $nombre_archivo_db,
+            $dir . $id_socio_seguro . ".jpg",
+            $dir . $id_socio_seguro . ".JPG",
+            $dir . $id_socio_seguro . ".jpeg",
+            $dir . $id_socio_seguro . ".png"
+        ];
+        
+        foreach ($archivos_posibles as $archivo) {
+            if (!empty($archivo) && basename($archivo) !== 'noavatar.jpg' && file_exists($archivo)) {
+                @unlink($archivo);
+            }
+        }
+        
+        // 3. Limpiar soc_imagen en la BD
+        $sql_update = "UPDATE san_socios SET soc_imagen = '' WHERE soc_id_socio = $id_socio_seguro";
+        mysqli_query($conexion, $sql_update);
+        
+        return true;
     }
     
 ?>

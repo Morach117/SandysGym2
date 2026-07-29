@@ -27,11 +27,8 @@ $avatar_default = "https://ui-avatars.com/api/?name={$nombres_url}&background=ef
 $foto_perfil = $avatar_default;
 
 if ($foto_bd !== '') {
-    $foto_perfil = trim($foto_bd);
-    if (strpos($foto_perfil, '/') === false) {
-        $foto_perfil = '../imagenes/avatar/' . $foto_perfil;
-    }
-    $foto_perfil .= '?v=' . time();
+    $nombreArchivo = basename(trim($foto_bd));
+    $foto_perfil = '../imagenes/avatar/' . $nombreArchivo . '?v=' . time();
 }
 ?>
 

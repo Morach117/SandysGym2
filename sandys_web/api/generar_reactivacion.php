@@ -1,5 +1,5 @@
 <?php
-define('TITULO_PROMO_REACTIVACION', 'PROMOCION FIJA DE REACTIVACION');
+define('TITULO_PROMO_REACTIVACION', 'REACTIVACION-');
 define('DESCUENTO_REACTIVACION', 35);
 
 $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') 
@@ -71,7 +71,8 @@ try {
         INNER JOIN san_promociones p ON c.id_promocion = p.id_promocion
         WHERE c.id_socio = ? AND p.titulo = ? LIMIT 1
     ");
-    $stmtVal->execute([$idSocioPost, TITULO_PROMO_REACTIVACION]);
+    $tituloPromo = TITULO_PROMO_REACTIVACION . $idSocioPost;
+    $stmtVal->execute([$idSocioPost, $tituloPromo]);
     if ($stmtVal->fetch()) {
         echo json_encode(['success' => false, 'message' => 'Ya has generado tu cupón de reactivación.']);
         $conn->rollBack();
@@ -100,7 +101,7 @@ try {
     }
     
     $stmtPromo = $conn->prepare("SELECT id_promocion FROM san_promociones WHERE titulo = ? LIMIT 1");
-    $stmtPromo->execute([TITULO_PROMO_REACTIVACION]);
+    $stmtPromo->execute([$tituloPromo]);
     $promoBaseId = $stmtPromo->fetchColumn();
     
     if (!$promoBaseId) {
@@ -108,7 +109,7 @@ try {
         $vigenciaFinal = date('Y-m-d', strtotime('+10 years'));
         
         $datosPromo = [
-            'titulo' => TITULO_PROMO_REACTIVACION,
+            'titulo' => $tituloPromo,
             'fecha_generada' => $fechaActual,
             'vigencia_inicial' => $fechaActual,
             'vigencia_final' => $vigenciaFinal,

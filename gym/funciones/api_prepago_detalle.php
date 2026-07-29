@@ -2,7 +2,9 @@
 // api_prepago_detalle.php
 
 // Incluir los archivos necesarios para la conexión a la BD y funciones
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require_once '../../funciones_globales/funciones_conexion.php';
 require_once '../../funciones_globales/funciones_comunes.php';
 

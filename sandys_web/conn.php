@@ -25,7 +25,7 @@ $local_hosts = [
     'localhost',
     '127.0.0.1',
     'gym.test',
-    '192.168.0.181'
+    '192.168.0.211'
 ];
 
 $current_host = $_SERVER['HTTP_HOST'] ?? 'localhost';

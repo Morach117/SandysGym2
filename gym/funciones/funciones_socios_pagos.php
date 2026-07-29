@@ -323,18 +323,20 @@ function guardar_pago_socio()
                 $pag_fecha_ini_actual = $pag_fecha_ini_orig;
                 $pag_fecha_fin_actual = $pag_fecha_fin_orig;
                 
-                if ($socio_actual_id == $id_integrante1) {
-                    $id_servicio_actual = 125;
-                    $pag_fecha_ini_actual = $pag_fecha_ini1;
-                    $pag_fecha_fin_actual = $pag_fecha_fin1;
-                } elseif ($socio_actual_id == $id_integrante2) {
-                    $id_servicio_actual = 126;
-                    $pag_fecha_ini_actual = $pag_fecha_ini2;
-                    $pag_fecha_fin_actual = $pag_fecha_fin2;
-                } elseif ($socio_actual_id == $id_pareja) {
-                    $id_servicio_actual = 125;
-                    $pag_fecha_ini_actual = $pag_fecha_ini_pareja;
-                    $pag_fecha_fin_actual = $pag_fecha_fin_pareja;
+                if ($socio_actual_id != $id_socio) {
+                    if ($socio_actual_id == $id_integrante1) {
+                        $id_servicio_actual = 125;
+                        $pag_fecha_ini_actual = $pag_fecha_ini1;
+                        $pag_fecha_fin_actual = $pag_fecha_fin1;
+                    } elseif ($socio_actual_id == $id_integrante2) {
+                        $id_servicio_actual = 126;
+                        $pag_fecha_ini_actual = $pag_fecha_ini2;
+                        $pag_fecha_fin_actual = $pag_fecha_fin2;
+                    } elseif ($socio_actual_id == $id_pareja) {
+                        $id_servicio_actual = 125;
+                        $pag_fecha_ini_actual = $pag_fecha_ini_pareja;
+                        $pag_fecha_fin_actual = $pag_fecha_fin_pareja;
+                    }
                 }
 
                 // CORRECCIÓN AQUÍ: Se asignan los valores calculados dinámicamente arriba

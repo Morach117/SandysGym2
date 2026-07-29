@@ -54,7 +54,7 @@ try {
     $esTitular = false;
     $idTitularReal = 0;
 
-    $stmtPago = $conn->prepare("SELECT pag_id_servicio FROM san_pagos WHERE pag_id_socio = ? AND pag_status = 'A' AND pag_fecha_fin >= CURDATE() ORDER BY pag_id_pago DESC LIMIT 1");
+    $stmtPago = $conn->prepare("SELECT pag_id_servicio FROM san_pagos WHERE pag_id_socio = ? AND pag_status = 'A' AND pag_fecha_fin >= CURDATE() AND pag_id_servicio IN (123, 124, 167) ORDER BY pag_id_pago DESC LIMIT 1");
     $stmtPago->execute([$idUsuarioLogueado]);
     $miPago = $stmtPago->fetch(PDO::FETCH_ASSOC);
 
@@ -66,7 +66,7 @@ try {
         $stmtRef->execute([$idUsuarioLogueado]);
         $resRef = $stmtRef->fetch(PDO::FETCH_ASSOC);
 
-        if ($resRef && $resRef['soc_id_titular_grupo'] > 0) {
+        if ($resRef && $resRef['soc_id_titular_grupo'] > 0 && $resRef['soc_id_titular_grupo'] != $idUsuarioLogueado) {
             $esTitular = false;
             $idTitularReal = $resRef['soc_id_titular_grupo'];
         } else {

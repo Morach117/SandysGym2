@@ -41,6 +41,7 @@ $page = $_GET['page'] ?? 'user_home';
     <link rel="stylesheet" href="./assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="./assets/css/slicknav.min.css" type="text/css">
     <link rel="stylesheet" href="./assets/css/style.css">
+    <link rel="manifest" href="./manifest.json">
 
 <style>
     .header-section { background: #000000; padding: 15px 0; border-bottom: 1px solid #1a1a1a; }
@@ -204,8 +205,8 @@ $page = $_GET['page'] ?? 'user_home';
                         <i class="fas fa-dumbbell"></i> Rutinas
                     </a>
                 </li>
-                <li class="<?php echo ($page == 'user_calculator') ? 'active' : ''; ?>">
-                    <a href="index.php?page=user_calculator"><i class="fas fa-calculator"></i> IMC</a>
+                <li id="mobileInstallBtn">
+                    <a href="#" onclick="installPWA(); return false;"><i class="fas fa-download"></i> Instalar App</a>
                 </li>
             </ul>
         </nav>
@@ -245,8 +246,8 @@ $page = $_GET['page'] ?? 'user_home';
                                     <i class="fas fa-dumbbell"></i> Rutinas
                                 </a>
                             </li>
-                            <li class="<?php echo ($page == 'user_calculator') ? 'active' : ''; ?>">
-                                <a href="index.php?page=user_calculator"><i class="fas fa-calculator"></i> IMC</a>
+                            <li id="desktopInstallBtn">
+                                <a href="#" onclick="installPWA(); return false;"><i class="fas fa-download"></i> Instalar App</a>
                             </li>
                             
                             <li class="user-dropdown">
@@ -277,5 +278,123 @@ $page = $_GET['page'] ?? 'user_home';
             </div>
         </div>
     </header>
+
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('./sw.js').then(function(registration) {
+                console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            }, function(err) {
+                console.log('ServiceWorker registration failed: ', err);
+            });
+        });
+    }
+
+    let deferredPrompt;
+    
+    // Ocultar si ya está instalada / standalone
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    if (isStandalone) {
+        document.getElementById('desktopInstallBtn').style.display = 'none';
+        document.getElementById('mobileInstallBtn').style.display = 'none';
+    }
+
+    // Detectar iOS
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+    window.addEventListener('load', () => {
+        // Si es iOS y no está instalada, sugerir instalación automáticamente
+        if (isIOS && !isStandalone) {
+            if (!localStorage.getItem('pwa_prompt_shown_ios')) {
+                setTimeout(() => {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            title: '¡Instala nuestra App!',
+                            html: `<div style="text-align: left; font-size: 15px; line-height: 1.6;">
+                                    Para un acceso más rápido, agrega Sandy's Gym a tu pantalla de inicio.<br><br>
+                                    Toca el botón de <strong>Compartir</strong> <i class="fas fa-share-square"></i> en Safari y selecciona <strong>"Agregar al inicio"</strong> <i class="fas fa-plus-square"></i>.
+                                   </div>`,
+                            icon: 'info',
+                            background: '#1a1a1a',
+                            color: '#ffffff',
+                            confirmButtonColor: '#ef4444',
+                            confirmButtonText: 'Entendido'
+                        });
+                    }
+                    localStorage.setItem('pwa_prompt_shown_ios', 'true');
+                }, 3000);
+            }
+        }
+    });
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // Asegurar visibilidad si no está standalone
+        if (!isStandalone) {
+            document.getElementById('desktopInstallBtn').style.display = 'flex';
+            document.getElementById('mobileInstallBtn').style.display = 'flex';
+        }
+
+        if (!localStorage.getItem('pwa_prompt_shown')) {
+            setTimeout(() => {
+                if(typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: '¡Instala nuestra App!',
+                        text: 'Agrega Sandy\'s Gym a tu pantalla de inicio para un acceso más rápido.',
+                        icon: 'info',
+                        showCancelButton: true,
+                        confirmButtonText: 'Instalar',
+                        cancelButtonText: 'Más tarde',
+                        background: '#1a1a1a',
+                        color: '#ffffff',
+                        confirmButtonColor: '#ef4444'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            installPWA();
+                        }
+                    });
+                }
+                localStorage.setItem('pwa_prompt_shown', 'true');
+            }, 2000);
+        }
+    });
+
+    function installPWA() {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('User accepted the install prompt');
+                    document.getElementById('desktopInstallBtn').style.display = 'none';
+                    document.getElementById('mobileInstallBtn').style.display = 'none';
+                } else {
+                    console.log('User dismissed the install prompt');
+                }
+                deferredPrompt = null;
+            });
+        } else {
+            if(typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Instalación de App',
+                    html: `<div style="text-align: left; font-size: 15px; line-height: 1.6;">
+                            <strong>En Android / Chrome:</strong><br>
+                            Toca los tres puntos de la esquina superior derecha de tu navegador y selecciona <strong>"Instalar aplicación"</strong> o <strong>"Agregar a la pantalla principal"</strong>.<br><br>
+                            <strong>En iOS / Safari:</strong><br>
+                            Toca el botón de <strong>Compartir</strong> <i class="fas fa-share-square"></i> (en la parte inferior o superior) y selecciona <strong>"Agregar al inicio"</strong> <i class="fas fa-plus-square"></i>.
+                           </div>`,
+                    icon: 'info',
+                    background: '#1a1a1a',
+                    color: '#ffffff',
+                    confirmButtonColor: '#ef4444',
+                    confirmButtonText: 'Entendido'
+                });
+            } else {
+                alert('Para instalar la app, usa la opción "Agregar a la pantalla de inicio" o "Instalar aplicación" desde el menú de tu navegador.');
+            }
+        }
+    }
+</script>
 </body>
 </html>

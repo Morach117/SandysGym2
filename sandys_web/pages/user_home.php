@@ -614,7 +614,7 @@ if ($cuponReactData) {
         </div>
     <?php endif; ?>
 
-    <?php if (!$miembroActivo && !$cuponReactivacionUsado): ?>
+    <?php if (!$miembroActivo && !$cuponReactivacionUsado && !($idPadrino > 0 && !$cuponUsado)): ?>
         <div class="referral-banner reactivacion-banner" style="margin-top: 20px; border-color: rgba(16, 185, 129, 0.3); background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, #121212 100%);">
             <div id="reactivacionBannerContent">
                 <?php if ($cuponReactivacionGenerado): ?>
@@ -651,19 +651,9 @@ if ($cuponReactData) {
             <h3 class="app-title">Pagar Membresía</h3>
         </a>
 
-        <a href="index.php?page=mis_pagos" class="app-card">
-            <div class="app-icon"><i class="fas fa-receipt"></i></div>
-            <h3 class="app-title">Mis Pagos</h3>
-        </a>
-
-        <a href="index.php?page=user_rutina" class="app-card <?php echo !$miembroActivo ? 'disabled' : ''; ?>">
-            <div class="app-icon"><i class="fas fa-dumbbell"></i></div>
-            <h3 class="app-title">Mis Rutinas</h3>
-        </a>
-
-        <a href="index.php?page=user_information" class="app-card">
-            <div class="app-icon"><i class="fas fa-user-edit"></i></div>
-            <h3 class="app-title">Mi Perfil</h3>
+        <a href="index.php?page=user_referidos" class="app-card">
+            <div class="app-icon"><i class="fas fa-users"></i></div>
+            <h3 class="app-title">Referidos</h3>
         </a>
 
         <a href="index.php?page=user_monedero" class="app-card">
@@ -671,18 +661,24 @@ if ($cuponReactData) {
             <h3 class="app-title">Monedero</h3>
         </a>
 
-        <a href="index.php?page=user_calculator" class="app-card">
-            <div class="app-icon"><i class="fas fa-calculator"></i></div>
-            <h3 class="app-title">IMC</h3>
+        <a href="index.php?page=user_information" class="app-card">
+            <div class="app-icon"><i class="fas fa-user-edit"></i></div>
+            <h3 class="app-title">Mi Perfil</h3>
         </a>
 
-        <a href="index.php?page=user_referidos" class="app-card">
-            <div class="app-icon"><i class="fas fa-users"></i></div>
-            <h3 class="app-title">Referidos</h3>
+        <a href="index.php?page=user_rutina" class="app-card <?php echo !$miembroActivo ? 'disabled' : ''; ?>">
+            <div class="app-icon"><i class="fas fa-dumbbell"></i></div>
+            <h3 class="app-title">Mis Rutinas</h3>
         </a>
+
         <a href="index.php?page=progreso" class="app-card <?php echo !$miembroActivo ? 'disabled' : ''; ?>">
             <div class="app-icon"><i class="fas fa-chart-line"></i></div>
             <h3 class="app-title">Mi Progreso</h3>
+        </a>
+
+        <a href="index.php?page=mis_pagos" class="app-card">
+            <div class="app-icon"><i class="fas fa-receipt"></i></div>
+            <h3 class="app-title">Mis Pagos</h3>
         </a>
 
         <?php if ($mostrarAdminPlan): ?>

@@ -101,6 +101,42 @@ if ($eliminar) {
         mostrar_mensaje_div($mensaje['num'] . ". " . $mensaje['msj'], 'danger');
 }
 
+$eliminar_foto = request_var('eliminar_foto', false);
+if ($eliminar_foto) {
+    if (eliminar_fotografia()) {
+        mostrar_mensaje_div('Fotografía eliminada correctamente.', 'success');
+    } else {
+        mostrar_mensaje_div('No se pudo eliminar la fotografía.', 'danger');
+    }
+}
+
+$subir_foto = request_var('subir_foto', false);
+if ($subir_foto) {
+    $exito_foto = subir_fotografia();
+    if ($exito_foto['num'] == 1) {
+        mostrar_mensaje_div('Fotografía actualizada correctamente.', 'success');
+    } else {
+        mostrar_mensaje_div($exito_foto['msj'], 'danger');
+    }
+}
+
+// Re-evaluar la foto en caso de que se haya subido o eliminado arriba
+$sql_imagen = "SELECT soc_imagen FROM san_socios WHERE soc_id_socio = $id_socio_seguro LIMIT 1";
+$resultado_imagen = mysqli_query($conexion, $sql_imagen);
+$nombre_archivo = 'noavatar.jpg';
+if ($resultado_imagen && mysqli_num_rows($resultado_imagen) > 0) {
+    $fila = mysqli_fetch_assoc($resultado_imagen);
+    if (!empty($fila['soc_imagen'])) {
+        $nombre_archivo = $fila['soc_imagen'];
+    }
+}
+$ruta_imagen = "../imagenes/avatar/" . $nombre_archivo;
+if (file_exists($ruta_imagen) && $nombre_archivo !== 'noavatar.jpg') {
+    $fotografia = "<img src='$ruta_imagen?" . date('His') . "' class='img-thumbnail' style='width:100%' />";
+} else {
+    $fotografia = "<img src='../imagenes/avatar/noavatar.jpg' class='img-thumbnail' style='width:100%' />";
+}
+
 // Solo superadministrador
 if ($rol == 'S') {
     $op_fecha_pago = "<div class='row'>
@@ -116,6 +152,9 @@ if ($enviar) {
     $validar = validar_pago_socio();
 
     if ($validar['num'] == 1) {
+        if (isset($_FILES['avatar']) && !empty($_FILES['avatar']['name'])) {
+            subir_fotografia();
+        }
         $exito = guardar_pago_socio();
         if ($exito['num'] == 1) {
             header("Location: .?s=socios&i=pagos&id_socio=$exito[IDS]&IDP=$exito[IDP]&token=$exito[tkn]");
@@ -461,9 +500,22 @@ if (!empty($nombre['soc_fecha_nacimiento']) && $nombre['soc_fecha_nacimiento'] !
                 </div>
             </div>
 
-            <div class="row">
+            <div class="row" style="margin-top: 10px;">
                 <div class="col-md-12">
-                    <input type="file" name="avatar" />
+                    <input type="file" name="avatar" style="display:inline-block;" />
+                </div>
+            </div>
+
+            <div class="row" style="margin-top: 10px;">
+                <div class="col-md-12">
+                    <button type="submit" name="subir_foto" value="1" class="btn btn-sm btn-info" style="margin-right: 5px;">
+                        <span class="glyphicon glyphicon-upload"></span> Subir Foto
+                    </button>
+                    <?php if ($nombre_archivo !== 'noavatar.jpg'): ?>
+                        <a href=".?s=socios&i=pagos&id_socio=<?= $id_socio ?>&eliminar_foto=true" class="btn btn-sm btn-danger" onclick="return confirm('¿Seguro de eliminar la foto del socio?');">
+                            <span class="glyphicon glyphicon-trash"></span> Eliminar Foto
+                        </a>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

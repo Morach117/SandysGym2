@@ -22,14 +22,53 @@ if (!function_exists('eliminar_socio')) {
             // Eliminar fotografía
             $ruta_foto = "../imagenes/avatar/{$id_socio}.jpg";
             if (file_exists($ruta_foto)) {
-                unlink($ruta_foto);
+                @unlink($ruta_foto);
+            }
+            $ruta_foto_upper = "../imagenes/avatar/{$id_socio}.JPG";
+            if (file_exists($ruta_foto_upper)) {
+                @unlink($ruta_foto_upper);
             }
 
-            // CORRECCIÓN: Nombres de columnas ajustados a la nomenclatura de llaves foráneas
+            // Tablas dependientes a desvincular / eliminar antes de borrar el registro del socio
             $tablas_dependientes = [
+                // 1. Desvincular referencias de otros socios (titulares / referidos)
+                "UPDATE san_socios SET soc_id_referido_por = 0 WHERE soc_id_referido_por = $id_socio",
+                "UPDATE san_socios SET soc_id_titular_grupo = 0 WHERE soc_id_titular_grupo = $id_socio",
+
+                // 2. Tablas de apartado y cotización (y sus detalles)
+                "DELETE FROM san_sapartado_detalle WHERE sade_id_sapartado IN (SELECT sa_id_sapartado FROM san_sapartado WHERE sa_id_cliente = $id_socio)",
+                "DELETE FROM san_sapartado_historico WHERE sah_id_cliente = $id_socio",
+                "DELETE FROM san_sapartado WHERE sa_id_cliente = $id_socio",
+                "DELETE FROM san_cotizacion_detalle WHERE cod_id_cotizacion IN (SELECT cot_id_cotizacion FROM san_cotizacion WHERE cot_id_cliente = $id_socio)",
+                "DELETE FROM san_cotizacion WHERE cot_id_cliente = $id_socio",
+
+                // 3. Tablas de crédito (y sus subtablas)
+                "DELETE FROM san_credito_calendario WHERE credc_id_credito IN (SELECT cred_id_credito FROM san_credito WHERE cred_id_aval = $id_socio OR cred_id_venta IN (SELECT ven_id_venta FROM san_venta WHERE ven_id_socio = $id_socio))",
+                "DELETE FROM san_credito_facturacion WHERE cfc_id_credito IN (SELECT cred_id_credito FROM san_credito WHERE cred_id_aval = $id_socio OR cfc_id_venta IN (SELECT ven_id_venta FROM san_venta WHERE ven_id_socio = $id_socio))",
+                "DELETE FROM san_credito_pagos WHERE credd_id_credito IN (SELECT cred_id_credito FROM san_credito WHERE cred_id_aval = $id_socio OR credd_id_venta IN (SELECT ven_id_venta FROM san_venta WHERE ven_id_socio = $id_socio))",
+                "DELETE FROM san_credito WHERE cred_id_aval = $id_socio OR cred_id_venta IN (SELECT ven_id_venta FROM san_venta WHERE ven_id_socio = $id_socio)",
+
+                // 4. Tablas de ventas (y sus detalles/históricos)
+                "DELETE FROM san_monedero_historico WHERE monh_id_venta IN (SELECT ven_id_venta FROM san_venta WHERE ven_id_socio = $id_socio)",
+                "DELETE FROM san_venta_detalle WHERE vende_id_venta IN (SELECT ven_id_venta FROM san_venta WHERE ven_id_socio = $id_socio)",
+                "DELETE FROM san_venta_servicio WHERE vense_id_venta IN (SELECT ven_id_venta FROM san_venta WHERE ven_id_socio = $id_socio)",
+                "DELETE FROM san_venta_historico WHERE venh_id_socio = $id_socio",
+                "DELETE FROM san_venta WHERE ven_id_socio = $id_socio",
+
+                // 5. Prepagos y monederos
+                "DELETE FROM san_prepago_detalle WHERE pred_id_socio = $id_socio",
+                "DELETE FROM san_prepago WHERE prep_id_socio = $id_socio",
+
+                // 6. Pagos
                 "DELETE FROM san_pagos WHERE pag_id_socio = $id_socio",
-                "DELETE FROM san_prepago_detalle WHERE pred_id_socio = $id_socio", // <- CAMBIAR PREFIJO SI ES NECESARIO
-                "DELETE FROM san_venta WHERE ven_id_socio = $id_socio"
+
+                // 7. Códigos, promociones, referidos, rutinas e invitaciones
+                "DELETE FROM san_codigos_usados WHERE id_socio = $id_socio",
+                "DELETE FROM san_codigos WHERE id_socio = $id_socio",
+                "DELETE FROM san_referidos WHERE id_socio = $id_socio",
+                "DELETE FROM san_rutinas_progreso WHERE pro_id_socio = $id_socio",
+                "DELETE FROM san_plan_invitaciones WHERE id_socio_titular = $id_socio",
+                "DELETE FROM email_logs WHERE id_socio = $id_socio"
             ];
 
             foreach ($tablas_dependientes as $sql) {

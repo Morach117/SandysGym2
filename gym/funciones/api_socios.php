@@ -1,6 +1,9 @@
 <?php
 // api_socios.php
 
+error_reporting(0);
+ini_set('display_errors', '0');
+
 require_once '../../funciones_globales/funciones_conexion.php';
 require_once '../../funciones_globales/funciones_comunes.php';
 
@@ -18,7 +21,9 @@ if (!$conexion) {
 // --- <<< CAMBIO #2: ESTABLECER ZONA HORARIA DE LA CONEXIÓN MYSQL >>> ---
 mysqli_query($conexion, "SET time_zone = '-06:00'");
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 $id_empresa = isset($_SESSION['id_empresa']) ? intval($_SESSION['id_empresa']) : 1; 
 
 $draw = isset($_POST['draw']) ? intval($_POST['draw']) : 0;
@@ -32,9 +37,20 @@ if (empty($id_empresa)) {
 // Parámetros de DataTables
 $start = isset($_POST['start']) ? intval($_POST['start']) : 0;
 $length = isset($_POST['length']) ? intval($_POST['length']) : 10;
-$orderColumnIndex = isset($_POST['order'][0]['column']) ? intval($_POST['order'][0]['column']) : 3; 
-$orderColumnName = isset($_POST['columns'][$orderColumnIndex]['data']) ? mysqli_real_escape_string($conexion, $_POST['columns'][$orderColumnIndex]['data']) : 'nombres';
+$orderColumnIndex = isset($_POST['order'][0]['column']) ? intval($_POST['order'][0]['column']) : 2; 
+$rawOrderColumnName = isset($_POST['columns'][$orderColumnIndex]['data']) ? $_POST['columns'][$orderColumnIndex]['data'] : 'nombres';
 $orderDir = isset($_POST['order'][0]['dir']) && strtolower($_POST['order'][0]['dir']) == 'desc' ? 'DESC' : 'ASC';
+
+// Mapeo seguro de columnas para la cláusula ORDER BY
+$column_map = [
+    'nombres'      => 'nombres',
+    'soc_correo'   => 's.soc_correo',
+    'soc_tel_cel'  => 's.soc_tel_cel',
+    'status_pago'  => 'p.pag_fecha_fin',
+    'id_socio'     => 's.soc_id_socio'
+];
+
+$orderColumnSql = isset($column_map[$rawOrderColumnName]) ? $column_map[$rawOrderColumnName] : 'nombres';
 
 $searchValue = isset($_POST['search']['value']) ? mysqli_real_escape_string($conexion, $_POST['search']['value']) : '';
 $pag_opciones = isset($_POST['pag_opciones']) ? intval($_POST['pag_opciones']) : 0;
@@ -94,7 +110,7 @@ $recordsFiltered = $resFiltered ? intval(mysqli_fetch_assoc($resFiltered)['total
 
 // LÓGICA DE ORDENAMIENTO
 $active_condition = "p.pag_fecha_ini <= '$fecha_mov' AND p.pag_fecha_fin >= '$fecha_mov'";
-$secondary_order = "$orderColumnName $orderDir";
+$secondary_order = "$orderColumnSql $orderDir";
 
 $orderByClause = "ORDER BY
     CASE WHEN $active_condition THEN 0 ELSE 1 END ASC,

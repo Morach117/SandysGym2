@@ -1,5 +1,5 @@
 <?php
-define('TITULO_PROMO_REFERIDOS', 'PROMOCION FIJA DE REFERIDOS');
+define('TITULO_PROMO_REFERIDOS', 'REFERIDO-');
 define('DESCUENTO_REFERIDOS', 35);
 
 $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') 
@@ -81,8 +81,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['generar_cupon'])) {
             json_response(['success' => false, 'message' => 'Socio no válido.'], 400);
         }
             
+        $tituloPromo = TITULO_PROMO_REFERIDOS . $idSocio;
         $stmtPromo = $conn->prepare("SELECT id_promocion FROM san_promociones WHERE titulo = ? LIMIT 1");
-        $stmtPromo->execute([TITULO_PROMO_REFERIDOS]);
+        $stmtPromo->execute([$tituloPromo]);
         $promoBaseId = $stmtPromo->fetchColumn();
 
         if (!$promoBaseId) {
@@ -90,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['generar_cupon'])) {
             $vigenciaFinal = date('Y-m-d', strtotime('+10 years'));
             
             $datosPromo = [
-                'titulo' => TITULO_PROMO_REFERIDOS,
+                'titulo' => $tituloPromo,
                 'fecha_generada' => $fechaActual,
                 'vigencia_inicial' => $fechaActual,
                 'vigencia_final' => $vigenciaFinal,

@@ -98,7 +98,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['generar_cupon'])) {
                 'porcentaje_descuento' => DESCUENTO_REFERIDOS,
                 'utilizado' => '0',
                 'tipo_promocion' => 'General',
-                'fecha_creacion' => $fechaActual
+                'fecha_creacion' => $fechaActual,
+                'id_empresa' => 1,
+                'descripcion' => 'Descuento referidos'
             ];
             
             $promoBaseId = construir_insert('san_promociones', $datosPromo);
@@ -124,7 +126,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['generar_cupon'])) {
             'codigo_generado' => $codigoFinal,
             'id_promocion' => $promoBaseId,
             'status' => 1,
-            'id_socio' => $idSocio
+            'id_socio' => $idSocio,
+            'id_empresa' => 1
         ];
         construir_insert('san_codigos', $datosCodigo);
 

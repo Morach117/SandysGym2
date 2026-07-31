@@ -116,7 +116,9 @@ try {
             'porcentaje_descuento' => DESCUENTO_REACTIVACION,
             'utilizado' => '0',
             'tipo_promocion' => 'General',
-            'fecha_creacion' => $fechaActual
+            'fecha_creacion' => $fechaActual,
+            'id_empresa' => 1,
+            'descripcion' => 'Descuento reactivacion'
         ];
         
         $promoBaseId = construir_insert('san_promociones', $datosPromo);
@@ -147,7 +149,8 @@ try {
         'codigo_generado' => $codigoFinal,
         'id_promocion' => $promoBaseId,
         'status' => 1,
-        'id_socio' => $idSocioPost
+        'id_socio' => $idSocioPost,
+        'id_empresa' => 1
     ];
     construir_insert('san_codigos', $datosCodigo);
     

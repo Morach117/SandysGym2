@@ -358,9 +358,11 @@ function registrar_recarga_monedero_pdo(PDO $conn, int $payment_id, array $metad
             $stmtIns = $conn->prepare("INSERT INTO san_prepago (prep_id_socio, prep_saldo, prep_id_empresa) VALUES (?, ?, ?)");
             $stmtIns->execute([$id_socio, $saldo_tras_abono, $id_empresa]);
             $prep_id_prepago = (int) $conn->lastInsertId();
-            
             $descripcion_movimiento = "APERTURA DE CUENTA PREPAGO (MP Ref: $payment_id)";
         }
+        
+        $stmtUpdSocio = $conn->prepare("UPDATE san_socios SET soc_mon_saldo = soc_mon_saldo + ? WHERE soc_id_socio = ?");
+        $stmtUpdSocio->execute([$importe_recarga, $id_socio]);
 
         $sql_detalle = "INSERT INTO san_prepago_detalle (pred_id_prepago, pred_descripcion, pred_importe, pred_saldo, pred_movimiento, pred_fecha, pred_id_usuario) VALUES (?, ?, ?, ?, ?, ?, ?)";
         $stmtDetalle = $conn->prepare($sql_detalle);

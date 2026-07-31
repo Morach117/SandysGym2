@@ -9,7 +9,7 @@ $socioId = $selSocioData['soc_id_socio'];
 $fotoPerfil = null;
 if (!empty($selSocioData['soc_imagen'])) {
     $nombreArchivo = basename($selSocioData['soc_imagen']);
-    $fotoPerfil = '../imagenes/avatar/' . $nombreArchivo;
+    $fotoPerfil = 'api/get_avatar.php?f=' . $nombreArchivo;
 }
 
 $query = "SELECT pag_fecha_fin FROM san_pagos WHERE pag_id_socio = :socioId AND pag_status = 'A' ORDER BY pag_fecha_fin DESC LIMIT 1";
@@ -194,16 +194,30 @@ $page = $_GET['page'] ?? 'user_home';
                 <li class="<?php echo ($page == 'user_home') ? 'active' : ''; ?>">
                     <a href="index.php?page=user_home"><i class="fas fa-tachometer-alt"></i> Panel</a>
                 </li>
+                <li class="<?php echo ($page == 'user_information') ? 'active' : ''; ?>">
+                    <a href="index.php?page=user_information"><i class="fas fa-user-edit"></i> Mi Perfil</a>
+                </li>
                 <li class="<?php echo ($page == 'user_pago_membresia') ? 'active' : ''; ?>">
                     <a href="index.php?page=user_pago_membresia"><i class="fas fa-credit-card"></i> Pagar Membresía</a>
                 </li>
-                <li class="<?php echo ($page == 'mis_pagos') ? 'active' : ''; ?>">
-                    <a href="index.php?page=mis_pagos"><i class="fas fa-receipt"></i> Mis Pagos</a>
+                <li class="<?php echo ($page == 'user_referidos') ? 'active' : ''; ?>">
+                    <a href="index.php?page=user_referidos"><i class="fas fa-users"></i> Referidos</a>
+                </li>
+                <li class="<?php echo ($page == 'user_monedero') ? 'active' : ''; ?>">
+                    <a href="index.php?page=user_monedero"><i class="fas fa-wallet"></i> Monedero</a>
                 </li>
                 <li class="<?php echo ($page == 'user_rutina') ? 'active' : ''; ?>">
                     <a href="index.php?page=user_rutina" class="<?php echo !$miembroActivo ? 'disabled' : ''; ?>">
                         <i class="fas fa-dumbbell"></i> Rutinas
                     </a>
+                </li>
+                <li class="<?php echo ($page == 'progreso') ? 'active' : ''; ?>">
+                    <a href="index.php?page=progreso" class="<?php echo !$miembroActivo ? 'disabled' : ''; ?>">
+                        <i class="fas fa-chart-line"></i> Progreso
+                    </a>
+                </li>
+                <li class="<?php echo ($page == 'mis_pagos') ? 'active' : ''; ?>">
+                    <a href="index.php?page=mis_pagos"><i class="fas fa-receipt"></i> Mis Pagos</a>
                 </li>
                 <li id="mobileInstallBtn">
                     <a href="#" onclick="installPWA(); return false;"><i class="fas fa-download"></i> Instalar App</a>
@@ -235,15 +249,26 @@ $page = $_GET['page'] ?? 'user_home';
                             <li class="<?php echo ($page == 'user_home') ? 'active' : ''; ?>">
                                 <a href="index.php?page=user_home"><i class="fas fa-tachometer-alt"></i> Panel</a>
                             </li>
-                            <li class="<?php echo ($page == 'user_pago_membresia') ? 'active' : ''; ?>">
-                                <a href="index.php?page=user_pago_membresia"><i class="fas fa-credit-card"></i> Pagar Membresía</a>
+                            <li class="<?php echo ($page == 'user_information') ? 'active' : ''; ?>">
+                                <a href="index.php?page=user_information"><i class="fas fa-user-edit"></i> Mi Perfil</a>
                             </li>
-                            <li class="<?php echo ($page == 'mis_pagos') ? 'active' : ''; ?>">
-                                <a href="index.php?page=mis_pagos"><i class="fas fa-receipt"></i> Mis Pagos</a>
+                            <li class="<?php echo ($page == 'user_pago_membresia') ? 'active' : ''; ?>">
+                                <a href="index.php?page=user_pago_membresia"><i class="fas fa-credit-card"></i> Pagar</a>
+                            </li>
+                            <li class="<?php echo ($page == 'user_referidos') ? 'active' : ''; ?>">
+                                <a href="index.php?page=user_referidos"><i class="fas fa-users"></i> Referidos</a>
+                            </li>
+                            <li class="<?php echo ($page == 'user_monedero') ? 'active' : ''; ?>">
+                                <a href="index.php?page=user_monedero"><i class="fas fa-wallet"></i> Monedero</a>
                             </li>
                             <li class="<?php echo ($page == 'user_rutina') ? 'active' : ''; ?>">
                                 <a href="index.php?page=user_rutina" class="<?php echo !$miembroActivo ? 'disabled' : ''; ?>">
                                     <i class="fas fa-dumbbell"></i> Rutinas
+                                </a>
+                            </li>
+                            <li class="<?php echo ($page == 'progreso') ? 'active' : ''; ?>">
+                                <a href="index.php?page=progreso" class="<?php echo !$miembroActivo ? 'disabled' : ''; ?>">
+                                    <i class="fas fa-chart-line"></i> Progreso
                                 </a>
                             </li>
                             <li id="desktopInstallBtn">

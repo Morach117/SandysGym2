@@ -84,7 +84,7 @@ $orderColumnName = $columnasValidas[$orderColumnIndex] ?? 'pred_id_pdetalle';
 $orderDir = (isset($_POST['order'][0]['dir']) && strtolower($_POST['order'][0]['dir']) === 'asc') ? 'ASC' : 'DESC';
 
 try {
-    $stmtTotal = $conn->prepare("SELECT COUNT(pred_id_pdetalle) FROM san_prepago_detalle WHERE pred_id_socio = :id_socio");
+    $stmtTotal = $conn->prepare("SELECT COUNT(d.pred_id_pdetalle) FROM san_prepago_detalle d INNER JOIN san_prepago p ON p.prep_id_prepago = d.pred_id_prepago WHERE p.prep_id_socio = :id_socio");
     $stmtTotal->bindValue(':id_socio', $post_id_socio, PDO::PARAM_INT);
     $stmtTotal->execute();
     $recordsTotal = (int)$stmtTotal->fetchColumn();
@@ -94,7 +94,7 @@ try {
         $searchCondition = " AND (pred_descripcion LIKE :search OR pred_movimiento LIKE :search)";
     }
 
-    $stmtFiltrado = $conn->prepare("SELECT COUNT(pred_id_pdetalle) FROM san_prepago_detalle WHERE pred_id_socio = :id_socio" . $searchCondition);
+    $stmtFiltrado = $conn->prepare("SELECT COUNT(d.pred_id_pdetalle) FROM san_prepago_detalle d INNER JOIN san_prepago p ON p.prep_id_prepago = d.pred_id_prepago WHERE p.prep_id_socio = :id_socio" . str_replace('pred_','d.pred_',$searchCondition));
     $stmtFiltrado->bindValue(':id_socio', $post_id_socio, PDO::PARAM_INT);
     if ($searchValue !== "") {
         $searchParam = "%" . $searchValue . "%";
@@ -111,9 +111,10 @@ try {
                     CASE pred_movimiento WHEN 'R' THEN 'Resta' WHEN 'S' THEN 'Suma' WHEN 'A' THEN 'Suma' ELSE pred_movimiento END AS movimiento,
                     DATE_FORMAT(pred_fecha, '%d-%m-%Y') AS fecha,
                     LOWER(DATE_FORMAT(pred_fecha, '%r')) AS hora
-                  FROM san_prepago_detalle
-                  WHERE pred_id_socio = :id_socio" . $searchCondition . "
-                  ORDER BY " . $orderColumnName . " " . $orderDir . "
+                  FROM san_prepago_detalle d
+                  INNER JOIN san_prepago p ON p.prep_id_prepago = d.pred_id_prepago
+                  WHERE p.prep_id_socio = :id_socio" . str_replace('pred_', 'd.pred_', $searchCondition) . "
+                  ORDER BY d." . $orderColumnName . " " . $orderDir . "
                   LIMIT :start, :length";
 
     $stmtData = $conn->prepare($queryData);

@@ -28,7 +28,7 @@ $foto_perfil = $avatar_default;
 
 if ($foto_bd !== '') {
     $nombreArchivo = basename(trim($foto_bd));
-    $foto_perfil = '../imagenes/avatar/' . $nombreArchivo . '?v=' . time();
+    $foto_perfil = 'api/get_avatar.php?f=' . $nombreArchivo . '&v=' . time();
 }
 ?>
 
@@ -273,7 +273,7 @@ body {
                             <label for="fotoInput" class="btn-camara">
                                 <i class="fas fa-camera"></i>
                             </label>
-                            <input type="file" id="fotoInput" name="foto_perfil" accept="image/jpeg, image/png, image/webp" class="d-none" onchange="previewImage(event)">
+                            <input type="file" id="fotoInput" name="foto_perfil" accept="image/*" capture="user" class="d-none" onchange="previewImage(event)">
                         </div>
                         <p class="text-muted mt-2 small" style="color: #aaa;">Toca la cámara para subir una foto o tomar una selfie</p>
                     </div>

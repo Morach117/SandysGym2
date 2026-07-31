@@ -199,7 +199,11 @@ try {
     <div class="gallery-section">
         <div class="container">
             <div class="row mb-4"><div class="col-lg-12 text-center"><h2 style="font-size: 36px; text-transform: uppercase; font-weight: 800; color: #ffffff;">Nuestras <span style="color: var(--accent-orange);">Instalaciones</span></h2></div></div>
-            <div class="row" id="galeria-container"></div>
+            <div class="row">
+                <div class="col-12">
+                    <div id="galeria-container" class="owl-carousel owl-theme"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -326,19 +330,43 @@ function renderizarHero(heroes) {
     }
 
     function renderizarGaleria(galeria) {
-        const contenedor = document.getElementById('galeria-container');
+        const contenedor = $('#galeria-container');
+        if (contenedor.hasClass('owl-loaded')) { 
+            contenedor.trigger('destroy.owl.carousel'); 
+            contenedor.removeClass('owl-loaded owl-drag owl-hidden');
+            contenedor.find('.owl-stage-outer').children().unwrap();
+            contenedor.empty();
+        }
+
         let html = ''; const basePath = 'assets/img/gallery/';
-        if (galeria.length === 0) return contenedor.innerHTML = '<div class="col-12 text-center text-muted">No hay imágenes.</div>';
+        if (galeria.length === 0) return contenedor.html('<div class="col-12 text-center text-muted">No hay imágenes.</div>');
 
         galeria.forEach((g, index) => {
-            let cols = g.es_wide == 1 ? 'col-lg-6 col-md-12' : 'col-lg-3 col-md-6';
-            let claseWide = g.es_wide == 1 ? 'grid-wide' : '';
             let imgSrc = g.imagen_url.startsWith('http') ? g.imagen_url : basePath + g.imagen_url;
-            let editAttr = editMode ? `class="gs-item ${claseWide} editable-element" ondblclick='notificarParent("galeria", dbLandingData.galeria[${index}])'` : `class="gs-item ${claseWide}"`;
+            let editAttr = editMode ? `class="gs-item editable-element" ondblclick='notificarParent("galeria", dbLandingData.galeria[${index}])'` : `class="gs-item"`;
 
-            html += `<div class="${cols} fade-update"><div ${editAttr} style="background-image: url('${imgSrc}');"><a href="${imgSrc}" class="thumb-icon image-popup"><i class="fa-solid fa-image"></i></a></div></div>`;
+            html += `<div class="item fade-update"><div ${editAttr} style="background-image: url('${imgSrc}'); height: 350px;"><a href="${imgSrc}" class="thumb-icon image-popup"><i class="fa-solid fa-image"></i></a></div></div>`;
         });
-        contenedor.innerHTML = html;
+        
+        contenedor.html(html);
+
+        if ($.fn.owlCarousel && galeria.length > 0) { 
+            setTimeout(() => {
+                contenedor.owlCarousel({ 
+                    loop: true, 
+                    margin: 15, 
+                    nav: true, 
+                    navText: ['<i class="fas fa-chevron-left"></i>','<i class="fas fa-chevron-right"></i>'],
+                    dots: true, 
+                    autoplay: true,
+                    responsive: {
+                        0: { items: 1 },
+                        600: { items: 2 },
+                        1000: { items: 3 }
+                    }
+                });
+            }, 50);
+        }
     }
 
     document.addEventListener('DOMContentLoaded', () => { renderizarHero(dbLandingData.hero); renderizarPlanes(dbLandingData.planes); renderizarGaleria(dbLandingData.galeria); });

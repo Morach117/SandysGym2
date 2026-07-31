@@ -1,8 +1,10 @@
-const CACHE_NAME = 'sandys-gym-v1';
+const CACHE_NAME = 'sandys-gym-v2';
 const urlsToCache = [
   './index.php',
   './assets/css/style.css',
   './assets/css/bootstrap.min.css',
+  './assets/img/icon-192x192.png',
+  './assets/img/icon-512x512.png',
   './assets/img/logo.png'
 ];
 

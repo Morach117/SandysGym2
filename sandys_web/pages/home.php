@@ -345,7 +345,7 @@ function renderizarHero(heroes) {
             let imgSrc = g.imagen_url.startsWith('http') ? g.imagen_url : basePath + g.imagen_url;
             let editAttr = editMode ? `class="gs-item editable-element" ondblclick='notificarParent("galeria", dbLandingData.galeria[${index}])'` : `class="gs-item"`;
 
-            html += `<div class="item fade-update"><div ${editAttr} style="background-image: url('${imgSrc}'); height: 350px;"><a href="${imgSrc}" class="thumb-icon image-popup"><i class="fa-solid fa-image"></i></a></div></div>`;
+            html += `<div class="item fade-update"><a href="${imgSrc}" class="image-popup d-block" style="text-decoration: none; cursor: pointer;"><div ${editAttr} style="background-image: url('${imgSrc}'); height: 350px;"></div></a></div>`;
         });
         
         contenedor.html(html);
@@ -365,6 +365,10 @@ function renderizarHero(heroes) {
                         1000: { items: 3 }
                     }
                 });
+                
+                if ($.fn.magnificPopup) {
+                    $('.image-popup').magnificPopup({ type: 'image' });
+                }
             }, 50);
         }
     }

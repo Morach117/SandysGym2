@@ -246,6 +246,14 @@ if (!empty($nombre['soc_fecha_nacimiento']) && $nombre['soc_fecha_nacimiento'] !
             <?= $op_fecha_pago ?>
 
             <div class="row">
+                <label class="col-md-5">Código de Promoción</label>
+                <div class="col-md-7">
+                    <input type="text" class="form-control" name="codigo_promocion" id="codigo_promocion"
+                        value="<?= $codigo_promocion ?>" autocomplete="off" />
+                </div>
+            </div>
+
+            <div class="row">
                 <label class="col-md-5">Servicio</label>
                 <div class="col-md-7">
                     <select class="form-control" name="servicio" id="servicio" required>
@@ -420,14 +428,6 @@ if (!empty($nombre['soc_fecha_nacimiento']) && $nombre['soc_fecha_nacimiento'] !
                 <div class="col-md-7">
                     <input type="text" class="form-control" name="pag_fecha_fin" id="pag_fecha_fin"
                         value="<?= $pag_fecha_fin ?>" autocomplete="off" readonly="on" />
-                </div>
-            </div>
-
-            <div class="row">
-                <label class="col-md-5">Código de Promoción</label>
-                <div class="col-md-7">
-                    <input type="text" class="form-control" name="codigo_promocion" id="codigo_promocion"
-                        value="<?= $codigo_promocion ?>" autocomplete="off" />
                 </div>
             </div>
 
@@ -667,9 +667,22 @@ document.addEventListener('DOMContentLoaded', function() {
     // LÓGICA DE DESCUENTOS Y PAGOS
     // --------------------------------------------------------
 
+    function restaurarCuotaSinPromocion() {
+        var cuotaOriginal = parseFloat($("#subtotal").text());
+        if (isNaN(cuotaOriginal)) return;
+        var descCliente = parseFloat($('#descuento_cliente_hidden').val());
+
+        if (!isNaN(descCliente) && descCliente > 0) {
+            aplicarDescuentoCliente(descCliente);
+        } else {
+            $("#descuento").text('0.00');
+            $("#total").text(cuotaOriginal.toFixed(2));
+        }
+    }
+
     function obtenerCuotaServicio() {
         var servicioSeleccionado = document.getElementById("servicio").value;
-        var id_servicio = servicioSeleccionado.split('-')[0];
+        var id_servicio = servicioSeleccionado ? servicioSeleccionado.split('-')[0] : '';
 
         if (!id_servicio) return;
 
@@ -685,20 +698,26 @@ document.addEventListener('DOMContentLoaded', function() {
                     var cuota = parseFloat(respuesta.cuota);
                     $("#subtotal").text(cuota.toFixed(2));
 
-                    verificarCumpleanos(function(esCumple) {
-                        if (!esCumple) {
-                            if (!descuentoCumpleanosAplicado) {
-                                var descuentoCliente = parseFloat($(
-                                    '#descuento_cliente_hidden').val());
-                                if (!isNaN(descuentoCliente) && descuentoCliente > 0) {
-                                    aplicarDescuentoCliente(descuentoCliente);
-                                } else {
-                                    $("#descuento").text('0.00');
-                                    $("#total").text(cuota.toFixed(2));
+                    var codigoPromoExistente = $("#codigo_promocion").val() ? $("#codigo_promocion").val().trim() : '';
+
+                    if (codigoPromoExistente !== '') {
+                        aplicarDescuentoPromocional(codigoPromoExistente);
+                    } else {
+                        verificarCumpleanos(function(esCumple) {
+                            if (!esCumple) {
+                                if (!descuentoCumpleanosAplicado) {
+                                    var descuentoCliente = parseFloat($(
+                                        '#descuento_cliente_hidden').val());
+                                    if (!isNaN(descuentoCliente) && descuentoCliente > 0) {
+                                        aplicarDescuentoCliente(descuentoCliente);
+                                    } else {
+                                        $("#descuento").text('0.00');
+                                        $("#total").text(cuota.toFixed(2));
+                                    }
                                 }
                             }
-                        }
-                    });
+                        });
+                    }
                 } else {
                     console.error("Error cuota:", respuesta.error);
                 }
@@ -716,58 +735,67 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function aplicarDescuentoPromocional(codigo) {
+        if (!codigo || !codigo.trim()) {
+            restaurarCuotaSinPromocion();
+            return;
+        }
+
+        codigo = codigo.trim();
+
         // BLOQUEO DE SEGURIDAD PARA INGRESO MANUAL
         if (codigo === '22M40G20' && yaUsoDescuentoCumple) {
             alert("El socio ya utilizó su promoción de cumpleaños este año.");
             $("#codigo_promocion").val("");
-
-            // Restaurar precios
-            var cuotaOriginal = parseFloat($("#subtotal").text());
-            var descCliente = parseFloat($('#descuento_cliente_hidden').val());
-
-            if (!isNaN(descCliente) && descCliente > 0) {
-                aplicarDescuentoCliente(descCliente);
-            } else {
-                $("#descuento").text('0.00');
-                $("#total").text(cuotaOriginal.toFixed(2));
-            }
+            restaurarCuotaSinPromocion();
             return;
         }
 
         if (descuentoCumpleanosAplicado && codigo !== '22M40G20') return;
 
         var servicioSeleccionado = $("#servicio").val();
-        var id_servicio = servicioSeleccionado.split('-')[0];
+        var id_servicio = servicioSeleccionado ? servicioSeleccionado.split('-')[0] : '';
 
-        verificarDescuentosPromocionales(id_servicio);
+        if (!id_servicio) {
+            return;
+        }
 
-        $.ajax({
-            url: "./funciones/verificar_codigo_promocional.php",
-            data: {
-                codigo_promocion: codigo
-            },
-            dataType: 'json',
-            success: function(resp) {
-                if (resp.success) {
-                    var descPorc = parseFloat(resp.porcentaje_descuento);
-                    var cuota = parseFloat($("#subtotal").text());
-
-                    var descCliente = parseFloat($('#descuento_cliente_hidden').val());
-                    var totalDescPorc = descPorc;
-
-                    if (!isNaN(descCliente)) {
-                        totalDescPorc += descCliente;
-                    }
-
-                    var montoDesc = cuota * (totalDescPorc / 100);
-                    var totalFinal = cuota - montoDesc;
-
-                    $("#descuento").text(montoDesc.toFixed(2));
-                    $("#total").text(totalFinal.toFixed(2));
-                } else {
-                    alert("Error: " + resp.error);
-                }
+        verificarDescuentosPromocionales(id_servicio, function(permitido) {
+            if (!permitido) {
+                return;
             }
+
+            $.ajax({
+                url: "./funciones/verificar_codigo_promocional.php",
+                data: {
+                    codigo_promocion: codigo
+                },
+                dataType: 'json',
+                success: function(resp) {
+                    if (resp.success) {
+                        var descPorc = parseFloat(resp.porcentaje_descuento);
+                        var cuota = parseFloat($("#subtotal").text());
+
+                        if (isNaN(cuota) || cuota <= 0) return;
+
+                        var descCliente = parseFloat($('#descuento_cliente_hidden').val());
+                        var totalDescPorc = descPorc;
+
+                        if (!isNaN(descCliente) && descCliente > 0) {
+                            totalDescPorc += descCliente;
+                        }
+
+                        var montoDesc = cuota * (totalDescPorc / 100);
+                        var totalFinal = cuota - montoDesc;
+
+                        $("#descuento").text(montoDesc.toFixed(2));
+                        $("#total").text(totalFinal.toFixed(2));
+                    } else {
+                        alert("Error: " + resp.error);
+                        $("#codigo_promocion").val("");
+                        restaurarCuotaSinPromocion();
+                    }
+                }
+            });
         });
     }
 
@@ -824,7 +852,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function verificarDescuentosPromocionales(id_servicio) {
+    function verificarDescuentosPromocionales(id_servicio, callback) {
+        if (!id_servicio) {
+            if (callback) callback(false);
+            return;
+        }
         $.ajax({
             url: "./funciones/verificar_descuentos_promocionales.php",
             data: {
@@ -834,16 +866,25 @@ document.addEventListener('DOMContentLoaded', function() {
             success: function(resp) {
                 if (!resp.success) {
                     alert("El servicio seleccionado no permite descuentos promocionales.");
-                    setTimeout(function() {
-                        location.reload();
-                    }, 1000);
+                    $("#codigo_promocion").val("");
+                    restaurarCuotaSinPromocion();
+                    if (callback) callback(false);
+                } else {
+                    if (callback) callback(true);
                 }
+            },
+            error: function() {
+                if (callback) callback(true);
             }
         });
     }
 
-    $("#codigo_promocion").change(function() {
-        if (this.value) aplicarDescuentoPromocional(this.value);
+    $("#codigo_promocion").on('change blur', function() {
+        if (this.value && this.value.trim()) {
+            aplicarDescuentoPromocional(this.value.trim());
+        } else {
+            restaurarCuotaSinPromocion();
+        }
     });
 
     // --------------------------------------------------------

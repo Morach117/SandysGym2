@@ -8,6 +8,13 @@ if (isset($_SESSION['admin']['soc_correo'])) {
     $stmt->execute();
     $selSocioData = $stmt->fetch(PDO::FETCH_ASSOC);
     $stmt->closeCursor();
+
+    if (!$selSocioData) {
+        session_unset();
+        session_destroy();
+        header("Location: index.php?page=login");
+        exit;
+    }
 } else {
     $selSocioData = array();
 }

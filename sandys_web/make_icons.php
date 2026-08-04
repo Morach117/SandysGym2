@@ -1,15 +1,20 @@
 <?php
-$srcPath = __DIR__ . '/assets/img/logo.png';
+$srcPath = __DIR__ . '/assets/img/logo_movil.png';
 $src = imagecreatefrompng($srcPath);
 if (!$src) {
-    die("Could not read logo.png\n");
+    die("Could not read logo_movil.png\n");
 }
 $w = imagesx($src);
 $h = imagesy($src);
 
 // Create 512x512
 $bg512 = imagecreatetruecolor(512, 512);
-imagefill($bg512, 0, 0, imagecolorallocate($bg512, 5, 5, 5));
+imagealphablending($bg512, false);
+imagesavealpha($bg512, true);
+$transparent = imagecolorallocatealpha($bg512, 0, 0, 0, 127);
+imagefill($bg512, 0, 0, $transparent);
+imagealphablending($bg512, true);
+
 $scale = min(400/$w, 400/$h);
 $nw = $w * $scale;
 $nh = $h * $scale;
@@ -19,7 +24,12 @@ echo "Created icon-512x512.png\n";
 
 // Create 192x192
 $bg192 = imagecreatetruecolor(192, 192);
-imagefill($bg192, 0, 0, imagecolorallocate($bg192, 5, 5, 5));
+imagealphablending($bg192, false);
+imagesavealpha($bg192, true);
+$transparent192 = imagecolorallocatealpha($bg192, 0, 0, 0, 127);
+imagefill($bg192, 0, 0, $transparent192);
+imagealphablending($bg192, true);
+
 $scale192 = min(150/$w, 150/$h);
 $nw192 = $w * $scale192;
 $nh192 = $h * $scale192;

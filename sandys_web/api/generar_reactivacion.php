@@ -83,21 +83,17 @@ try {
     $stmtPago->execute([$idSocioPost]);
     $pago = $stmtPago->fetch(PDO::FETCH_ASSOC);
     
-    if (!$pago) {
-        echo json_encode(['success' => false, 'message' => 'No se encontró historial de membresía.']);
-        $conn->rollBack();
-        exit;
-    }
-    
-    $currentDate = new DateTime();
-    $currentDate->setTime(0, 0, 0);
-    $fechaFinDate = new DateTime($pago['pag_fecha_fin']);
-    $fechaFinDate->setTime(0, 0, 0);
-    
-    if ($currentDate <= $fechaFinDate || $fechaFinDate->diff($currentDate)->days <= 30) {
-        echo json_encode(['success' => false, 'message' => 'Aún no cumples con los 30 días de vencimiento.']);
-        $conn->rollBack();
-        exit;
+    if ($pago) {
+        $currentDate = new DateTime();
+        $currentDate->setTime(0, 0, 0);
+        $fechaFinDate = new DateTime($pago['pag_fecha_fin']);
+        $fechaFinDate->setTime(0, 0, 0);
+        
+        if ($currentDate <= $fechaFinDate || $fechaFinDate->diff($currentDate)->days < 30) {
+            echo json_encode(['success' => false, 'message' => 'Aún no cumples con los 30 días de vencimiento.']);
+            $conn->rollBack();
+            exit;
+        }
     }
     
     $stmtPromo = $conn->prepare("SELECT id_promocion FROM san_promociones WHERE titulo = ? LIMIT 1");

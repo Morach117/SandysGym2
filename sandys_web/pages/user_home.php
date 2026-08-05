@@ -180,7 +180,7 @@ if ($cuponReactData) {
         $leyendaReactivacion = "Ya tienes un código generado";
     }
 } else {
-    if ($diasVencido > 30) {
+    if (!$miembroActivo && ($diasVencido >= 30 || !$fechaFin)) {
         $puedeGenerarReactivacion = true;
         $btnReactivacionDeshabilitado = false;
         $leyendaReactivacion = "";

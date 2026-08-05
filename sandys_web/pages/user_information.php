@@ -400,8 +400,44 @@ function previewImage(event) {
     }
 }
 
+function compressImageFile(file, maxDimension = 1200, quality = 0.82) {
+    return new Promise((resolve) => {
+        if (!file || !file.type.startsWith('image/')) {
+            resolve(file);
+            return;
+        }
+        const img = new Image();
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            img.onload = function() {
+                let width = img.width;
+                let height = img.height;
+                if (width > maxDimension || height > maxDimension) {
+                    if (width > height) {
+                        height = Math.round((height * maxDimension) / width);
+                        width = maxDimension;
+                    } else {
+                        width = Math.round((width * maxDimension) / height);
+                        height = maxDimension;
+                    }
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                canvas.toBlob((blob) => {
+                    resolve(blob || file);
+                }, 'image/jpeg', quality);
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
 $(document).ready(function() {
-    $('#editarPerfilForm').off('submit').on('submit', function(e) {
+    $('#editarPerfilForm').off('submit').on('submit', async function(e) {
         e.preventDefault();
         e.stopImmediatePropagation();
 
@@ -410,6 +446,16 @@ $(document).ready(function() {
         btn.text('Procesando...').prop('disabled', true);
 
         let formData = new FormData(this);
+        let fileInput = document.getElementById('fotoInput');
+
+        if (fileInput && fileInput.files && fileInput.files[0]) {
+            try {
+                let compressedBlob = await compressImageFile(fileInput.files[0]);
+                formData.set('foto_perfil', compressedBlob, 'perfil.jpg');
+            } catch (err) {
+                console.error("Error al comprimir imagen:", err);
+            }
+        }
 
         $.ajax({
             url: 'api/update_profile_reward.php',

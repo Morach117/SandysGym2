@@ -84,17 +84,17 @@ $orderColumnName = $columnasValidas[$orderColumnIndex] ?? 'pred_id_pdetalle';
 $orderDir = (isset($_POST['order'][0]['dir']) && strtolower($_POST['order'][0]['dir']) === 'asc') ? 'ASC' : 'DESC';
 
 try {
-    $stmtTotal = $conn->prepare("SELECT COUNT(d.pred_id_pdetalle) FROM san_prepago_detalle d INNER JOIN san_prepago p ON p.prep_id_prepago = d.pred_id_prepago WHERE p.prep_id_socio = :id_socio");
+    $stmtTotal = $conn->prepare("SELECT COUNT(d.pred_id_pdetalle) FROM san_prepago_detalle d WHERE d.pred_id_socio = :id_socio");
     $stmtTotal->bindValue(':id_socio', $post_id_socio, PDO::PARAM_INT);
     $stmtTotal->execute();
     $recordsTotal = (int)$stmtTotal->fetchColumn();
 
     $searchCondition = "";
     if ($searchValue !== "") {
-        $searchCondition = " AND (pred_descripcion LIKE :search OR pred_movimiento LIKE :search)";
+        $searchCondition = " AND (d.pred_descripcion LIKE :search OR d.pred_movimiento LIKE :search)";
     }
 
-    $stmtFiltrado = $conn->prepare("SELECT COUNT(d.pred_id_pdetalle) FROM san_prepago_detalle d INNER JOIN san_prepago p ON p.prep_id_prepago = d.pred_id_prepago WHERE p.prep_id_socio = :id_socio" . str_replace('pred_','d.pred_',$searchCondition));
+    $stmtFiltrado = $conn->prepare("SELECT COUNT(d.pred_id_pdetalle) FROM san_prepago_detalle d WHERE d.pred_id_socio = :id_socio" . $searchCondition);
     $stmtFiltrado->bindValue(':id_socio', $post_id_socio, PDO::PARAM_INT);
     if ($searchValue !== "") {
         $searchParam = "%" . $searchValue . "%";
@@ -104,16 +104,15 @@ try {
     $recordsFiltered = (int)$stmtFiltrado->fetchColumn();
 
     $queryData = "SELECT 
-                    pred_id_pdetalle AS id_pdetalle,
-                    pred_descripcion AS p_descripcion,
-                    pred_importe AS importe,
-                    pred_saldo AS saldo,
-                    CASE pred_movimiento WHEN 'R' THEN 'Resta' WHEN 'S' THEN 'Suma' WHEN 'A' THEN 'Suma' ELSE pred_movimiento END AS movimiento,
-                    DATE_FORMAT(pred_fecha, '%d-%m-%Y') AS fecha,
-                    LOWER(DATE_FORMAT(pred_fecha, '%r')) AS hora
+                    d.pred_id_pdetalle AS id_pdetalle,
+                    d.pred_descripcion AS p_descripcion,
+                    d.pred_importe AS importe,
+                    d.pred_saldo AS saldo,
+                    CASE d.pred_movimiento WHEN 'R' THEN 'Resta' WHEN 'S' THEN 'Suma' WHEN 'A' THEN 'Suma' ELSE d.pred_movimiento END AS movimiento,
+                    DATE_FORMAT(d.pred_fecha, '%d-%m-%Y') AS fecha,
+                    LOWER(DATE_FORMAT(d.pred_fecha, '%r')) AS hora
                   FROM san_prepago_detalle d
-                  INNER JOIN san_prepago p ON p.prep_id_prepago = d.pred_id_prepago
-                  WHERE p.prep_id_socio = :id_socio" . str_replace('pred_', 'd.pred_', $searchCondition) . "
+                  WHERE d.pred_id_socio = :id_socio" . $searchCondition . "
                   ORDER BY d." . $orderColumnName . " " . $orderDir . "
                   LIMIT :start, :length";
 
@@ -154,8 +153,7 @@ try {
         "draw"            => $draw,
         "recordsTotal"    => 0,
         "recordsFiltered" => 0,
-        "data"            => [],
-        "error"           => "Error al consultar los datos."
+        "data"            => []
     ]);
 }
 ?>

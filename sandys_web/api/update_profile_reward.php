@@ -16,6 +16,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
+    if (empty($_POST) && isset($_SERVER['CONTENT_LENGTH']) && (int)$_SERVER['CONTENT_LENGTH'] > 0) {
+        throw new Exception("El archivo seleccionado excede el tamaño máximo permitido por el servidor.");
+    }
+
     require_once __DIR__ . '/../config/session.php';
     if (empty($_SESSION['admin']['soc_id_socio'])) {
         throw new Exception("Acceso denegado. Inicie sesión para actualizar su perfil.");
@@ -35,6 +39,9 @@ try {
     $emerParentesco = strtoupper(trim($_POST['emer_parentesco'] ?? ''));
 
     if ($idSocio <= 0) throw new Exception("ID de socio inválido.");
+    if (empty($nombres) || empty($apPaterno)) {
+        throw new Exception("Los campos Nombres y Apellido Paterno son obligatorios.");
+    }
 
     $directorioDestino = __DIR__ . '/../../imagenes/avatar/';
     $nombreArchivoFinal = null;

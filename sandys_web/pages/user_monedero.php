@@ -26,14 +26,13 @@ $id_empresa = 1;
 function obtener_prepago_pdo($conexion_pdo, $id_socio, $id_empresa)
 {
     try {
-        $query = "SELECT CONCAT(s.soc_apepat, ' ', s.soc_apemat, ' ', s.soc_nombres) AS nombre,
-                         IFNULL(p.prep_saldo, 0) AS saldo,
-                         s.soc_id_socio AS id_socio,
-                         s.soc_id_consorcio
-                  FROM san_socios s
-                  LEFT JOIN san_prepago p ON p.prep_id_socio = s.soc_id_socio
-                  WHERE s.soc_id_socio = :socioId 
-                  AND s.soc_id_empresa = :empresaId LIMIT 1";
+        $query = "SELECT CONCAT(soc_apepat, ' ', soc_apemat, ' ', soc_nombres) AS nombre,
+                         IFNULL(soc_mon_saldo, 0) AS saldo,
+                         soc_id_socio AS id_socio,
+                         soc_id_consorcio
+                  FROM san_socios
+                  WHERE soc_id_socio = :socioId 
+                  AND soc_id_empresa = :empresaId LIMIT 1";
 
         $stmt = $conexion_pdo->prepare($query);
         $stmt->bindParam(':socioId', $id_socio, PDO::PARAM_INT);

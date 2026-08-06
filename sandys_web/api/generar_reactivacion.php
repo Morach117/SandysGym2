@@ -79,11 +79,16 @@ try {
         exit;
     }
     
+    $stmtRef = $conn->prepare("SELECT soc_id_referido_por FROM san_socios WHERE soc_id_socio = ?");
+    $stmtRef->execute([$idSocioPost]);
+    $idPadrino = (int)$stmtRef->fetchColumn();
+
     $stmtPago = $conn->prepare("SELECT pag_fecha_fin FROM san_pagos WHERE pag_id_socio = ? AND pag_status = 'A' ORDER BY pag_fecha_fin DESC LIMIT 1");
     $stmtPago->execute([$idSocioPost]);
     $pago = $stmtPago->fetch(PDO::FETCH_ASSOC);
     
-    if ($pago) {
+    // Si NO es regalo de bienvenida (idPadrino <= 0), se requiere validación de 30 días de vencimiento
+    if ($idPadrino <= 0 && $pago) {
         $currentDate = new DateTime();
         $currentDate->setTime(0, 0, 0);
         $fechaFinDate = new DateTime($pago['pag_fecha_fin']);
@@ -111,18 +116,10 @@ try {
             'vigencia_final' => $vigenciaFinal,
             'porcentaje_descuento' => DESCUENTO_REACTIVACION,
             'utilizado' => '0',
-            'tipo_promocion' => 'General',
-            'fecha_creacion' => $fechaActual,
-            'id_empresa' => 1,
-            'descripcion' => 'Descuento reactivacion'
+            'tipo_promocion' => 'General'
         ];
         
         $promoBaseId = construir_insert('san_promociones', $datosPromo);
-        
-        construir_insert('san_descuentos_promociones', [
-            'id_promocion' => $promoBaseId,
-            'id_servicio' => '1-1'
-        ]);
     }
     
     $codigoFinal = '';
@@ -145,8 +142,8 @@ try {
         'codigo_generado' => $codigoFinal,
         'id_promocion' => $promoBaseId,
         'status' => 1,
-        'id_socio' => $idSocioPost,
-        'id_empresa' => 1
+        'is_active' => 1,
+        'id_socio' => $idSocioPost
     ];
     construir_insert('san_codigos', $datosCodigo);
     

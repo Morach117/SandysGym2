@@ -129,10 +129,9 @@ if ($idPadrino > 0) {
         SELECT c.codigo_generado, p.utilizado 
         FROM san_codigos c 
         INNER JOIN san_promociones p ON c.id_promocion = p.id_promocion
-        WHERE p.titulo = ? LIMIT 1
+        WHERE p.titulo IN (?, ?) AND c.id_socio = ? LIMIT 1
     ");
-    $tituloPromoBuscado = "REFERIDO-" . $socioId;
-    $stmtCupon->execute([$tituloPromoBuscado]);
+    $stmtCupon->execute(["REACTIVACION-" . $socioId, "REFERIDO-" . $socioId, $socioId]);
     $cuponData = $stmtCupon->fetch(PDO::FETCH_ASSOC);
     if ($cuponData) {
         $cuponGenerado = $cuponData['codigo_generado'];
@@ -724,47 +723,44 @@ $(document).ready(function () {
         const originalText = $btn.html();
         $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> Generando...');
 
-        $.ajax({
-            url: 'api/procesar_cupon_referido.php',
-            type: 'POST',
-            data: $(this).serialize() + '&generar_cupon=1',
-            dataType: 'json',
-            success: function (res) {
-                if (res.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: '¡Cupón Generado!',
-                        text: res.message,
-                        confirmButtonColor: '#10b981'
-                    });
-                    const bannerHtml = `
-                        <h4><i class="fas fa-gift"></i> ¡Tu código de bienvenida!</h4>
-                        <p>Usa este código en tu próxima mensualidad para obtener un descuento especial:</p>
-                        <span class="referral-code">${res.codigo}</span>
-                    `;
-                    $('#referralBannerContent').html(bannerHtml);
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Lo sentimos',
-                        text: res.message,
-                        confirmButtonColor: '#ef4444'
-                    });
-                }
-            },
-            error: function (xhr) {
-                let msg = 'Error de conexión con el servidor.';
-                if (xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
+        fetch('api/generar_reactivacion.php', {
+            method: 'POST',
+            body: new FormData(this)
+        })
+        .then(response => response.json())
+        .then(res => {
+            if (res.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Cupón Generado!',
+                    text: res.message,
+                    confirmButtonColor: '#10b981'
+                });
+                const bannerHtml = `
+                    <h4><i class="fas fa-gift"></i> ¡Tu código de bienvenida!</h4>
+                    <p>Usa este código en tu próxima mensualidad para obtener un descuento especial:</p>
+                    <span class="referral-code">${res.codigo}</span>
+                `;
+                $('#referralBannerContent').html(bannerHtml);
+            } else {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Error',
-                    text: msg,
+                    title: 'Lo sentimos',
+                    text: res.message,
                     confirmButtonColor: '#ef4444'
                 });
-            },
-            complete: function () {
-                $btn.prop('disabled', false).html(originalText);
             }
+        })
+        .catch(err => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error de conexión con el servidor.',
+                confirmButtonColor: '#ef4444'
+            });
+        })
+        .finally(() => {
+            $btn.prop('disabled', false).html(originalText);
         });
     });
 

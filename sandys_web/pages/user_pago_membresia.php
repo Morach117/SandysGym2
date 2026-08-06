@@ -61,6 +61,23 @@ if (!$selSocioData) {
     echo "<div style='color:white;'>Error: No se pudieron cargar los datos del socio.</div>";
     exit;
 }
+
+$codigo_prellenado = '';
+try {
+    $stmtCupon = $conn->prepare("
+        SELECT c.codigo_generado
+        FROM san_codigos c
+        INNER JOIN san_promociones p ON c.id_promocion = p.id_promocion
+        WHERE c.id_socio = ? AND p.utilizado = '0' AND c.status = 1
+        ORDER BY c.id_codigo DESC LIMIT 1
+    ");
+    $stmtCupon->execute([$id_socio]);
+    if ($row = $stmtCupon->fetch(PDO::FETCH_ASSOC)) {
+        $codigo_prellenado = $row['codigo_generado'];
+    }
+} catch (Exception $e) {
+    // Silently ignore if there is an error fetching the promo code
+}
 ?>
 
 <style>
@@ -383,7 +400,7 @@ if (!$selSocioData) {
                             <div class="col-12 form-group mb-4">
                                 <label for="codigo_promocion" class="form-label">¿Tienes un cupón?</label>
                                 <div class="input-group">
-                                    <input type="text" id="codigo_promocion" name="codigo_promocion" class="form-control" placeholder="Ingresa tu código promocional">
+                                    <input type="text" id="codigo_promocion" name="codigo_promocion" class="form-control" placeholder="Ingresa tu código promocional" value="<?php echo htmlspecialchars($codigo_prellenado); ?>">
                                     <div class="input-group-append">
                                         <button class="btn btn-outline-secondary" type="button" id="aplicarCuponBtn">APLICAR</button>
                                     </div>

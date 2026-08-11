@@ -280,7 +280,7 @@ $textoInvitacion = "¡Hola! Ven a entrenar conmigo a Sandys Gym. 🏋️‍♂�
         </div>
         <div class="stat-card">
             <div class="stat-number">$<?= number_format($gananciaTotal, 2) ?></div>
-            <div class="stat-label">Ganado en Monedero</div>
+            <div class="stat-label">Obtenido por referidos</div>
         </div>
     </div>
 

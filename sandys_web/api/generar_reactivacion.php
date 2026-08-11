@@ -65,17 +65,24 @@ if ($idSocioPost <= 0) {
 try {
     $conn->beginTransaction();
     
+    $tituloPromoReact = TITULO_PROMO_REACTIVACION . $idSocioPost;
+    $tituloPromoRef = 'REFERIDO-' . $idSocioPost;
+
     $stmtVal = $conn->prepare("
         SELECT c.codigo_generado 
         FROM san_codigos c
         INNER JOIN san_promociones p ON c.id_promocion = p.id_promocion
-        WHERE c.id_socio = ? AND p.titulo = ? LIMIT 1
+        WHERE c.id_socio = ? AND (p.titulo = ? OR p.titulo = ?) LIMIT 1
     ");
-    $tituloPromo = TITULO_PROMO_REACTIVACION . $idSocioPost;
-    $stmtVal->execute([$idSocioPost, $tituloPromo]);
-    if ($stmtVal->fetch()) {
-        echo json_encode(['success' => false, 'message' => 'Ya has generado tu cupón de reactivación.']);
-        $conn->rollBack();
+    $stmtVal->execute([$idSocioPost, $tituloPromoReact, $tituloPromoRef]);
+    $existente = $stmtVal->fetch(PDO::FETCH_ASSOC);
+    if ($existente) {
+        $conn->commit();
+        echo json_encode([
+            'success' => true, 
+            'codigo' => $existente['codigo_generado'],
+            'message' => 'Ya habías generado tu cupón. ¡Aquí lo tienes!'
+        ]);
         exit;
     }
     
@@ -83,7 +90,7 @@ try {
     $stmtRef->execute([$idSocioPost]);
     $idPadrino = (int)$stmtRef->fetchColumn();
 
-    $stmtPago = $conn->prepare("SELECT pag_fecha_fin FROM san_pagos WHERE pag_id_socio = ? AND pag_status = 'A' ORDER BY pag_fecha_fin DESC LIMIT 1");
+    $stmtPago = $conn->prepare("SELECT pag_fecha_fin FROM san_pagos WHERE pag_id_socio = ? ORDER BY pag_fecha_fin DESC, pag_id_pago DESC LIMIT 1");
     $stmtPago->execute([$idSocioPost]);
     $pago = $stmtPago->fetch(PDO::FETCH_ASSOC);
     
@@ -101,6 +108,7 @@ try {
         }
     }
     
+    $tituloPromo = ($idPadrino > 0 && !$pago) ? $tituloPromoRef : $tituloPromoReact;
     $stmtPromo = $conn->prepare("SELECT id_promocion FROM san_promociones WHERE titulo = ? LIMIT 1");
     $stmtPromo->execute([$tituloPromo]);
     $promoBaseId = $stmtPromo->fetchColumn();

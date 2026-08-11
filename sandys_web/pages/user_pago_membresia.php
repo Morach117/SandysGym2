@@ -40,7 +40,8 @@ function obtener_servicios_pdo($conexion_pdo, $id_consorcio, $id_giro)
     $query = "SELECT ser_id_servicio AS id_servicio, 
                      ser_descripcion AS descripcion,
                      ROUND( ser_cuota, 2 ) AS cuota,
-                     ser_meses AS meses
+                     ser_meses AS meses,
+                     ser_dias AS dias
               FROM   san_servicios 
               WHERE ser_tipo = 'PERIODO'
                     AND ser_id_consorcio = ?
@@ -376,7 +377,7 @@ try {
                                 <select id="servicio" name="servicio" class="custom-select form-control" required>
                                     <option value="" selected disabled>-- Elige una membresía --</option>
                                     <?php foreach ($listaServicios as $servicio): ?>
-                                        <option value="<?php echo $servicio['id_servicio'] . '-' . $servicio['meses']; ?>"
+                                        <option value="<?php echo $servicio['id_servicio'] . '-' . $servicio['meses'] . '-' . (isset($servicio['dias']) ? $servicio['dias'] : 0); ?>"
                                             data-cuota="<?php echo $servicio['cuota']; ?>">
                                             <?php echo htmlspecialchars($servicio['descripcion']) . " ($" . number_format($servicio['cuota'], 2) . ")"; ?>
                                         </option>

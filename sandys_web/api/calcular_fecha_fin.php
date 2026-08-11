@@ -50,14 +50,20 @@ try {
         throw new Exception("Formato de servicio inválido");
     }
 
-    list($id_servicio, $meses) = explode('-', $servicio_id_str);
+    list($id_servicio, $meses, $dias) = array_pad(explode('-', $servicio_id_str), 3, 0);
     $meses = (int)$meses;
+    $dias = (int)$dias;
 
-    if ($meses <= 0) throw new Exception("Meses inválidos");
+    if ($meses <= 0 && $dias <= 0) throw new Exception("Periodo inválido");
 
     $fecha_fin = clone $fecha_inicio;
-    $fecha_fin->modify("+$meses months");
-    $fecha_fin->modify("-1 day");
+    
+    if ($dias > 0) {
+        $fecha_fin->modify("+" . ($dias - 1) . " days");
+    } else {
+        $fecha_fin->modify("+$meses months");
+        $fecha_fin->modify("-1 day");
+    }
 
     echo json_encode([
         'status' => 'success',

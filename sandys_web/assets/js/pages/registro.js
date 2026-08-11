@@ -12,6 +12,7 @@ $(document).ready(function() {
     const UI = {
         form: $('#registrationForm'),
         inputs: {
+            search_account: $('#search_account'),
             email: $('#email'),
             password: $('#password'),
             confirmPass: $('#confirm_password'),
@@ -48,27 +49,34 @@ $(document).ready(function() {
     const REGEX_EMAIL = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
     let debounceTimer;
-    UI.inputs.email.on('input', function() {
+    let pendingOtpSearchTerm = null;
+    let cachedOtpMessage = "";
+    let cachedOtpEmail = "";
+
+    UI.inputs.search_account.on('input', function() {
         clearTimeout(debounceTimer);
         isEmailVerified = false;
+        pendingOtpSearchTerm = null;
+        UI.buttons.verify.html('Continuar <i class="fas fa-arrow-right ml-2"></i>');
         debounceTimer = setTimeout(() => {
-            if(UI.inputs.email.val().trim().length > 0) {
+            if(UI.inputs.search_account.val().trim().length > 0) {
                 checkEmailExistence(false);
             }
         }, 600);
     });
 
-    UI.inputs.email.on('blur', function() {
+    UI.inputs.search_account.on('blur', function() {
         clearTimeout(debounceTimer);
-        if(UI.inputs.email.val().trim().length > 0) {
+        if(UI.inputs.search_account.val().trim().length > 0) {
             checkEmailExistence(false);
         }
     });
 
     function checkEmailExistence(lockAfterValid) {
-        const emailVal = UI.inputs.email.val().trim();
-        if (!REGEX_EMAIL.test(emailVal)) {
-            showInlineFeedback("Por favor ingresa un correo válido.", true);
+        const searchVal = UI.inputs.search_account.val().trim();
+        
+        if (searchVal.length < 3) {
+            showInlineFeedback("Por favor ingresa un dato válido (Mínimo 3 caracteres).", true);
             isEmailVerified = false;
             return;
         }
@@ -79,17 +87,29 @@ $(document).ready(function() {
 
         $.ajax({
             type: 'POST',
-            url: './api/check_email.php',
-            data: { email: emailVal },
+            url: './api/find_account.php',
+            data: { search_term: searchVal, send_otp: lockAfterValid ? 1 : 0 },
             dataType: 'json'
         })
         .done(function(response) {
             if (response.exists) {
-                isEmailVerified = false;
-                showInlineFeedback(response.message || "El correo ya está en uso.", true);
+                if (response.needs_verification && lockAfterValid) {
+                    pendingOtpSearchTerm = searchVal;
+                    cachedOtpMessage = response.message;
+                    cachedOtpEmail = response.email;
+                    showOtpModal(response.message, response.email, searchVal);
+                } else {
+                    isEmailVerified = false;
+                    showInlineFeedback(response.message || "El correo ya está en uso.", true);
+                }
             } else {
+                if (response.is_email) {
+                    UI.inputs.email.val(searchVal);
+                } else {
+                    UI.inputs.email.val(''); // Clear it so they fill it in manually
+                }
                 isEmailVerified = true;
-                showInlineFeedback("", false);
+                showInlineFeedback(response.message || "", response.message ? true : false);
                 if (lockAfterValid) {
                     lockEmailState(true);
                 }
@@ -100,30 +120,89 @@ $(document).ready(function() {
              showInlineFeedback("Error de conexión. Intente de nuevo más tarde.", true);
         })
         .always(function() {
-            if (lockAfterValid) {
+            if (lockAfterValid && pendingOtpSearchTerm !== searchVal) {
                 setLoading(UI.buttons.verify, false, 'Continuar <i class="fas fa-arrow-right ml-2"></i>');
+            } else if (lockAfterValid && pendingOtpSearchTerm === searchVal) {
+                setLoading(UI.buttons.verify, false, 'Ingresar Código');
+            }
+        });
+    }
+
+    function showOtpModal(message, email, searchVal) {
+        Swal.fire({
+            title: 'Cuenta Encontrada',
+            text: message,
+            input: 'text',
+            inputPlaceholder: 'Ingresa el código de 6 dígitos',
+            showCancelButton: true,
+            showDenyButton: true,
+            confirmButtonText: 'Verificar',
+            cancelButtonText: 'Cerrar',
+            denyButtonText: 'Reenviar Código',
+            background: '#1a1a1a', color: '#fff', 
+            confirmButtonColor: '#22c55e', cancelButtonColor: '#666', denyButtonColor: '#ef4444',
+            preConfirm: (otp) => {
+                if (!otp) {
+                    Swal.showValidationMessage('El código es obligatorio');
+                }
+                return otp;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.post('./api/verify_otp_registration.php', { otp: result.value, email: email }, function(res) {
+                    if (res.success) {
+                        isEmailVerified = true;
+                        pendingOtpSearchTerm = null;
+                        showInlineFeedback("Cuenta verificada con éxito.", false);
+                        
+                        UI.inputs.email.val(res.data.email);
+                        UI.inputs.name.val(res.data.name);
+                        UI.inputs.paternal.val(res.data.paternal_surname);
+                        UI.inputs.maternal.val(res.data.maternal_surname);
+                        UI.inputs.telefono.val(res.data.telefono);
+                        UI.inputs.genero.val(res.data.genero);
+                        UI.inputs.dobMonth.val(res.data.mes_nacimiento);
+                        
+                        lockEmailState(true);
+                    } else {
+                        Swal.fire('Error', res.message, 'error').then(() => {
+                            showOtpModal(message, email, searchVal);
+                        });
+                        isEmailVerified = false;
+                    }
+                }, 'json');
+            } else if (result.isDenied) {
+                pendingOtpSearchTerm = null;
+                UI.buttons.verify.html('Continuar <i class="fas fa-arrow-right ml-2"></i>');
+                checkEmailExistence(true);
+            } else {
+                isEmailVerified = false;
+                showInlineFeedback("Haz clic en 'Ingresar Código' para continuar.", true);
+                UI.buttons.verify.html('Ingresar Código');
             }
         });
     }
 
     UI.buttons.verify.on('click', function() {
-        const emailVal = UI.inputs.email.val().trim();
+        const searchVal = UI.inputs.search_account.val().trim();
         
-        if (!REGEX_EMAIL.test(emailVal)) {
+        if (searchVal.length < 3) {
             Swal.fire({
                 icon: 'warning',
-                title: 'Correo Inválido',
-                text: 'Por favor ingresa un correo válido.',
+                title: 'Dato Inválido',
+                text: 'Por favor ingresa un correo, teléfono o nombre válido.',
                 background: '#1a1a1a', color: '#fff', confirmButtonColor: '#ef4444'
             });
-            UI.inputs.email.css('border-color', '#ef4444');
+            UI.inputs.search_account.css('border-color', '#ef4444');
             return;
         }
         
-        resetInputStyle(UI.inputs.email); 
+        resetInputStyle(UI.inputs.search_account); 
         
         if (isEmailVerified) {
             lockEmailState(true);
+        } else if (pendingOtpSearchTerm !== null && searchVal === pendingOtpSearchTerm) {
+            showOtpModal(cachedOtpMessage, cachedOtpEmail, searchVal);
         } else {
             checkEmailExistence(true);
         }
@@ -131,15 +210,15 @@ $(document).ready(function() {
 
     UI.buttons.changeEmail.on('click', function() {
         isEmailVerified = false;
-        UI.inputs.email.prop('readonly', false).prop('disabled', false).focus().select();
+        UI.inputs.search_account.prop('readonly', false).prop('disabled', false).focus().select();
         UI.buttons.changeEmail.fadeOut();
     });
 
     function lockEmailState(isLocked) {
         if (isLocked) {
-            UI.inputs.email.prop('readonly', true);
-            UI.containers.verify.slideUp();
-            UI.containers.additional.css({opacity: 0, display: 'block'}).animate({ opacity: 1 }, 400);
+            UI.inputs.search_account.prop('readonly', true);
+            UI.containers.verify.slideUp(400);
+            UI.containers.additional.hide().css('opacity', 1).slideDown(400);
             UI.buttons.changeEmail.fadeIn();
         }
     }
@@ -175,6 +254,14 @@ $(document).ready(function() {
     });
 
     UI.inputs.confirmPass.on('input', validateMatch);
+
+    // Filtro en tiempo real para inputs numéricos
+    $('#telefono, #referral_code').on('input', function() {
+        let val = $(this).val();
+        val = val.replace(/[^0-9]/g, ''); // Remover letras y caracteres especiales
+        if(val.length > 10) val = val.substring(0, 10);
+        $(this).val(val);
+    });
 
     function validateMatch() {
         const pass = UI.inputs.password.val();

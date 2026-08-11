@@ -149,10 +149,14 @@
             <form class="registration-form" id="registrationForm" novalidate>
 
                 <div class="input-group" id="emailSection">
-                    <div class="input-wrapper">
-                        <input type="email" class="form-control" id="email" name="email" placeholder="Correo Electrónico" required>
-                        <i class="fa-solid fa-envelope input-icon"></i>
-                        <button type="button" id="changeEmailBtn" class="btn-change-email" style="display: none;">Cambiar</button>
+                    <div class="form-group" style="width: 100%;">
+                        <label for="search_account" style="color: #ef4444; font-size: 14px;">Paso 1: Busca tu membresía o ingresa tu correo para iniciar</label>
+                        <div class="input-wrapper">
+                            <input type="hidden" id="email" name="email">
+                            <input type="text" class="form-control" id="search_account" name="search_account" placeholder="Correo, Teléfono o Nombre Completo" required>
+                            <i class="fa-solid fa-search input-icon"></i>
+                            <button type="button" id="changeEmailBtn" class="btn-change-email" style="display: none;">Cambiar</button>
+                        </div>
                     </div>
                 </div>
 
@@ -166,7 +170,7 @@
                     <div class="form-group">
                         <label for="referral_code" style="color: #ef4444;">¿Tienes un código de referido?</label>
                         <div class="input-wrapper">
-                            <input type="text" class="form-control" id="referral_code" name="referral_code" placeholder="Teléfono de quien te invitó (Opcional)" maxlength="10">
+                            <input type="tel" class="form-control" id="referral_code" name="referral_code" placeholder="Teléfono de quien te invitó (Opcional)" maxlength="10" pattern="[0-9]*">
                             <i class="fa-solid fa-gift input-icon"></i>
                         </div>
                         <small style="display: block; margin-top: 5px;">Si un amigo te invitó, ingresa su teléfono aquí.</small>
@@ -175,7 +179,7 @@
                     <div class="form-group">
                         <label>Nombre(s)</label>
                         <div class="input-wrapper">
-                            <input type="text" class="form-control" id="name" name="name" placeholder="Tu nombre" required>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="Tu nombre" required style="text-transform: capitalize;">
                             <i class="fa-solid fa-user input-icon"></i>
                         </div>
                     </div>
@@ -184,14 +188,14 @@
                         <div class="col-md-6 form-group">
                             <label>Apellido Paterno</label>
                             <div class="input-wrapper">
-                                <input type="text" class="form-control" id="paternal_surname" name="paternal_surname" placeholder="Paterno" required>
+                                <input type="text" class="form-control" id="paternal_surname" name="paternal_surname" placeholder="Paterno" required style="text-transform: capitalize;">
                                 <i class="fa-solid fa-user-tag input-icon"></i>
                             </div>
                         </div>
                         <div class="col-md-6 form-group">
                             <label>Apellido Materno</label>
                             <div class="input-wrapper">
-                                <input type="text" class="form-control" id="maternal_surname" name="maternal_surname" placeholder="Materno">
+                                <input type="text" class="form-control" id="maternal_surname" name="maternal_surname" placeholder="Materno" style="text-transform: capitalize;">
                                 <i class="fa-solid fa-user-tag input-icon"></i>
                             </div>
                         </div>
@@ -236,7 +240,7 @@
                     <div class="form-group">
                         <label>Teléfono Celular</label>
                         <div class="input-wrapper">
-                            <input type="tel" class="form-control" id="telefono" name="telefono" placeholder="10 dígitos" required>
+                            <input type="tel" class="form-control" id="telefono" name="telefono" placeholder="10 dígitos" required maxlength="10" pattern="[0-9]*">
                             <i class="fa-solid fa-phone input-icon"></i>
                         </div>
                     </div>

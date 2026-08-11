@@ -9,7 +9,8 @@ function obtener_servicios($default = '')
                      ser_clave AS clave,
                      ser_descripcion AS descripcion,
                      ROUND( ser_cuota, 2 ) AS cuota,
-                     ser_meses AS meses
+                     ser_meses AS meses,
+                     ser_dias AS dias
               FROM   san_servicios 
               WHERE  ser_tipo = 'PERIODO'
                      AND ser_id_consorcio = $id_consorcio
@@ -20,7 +21,8 @@ function obtener_servicios($default = '')
 
     if ($resultado) {
         while ($fila = mysqli_fetch_assoc($resultado)) {
-            $servicio = $fila['id_servicio'] . '-' . $fila['meses'];
+            $dias = !empty($fila['dias']) ? $fila['dias'] : 0;
+            $servicio = $fila['id_servicio'] . '-' . $fila['meses'] . '-' . $dias;
 
             if ($default == $servicio)
                 $datos .= "<option selected value='$servicio'>$fila[descripcion] - $$fila[cuota]</option>";
@@ -125,7 +127,7 @@ function obtener_servicios($default = '')
 		$pag_fecha_pago = fecha_formato_mysql(request_var('pag_fecha_pago', date('d-m-Y')));
 		$pag_fecha_ini = fecha_formato_mysql(request_var('pag_fecha_ini', ''));
 		$pag_fecha_fin = fecha_formato_mysql(request_var('pag_fecha_fin', ''));
-		list($id_servicio, $meses) = explode('-', request_var('servicio', ''));
+		list($id_servicio, $meses, $dias) = array_pad(explode('-', request_var('servicio', '')), 3, 0);
 		$importe = request_var('pag_importe', 0.0); // cuando el admin escribe el monto preferente
 		$fecha_mov = $pag_fecha_pago . " " . date('H:i:s');
 		$id_socio = request_var('id_socio', 0);
@@ -155,7 +157,7 @@ function obtener_servicios($default = '')
 			$v_monto_comision = 0;
 	
 			if ($pag_fecha_ini && $pag_fecha_fin) {
-				if ($id_servicio && $meses && $id_socio) {
+				if ($id_servicio && ($meses || $dias) && $id_socio) {
 					$servicio = obtener_servicio($id_servicio);
 	
 					if ($servicio) {

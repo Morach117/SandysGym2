@@ -42,8 +42,8 @@ if ($stmt->rowCount() > 0) {
         'success' => true, 
         'data' => [
             'email' => $row['soc_correo'],
-            'name' => $row['soc_nombres'],
-            'paternal_surname' => $row['soc_apepat'],
+            'name' => $row['soc_apepat'],
+            'paternal_surname' => $row['soc_nombres'],
             'maternal_surname' => $row['soc_apemat'],
             'telefono' => $row['soc_tel_cel'],
             'genero' => $row['soc_genero'] == 'Femenino' || $row['soc_genero'] == 'F' ? 'F' : 'M',

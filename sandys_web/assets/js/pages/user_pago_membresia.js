@@ -78,7 +78,7 @@ $(document).ready(function() {
         var $cuponInput = $('#codigo_promocion');
         var $cuponBtn = $('#aplicarCuponBtn');
  
-        if (servicioSeleccionado === '1-1') {
+        if (servicioSeleccionado) {
             if (immediate) {
                 $cuponContainer.show();
             } else {

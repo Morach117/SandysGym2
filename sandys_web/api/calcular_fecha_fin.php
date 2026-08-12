@@ -54,11 +54,13 @@ try {
     $meses = (int)$meses;
     $dias = (int)$dias;
 
-    if ($meses <= 0 && $dias <= 0) throw new Exception("Periodo inválido");
+    if ($meses < 0 || $dias < 0) throw new Exception("Periodo inválido");
 
     $fecha_fin = clone $fecha_inicio;
     
-    if ($dias > 0) {
+    if ($meses == 0 && $dias == 0) {
+        // Servicio de hoy solamente, fecha_fin es la misma que fecha_inicio
+    } else if ($dias > 0) {
         $fecha_fin->modify("+" . ($dias - 1) . " days");
     } else {
         $fecha_fin->modify("+$meses months");

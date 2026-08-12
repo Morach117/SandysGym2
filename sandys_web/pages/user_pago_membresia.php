@@ -69,7 +69,8 @@ try {
         SELECT c.codigo_generado
         FROM san_codigos c
         INNER JOIN san_promociones p ON c.id_promocion = p.id_promocion
-        WHERE c.id_socio = ? AND p.utilizado = '0' AND c.status = 1
+        WHERE c.id_socio = ? AND c.status = 1 AND c.is_active = 1 
+          AND p.vigencia_inicial <= CURDATE() AND p.vigencia_final >= CURDATE()
         ORDER BY c.id_codigo DESC LIMIT 1
     ");
     $stmtCupon->execute([$id_socio]);

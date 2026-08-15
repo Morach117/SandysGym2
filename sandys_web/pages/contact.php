@@ -17,15 +17,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_contact'])) {
             throw new Exception("El formato del correo no es válido.");
         }
 
-        $sql = "INSERT INTO san_contactos (nombre, correo, telefono, mensaje) VALUES (:nombre, :correo, :telefono, :mensaje)";
-        $stmt = $conn->prepare($sql); 
+        $honeypot = trim($_POST['website'] ?? '');
+        $recaptchaResponse = trim($_POST['g-recaptcha-response'] ?? '');
         
-        $stmt->execute([
-            ':nombre' => $nombre,
-            ':correo' => $correo,
-            ':telefono' => $telefono,
-            ':mensaje' => $mensaje
-        ]);
+        $recaptcha_secret_key = getenv('RECAPTCHA_SECRET_KEY'); 
+
+        if (empty($honeypot)) {
+            
+            if (!empty($recaptcha_secret_key)) {
+                if (empty($recaptchaResponse)) {
+                    throw new Exception("Por favor, completa el Captcha de seguridad.");
+                }
+                
+                $verifyResponse = @file_get_contents('https://www.google.com/recaptcha/api/siteverify?secret='.$recaptcha_secret_key.'&response='.$recaptchaResponse);
+                $responseData = json_decode($verifyResponse);
+                
+                if (!$responseData || !$responseData->success) {
+                    throw new Exception("Error en la validación del Captcha. Por favor, intenta de nuevo.");
+                }
+            }
+
+            $sql = "INSERT INTO san_contactos (nombre, correo, telefono, mensaje) VALUES (:nombre, :correo, :telefono, :mensaje)";
+            $stmt = $conn->prepare($sql); 
+            
+            $stmt->execute([
+                ':nombre' => $nombre,
+                ':correo' => $correo,
+                ':telefono' => $telefono,
+                ':mensaje' => $mensaje
+            ]);
+        }
 
         $alert_script = "
             Swal.fire({
@@ -157,9 +178,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_contact'])) {
                 <div class="leave-comment">
                     <form action="" method="POST" id="gymContactForm">
                         <input type="text" name="nombre" class="gym-dark-input" placeholder="Nombre completo *" required>
+                        <div style="display:none;" aria-hidden="true">
+                            <label for="website">Leave this field empty</label>
+                            <input type="text" name="website" id="website" tabindex="-1" autocomplete="off">
+                        </div>
                         <input type="email" name="correo" class="gym-dark-input" placeholder="Correo electrónico *" required>
                         <input type="tel" name="telefono" class="gym-dark-input" placeholder="Teléfono / WhatsApp">
                         <textarea name="mensaje" class="gym-dark-input" placeholder="¿En qué podemos ayudarte? (Ej. Dudas sobre membresías, horarios, clases...) *" required></textarea>
+                        
+                        <?php 
+                        $recaptcha_site_key = getenv('RECAPTCHA_SITE_KEY');
+                        if (!empty($recaptcha_site_key)): 
+                        ?>
+                            <div class="g-recaptcha" data-sitekey="<?php echo htmlspecialchars($recaptcha_site_key); ?>" data-theme="dark" style="margin-bottom: 20px;"></div>
+                        <?php endif; ?>
                         
                         <button type="submit" name="submit_contact" class="btn-pill-submit">Enviar Mensaje</button>
                     </form>
@@ -176,6 +208,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_contact'])) {
     </div>
 </section>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {

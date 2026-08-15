@@ -68,7 +68,7 @@
                 $stmtIdSocio->execute();
                 $idSocio = $stmtIdSocio->fetch(PDO::FETCH_ASSOC)['soc_id_socio'];
 
-                $consultaPagos = "SELECT * FROM san_pagos WHERE pag_id_socio = :idSocio ORDER BY pag_fecha_pago DESC";
+                $consultaPagos = "SELECT pag_fecha_ini, pag_fecha_fin, pag_importe FROM san_pagos WHERE pag_id_socio = :idSocio ORDER BY pag_fecha_pago DESC";
                 $stmtPagos = $conn->prepare($consultaPagos);
                 $stmtPagos->bindParam(':idSocio', $idSocio);
                 $stmtPagos->execute();

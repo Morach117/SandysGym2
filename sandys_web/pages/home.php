@@ -2,7 +2,7 @@
 try {
     if (!isset($conn)) throw new Exception("Variable PDO \$conn no encontrada.");
 
-    $stmtC = $conn->prepare("SELECT * FROM san_landing_config WHERE id = 1 LIMIT 1");
+    $stmtC = $conn->prepare("SELECT color_bg, color_input, color_accent_red, color_accent_green, color_accent_orange, color_text_muted, app_titulo, app_subtitulo, app_desc, app_btn_url, app_imagen, cta_titulo, cta_desc, cta_btn_url FROM san_landing_config WHERE id = 1 LIMIT 1");
     $stmtC->execute();
     $configUI = $stmtC->fetch(PDO::FETCH_ASSOC);
 

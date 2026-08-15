@@ -36,23 +36,23 @@ try {
     $conn = new PDO($dsn, $user, $pass, $options);
     echo "<p style='color: #10b981;'>✅ Conexión establecida con éxito.</p>";
 
-    // 1. Agregar columna validation_expires a san_socios si no existe
-    $checkCol = $conn->query("SHOW COLUMNS FROM `san_socios` LIKE 'validation_expires'")->fetch();
-    if (!$checkCol) {
-        $conn->exec("ALTER TABLE san_socios ADD COLUMN validation_expires DATETIME NULL;");
-        echo "<p style='color: #10b981;'>✅ Columna <b>'validation_expires'</b> agregada exitosamente en 'san_socios'.</p>";
-    } else {
-        echo "<p style='color: #9ca3af;'>ℹ️ La columna 'validation_expires' ya existía en 'san_socios'.</p>";
+    function addIndexIfNotExists($conn, $table, $indexName, $column) {
+        $stmt = $conn->query("SHOW INDEX FROM `$table` WHERE Key_name = '$indexName'");
+        if (!$stmt->fetch()) {
+            $conn->exec("ALTER TABLE `$table` ADD INDEX `$indexName` ($column)");
+            echo "<p style='color: #10b981;'>✅ Índice <b>'$indexName'</b> agregado en '$table'.</p>";
+        } else {
+            echo "<p style='color: #9ca3af;'>ℹ️ El índice '$indexName' ya existía en '$table'.</p>";
+        }
     }
 
-    // 2. Agregar columna id_socio a san_codigos si no existe
-    $checkColCodigos = $conn->query("SHOW COLUMNS FROM `san_codigos` LIKE 'id_socio'")->fetch();
-    if (!$checkColCodigos) {
-        $conn->exec("ALTER TABLE san_codigos ADD COLUMN id_socio INT(11) NULL;");
-        echo "<p style='color: #10b981;'>✅ Columna <b>'id_socio'</b> agregada exitosamente en 'san_codigos'.</p>";
-    } else {
-        echo "<p style='color: #9ca3af;'>ℹ️ La columna 'id_socio' ya existía en 'san_codigos'.</p>";
-    }
+    echo "<h3>Optimizaciones de Base de Datos (Índices)</h3>";
+    addIndexIfNotExists($conn, 'san_socios', 'idx_soc_correo', '`soc_correo`');
+    addIndexIfNotExists($conn, 'san_socios', 'idx_soc_empresa', '`soc_id_empresa`');
+    addIndexIfNotExists($conn, 'san_pagos', 'idx_pag_id_socio', '`pag_id_socio`');
+    addIndexIfNotExists($conn, 'san_pagos', 'idx_pag_fecha_pago', '`pag_fecha_pago`');
+    addIndexIfNotExists($conn, 'san_mp_pref', 'idx_external_reference', '`external_reference`');
+    addIndexIfNotExists($conn, 'san_codigos', 'idx_codigo_generado', '`codigo_generado`, `status`');
 
     echo "<br><div style='background-color: #1a1a1a; padding: 20px; border-left: 5px solid #ef4444; border-radius: 5px;'>";
     echo "<h3 style='color: #ef4444; margin-top: 0;'>⚠️ ALERTA DE SEGURIDAD</h3>";

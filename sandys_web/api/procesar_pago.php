@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
  * Consulta la información del socio en la base de datos
  */
 function obtener_datos_socio_pdo(PDO $conexion_pdo, int $id_socio, int $id_empresa) {
-    $q = "SELECT * FROM san_socios WHERE soc_id_socio = ? AND soc_id_empresa = ? LIMIT 1";
+    $q = "SELECT soc_fecha_nacimiento, soc_descuento FROM san_socios WHERE soc_id_socio = ? AND soc_id_empresa = ? LIMIT 1";
     $st = $conexion_pdo->prepare($q);
     $st->execute([$id_socio, $id_empresa]);
     return $st->fetch(PDO::FETCH_ASSOC);

@@ -2,7 +2,7 @@
 try {
     if (!isset($conn)) throw new Exception("Variable PDO \$conn no encontrada.");
 
-    $stmtC = $conn->prepare("SELECT color_bg, color_input, color_accent_red, color_accent_green, color_accent_orange, color_text_muted, app_titulo, app_subtitulo, app_desc, app_btn_url, app_imagen, cta_titulo, cta_desc, cta_btn_url FROM san_landing_config WHERE id = 1 LIMIT 1");
+    $stmtC = $conn->prepare("SELECT * FROM san_landing_config WHERE id = 1 LIMIT 1");
     $stmtC->execute();
     $configUI = $stmtC->fetch(PDO::FETCH_ASSOC);
 
@@ -186,7 +186,7 @@ try {
                         <?= htmlspecialchars($configUI['app_titulo']) ?><br><span style="color: var(--accent-orange);"><?= htmlspecialchars($configUI['app_subtitulo']) ?></span>
                     </h2>
                     <p style="color: #cccccc; font-size: 16px; line-height: 1.6; margin-bottom: 30px;"><?= htmlspecialchars($configUI['app_desc']) ?></p>
-                    <a href="<?= htmlspecialchars($configUI['app_btn_url']) ?>" class="btn plan-btn rounded-pill d-inline-block px-5">Acceder a mi Portal</a>
+                    <a href="index.php?page=registro" class="btn plan-btn rounded-pill d-inline-block px-5">Acceder a mi Portal</a>
                 </div>
                 <div class="col-lg-6 text-lg-right app-image-wrapper">
                     <?php $app_img_src = !empty($configUI['app_imagen']) ? 'assets/img/hero/' . $configUI['app_imagen'] : 'https://images.unsplash.com/photo-1594882645126-14020914d58d?q=80&w=800&auto=format&fit=crop'; ?>

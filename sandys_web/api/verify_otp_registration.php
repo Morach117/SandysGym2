@@ -42,12 +42,12 @@ if ($stmt->rowCount() > 0) {
         'success' => true, 
         'data' => [
             'email' => $row['soc_correo'],
-            'name' => $row['soc_apepat'],
-            'paternal_surname' => $row['soc_nombres'],
+            'name' => $row['soc_nombres'],
+            'paternal_surname' => $row['soc_apepat'],
             'maternal_surname' => $row['soc_apemat'],
             'telefono' => $row['soc_tel_cel'],
-            'genero' => $row['soc_genero'] == 'Femenino' || $row['soc_genero'] == 'F' ? 'F' : 'M',
-            'mes_nacimiento' => $row['mes_nacimiento']
+            'genero' => ($row['soc_genero'] == 'Femenino' || $row['soc_genero'] == 'F') ? 'Femenino' : 'Masculino',
+            'mes_nacimiento' => str_pad($row['mes_nacimiento'], 2, '0', STR_PAD_LEFT)
         ]
     ]);
 } else {

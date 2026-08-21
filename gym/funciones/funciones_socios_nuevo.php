@@ -55,22 +55,45 @@
             'soc_id_consorcio'      => $id_consorcio
         );
 
-        // --- VALIDACIÓN DE CORREO EXISTENTE ---
+        // --- VALIDACIÓN DE DUPLICADOS (CORREO Y TELÉFONO) ---
+        $tel_cel = request_var('soc_tel_cel', '');
+        $where_clauses = array();
+        
         if (!empty($correo)) {
-            $correo_escaped = mysqli_real_escape_string($conexion, $correo);
-            $correo_query = "SELECT count(*) as total FROM san_socios WHERE soc_correo = '$correo_escaped' LIMIT 1";
-            $correo_resultado = mysqli_query($conexion, $correo_query);
+            $where_clauses[] = "soc_correo = '" . mysqli_real_escape_string($conexion, $correo) . "'";
+        }
+        if (!empty($tel_cel)) {
+            $where_clauses[] = "soc_tel_cel = '" . mysqli_real_escape_string($conexion, $tel_cel) . "'";
+        }
 
-            if ($correo_resultado) {
-                $correo_fila = mysqli_fetch_assoc($correo_resultado);
-                if ($correo_fila['total'] > 0) {
+        if (count($where_clauses) > 0) {
+            $where_sql = implode(" OR ", $where_clauses);
+            $dup_query = "SELECT soc_nombres, soc_apepat, soc_apemat, soc_correo, soc_tel_cel FROM san_socios WHERE ($where_sql) LIMIT 1";
+            $dup_resultado = mysqli_query($conexion, $dup_query);
+            
+            if ($dup_resultado) {
+                if (mysqli_num_rows($dup_resultado) > 0) {
+                    $dup_fila = mysqli_fetch_assoc($dup_resultado);
+                    $nombre_completo = trim($dup_fila['soc_nombres'] . ' ' . $dup_fila['soc_apepat'] . ' ' . $dup_fila['soc_apemat']);
+                    
+                    $motivo = array();
+                    if (!empty($correo) && strtolower($dup_fila['soc_correo']) == strtolower($correo)) {
+                        $motivo[] = "el correo <strong>$correo</strong>";
+                    }
+                    if (!empty($tel_cel) && $dup_fila['soc_tel_cel'] == $tel_cel) {
+                        $motivo[] = "el teléfono <strong>$tel_cel</strong>";
+                    }
+                    
+                    $motivo_str = implode(" y/o ", $motivo);
+                    if (empty($motivo_str)) $motivo_str = "este correo o teléfono";
+                    
                     $mensaje['num'] = 2;
-                    $mensaje['msj'] = "El correo ingresado ya ha sido capturado para otro socio, es necesario cambiarlo.";
+                    $mensaje['msj'] = "Ya existe un socio registrado con $motivo_str.<br>El nombre del socio es: <strong>$nombre_completo</strong>.";
                     return $mensaje;
                 }
             } else {
                 $mensaje['num'] = 3;
-                $mensaje['msj'] = "Error en la consulta del correo. " . mysqli_error($conexion);
+                $mensaje['msj'] = "Error en la consulta de validación de duplicados. " . mysqli_error($conexion);
                 return $mensaje;
             }
         }

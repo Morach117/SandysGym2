@@ -69,6 +69,13 @@
 
 <form role="form" method="post" action=".?s=socios&i=nuevo">
     <div class="row">
+        <label class="col-md-2">Nombres <span class="text-danger">*</span></label>
+        <div class="col-md-4">
+            <input type="text" class="form-control text-uppercase" name="soc_nombres" maxlength="50" required="required" value="<?= $soc_nombres ?>" />
+        </div>
+    </div>
+
+    <div class="row">
         <label class="col-md-2">A. Paterno <span class="text-danger">*</span></label>
         <div class="col-md-4">
             <input type="text" class="form-control text-uppercase" name="soc_apepat" maxlength="50" required="required" value="<?= $soc_apepat ?>" />
@@ -77,13 +84,6 @@
         <label class="col-md-2">A. Materno</label>
         <div class="col-md-4">
             <input type="text" class="form-control text-uppercase" name="soc_apemat" maxlength="50" value="<?= $soc_apemat ?>" />
-        </div>
-    </div>
-
-    <div class="row">
-        <label class="col-md-2">Nombres <span class="text-danger">*</span></label>
-        <div class="col-md-4">
-            <input type="text" class="form-control text-uppercase" name="soc_nombres" maxlength="50" required="required" value="<?= $soc_nombres ?>" />
         </div>
     </div>
 

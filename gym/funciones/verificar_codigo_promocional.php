@@ -16,8 +16,8 @@ if ($conexion) {
                   INNER JOIN san_promociones p ON c.id_promocion = p.id_promocion
                   WHERE c.codigo_generado = '$codigo_promocion' 
                   AND c.status = '1' 
-                  AND p.vigencia_inicial <= NOW() 
-                  AND p.vigencia_final >= NOW()";
+                  AND p.vigencia_inicial <= CURDATE() 
+                  AND p.vigencia_final >= CURDATE()";
 
         $result = mysqli_query($conexion, $query);
 

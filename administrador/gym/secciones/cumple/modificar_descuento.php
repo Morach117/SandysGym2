@@ -34,19 +34,21 @@ function actualizar_descuentos() {
             }
         }
 
-        // 3. Actualizar descuento referido por Título
-        if (isset($_POST['porcentaje_referido'])) {
+        // 3. Actualizar descuento referido por ID
+        if (isset($_POST['porcentaje_referido']) && !empty($_POST['id_referido'])) {
+            $id_referido = intval($_POST['id_referido']);
             $porcentaje_referido = intval($_POST['porcentaje_referido']);
-            $query_referido = "UPDATE san_promociones SET porcentaje_descuento = '$porcentaje_referido' WHERE titulo = 'PROMOCION FIJA DE REFERIDOS'";
+            $query_referido = "UPDATE san_promociones SET porcentaje_descuento = $porcentaje_referido WHERE id_promocion = $id_referido";
             if (!mysqli_query($conexion, $query_referido)) {
                 $errores[] = 'Error al actualizar descuento de referido: ' . mysqli_error($conexion);
             }
         }
 
-        // 4. Actualizar descuento reactivación por Título
-        if (isset($_POST['porcentaje_reactivacion'])) {
+        // 4. Actualizar descuento reactivación por ID
+        if (isset($_POST['porcentaje_reactivacion']) && !empty($_POST['id_reactivacion'])) {
+            $id_reactivacion = intval($_POST['id_reactivacion']);
             $porcentaje_reactivacion = intval($_POST['porcentaje_reactivacion']);
-            $query_reactivacion = "UPDATE san_promociones SET porcentaje_descuento = '$porcentaje_reactivacion' WHERE titulo = 'PROMOCION FIJA DE REACTIVACION'";
+            $query_reactivacion = "UPDATE san_promociones SET porcentaje_descuento = $porcentaje_reactivacion WHERE id_promocion = $id_reactivacion";
             if (!mysqli_query($conexion, $query_reactivacion)) {
                 $errores[] = 'Error al actualizar descuento de reactivación: ' . mysqli_error($conexion);
             }
@@ -89,19 +91,22 @@ function obtener_porcentaje_descuento($id_promocion) {
     return 0; 
 }
 
-// Función para obtener el porcentaje de descuento por Título
-function obtener_porcentaje_descuento_por_titulo($titulo) {
+// Función para obtener los datos de la promoción por Título
+function obtener_datos_promocion_por_titulo($titulo) {
     global $conexion;
     
     $titulo_seguro = mysqli_real_escape_string($conexion, $titulo);
-    $query = "SELECT porcentaje_descuento FROM san_promociones WHERE titulo = '$titulo_seguro' LIMIT 1";
+    $query = "SELECT id_promocion, porcentaje_descuento FROM san_promociones WHERE titulo = '$titulo_seguro' AND tipo_promocion = 'Masivo' ORDER BY id_promocion DESC LIMIT 1";
     $resultado = mysqli_query($conexion, $query);
     
     if ($resultado && $fila = mysqli_fetch_assoc($resultado)) {
-        return intval($fila['porcentaje_descuento']);
+        return array(
+            'id' => intval($fila['id_promocion']),
+            'porcentaje' => intval($fila['porcentaje_descuento'])
+        );
     }
     
-    return 35; // Valor por defecto si no existe en BD aún
+    return array('id' => 0, 'porcentaje' => 35); // Valores por defecto
 }
 
 // NUEVA FUNCIÓN: Obtener servicios permitidos de tu tabla
@@ -181,14 +186,18 @@ $servicios_guardados_cumple = obtener_servicios_promocion(104);
     <div class="row" style="margin-top: 15px;">
         <label class="col-md-2">Descuento Referido (%)</label>
         <div class="col-md-4">
-            <input type="number" name="porcentaje_referido" class="form-control" value="<?= obtener_porcentaje_descuento_por_titulo('PROMOCION FIJA DE REFERIDOS') ?>" min="0" max="100" required />
+            <?php $datos_referido = obtener_datos_promocion_por_titulo('PROMOCION FIJA DE REFERIDOS'); ?>
+            <input type="hidden" name="id_referido" value="<?= $datos_referido['id'] ?>" />
+            <input type="number" name="porcentaje_referido" class="form-control" value="<?= $datos_referido['porcentaje'] ?>" min="0" max="100" required />
         </div>
     </div>
 
     <div class="row" style="margin-top: 15px;">
         <label class="col-md-2">Descuento Reactivación (%)</label>
         <div class="col-md-4">
-            <input type="number" name="porcentaje_reactivacion" class="form-control" value="<?= obtener_porcentaje_descuento_por_titulo('PROMOCION FIJA DE REACTIVACION') ?>" min="0" max="100" required />
+            <?php $datos_reactivacion = obtener_datos_promocion_por_titulo('PROMOCION FIJA DE REACTIVACION'); ?>
+            <input type="hidden" name="id_reactivacion" value="<?= $datos_reactivacion['id'] ?>" />
+            <input type="number" name="porcentaje_reactivacion" class="form-control" value="<?= $datos_reactivacion['porcentaje'] ?>" min="0" max="100" required />
         </div>
     </div>
 

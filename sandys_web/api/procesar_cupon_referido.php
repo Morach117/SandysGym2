@@ -81,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['generar_cupon'])) {
             json_response(['success' => false, 'message' => 'Socio no válido.'], 400);
         }
             
-        $tituloPromo = TITULO_PROMO_REFERIDOS . $idSocio;
+        $tituloPromo = 'PROMOCION FIJA DE REFERIDOS';
         $stmtPromo = $conn->prepare("SELECT id_promocion FROM san_promociones WHERE titulo = ? LIMIT 1");
         $stmtPromo->execute([$tituloPromo]);
         $promoBaseId = $stmtPromo->fetchColumn();
@@ -97,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['generar_cupon'])) {
                 'vigencia_final' => $vigenciaFinal,
                 'porcentaje_descuento' => DESCUENTO_REFERIDOS,
                 'utilizado' => '0',
-                'tipo_promocion' => 'Individual'
+                'tipo_promocion' => 'Masivo'
             ];
             
             $promoBaseId = construir_insert('san_promociones', $datosPromo);

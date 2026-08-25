@@ -879,7 +879,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    $("#codigo_promocion").on('change blur', function() {
+    $("#codigo_promocion").on('change', function() {
         if (this.value && this.value.trim()) {
             aplicarDescuentoPromocional(this.value.trim());
         } else {

@@ -78,7 +78,7 @@
 
         if (count($where_clauses) > 0) {
             $where_sql = implode(" OR ", $where_clauses);
-            $dup_query = "SELECT soc_nombres, soc_apepat, soc_apemat, soc_correo, soc_tel_cel FROM san_socios WHERE ($where_sql) LIMIT 1";
+            $dup_query = "SELECT soc_nombres, soc_apepat, soc_apemat, soc_correo, soc_tel_cel FROM san_socios WHERE ($where_sql) AND soc_id_empresa = $id_empresa LIMIT 1";
             $dup_resultado = mysqli_query($conexion, $dup_query);
             
             if ($dup_resultado) {

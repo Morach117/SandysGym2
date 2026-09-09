@@ -441,9 +441,10 @@ if (!$prepago) {
                         </div>
 
                         <div class="form-group mb-4">
-                            <label for="prep_importe" class="form-label">Monto a Recargar (MXN)</label>
-                            <input type="number" step="0.01" min="1" id="prep_importe" name="prep_importe"
-                                class="form-control" required placeholder="0.00" oninput="actualizarResumen()">
+                            <label for="prep_importe" class="form-label">Monto a Recargar (MXN) - Mínimo $50</label>
+                            <input type="text" inputmode="decimal" id="prep_importe" name="prep_importe"
+                                class="form-control" required placeholder="Ej. 100.00" oninput="actualizarResumen()" 
+                                onkeypress="return (event.charCode >= 48 && event.charCode <= 57) || event.charCode == 46 || event.charCode == 0">
                         </div>
 
                         <div id="boton-container">
@@ -551,8 +552,12 @@ if (!$prepago) {
                 const importe = $('#prep_importe').val();
                 const idSocio = $('#id_socio').val();
 
-                if (!importe || parseFloat(importe) <= 0) {
-                    $('#mensajeError').text("Ingresa un monto válido a recargar.").show();
+                if (!importe || parseFloat(importe) < 50) {
+                    $('#mensajeError').text("El monto mínimo a recargar es de $50.00 MXN.").show();
+                    return;
+                }
+                if (parseFloat(importe) > 20000) {
+                    $('#mensajeError').text("El monto máximo por recarga es de $20,000.00 MXN.").show();
                     return;
                 }
                 $('#mensajeError').hide();

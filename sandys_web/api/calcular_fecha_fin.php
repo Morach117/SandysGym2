@@ -60,10 +60,27 @@ try {
     
     if ($meses == 0 && $dias == 0) {
         // Servicio de hoy solamente, fecha_fin es la misma que fecha_inicio
-    } else if ($dias > 0) {
-        $fecha_fin->modify("+" . ($dias - 1) . " days");
     } else {
-        $fecha_fin->modify("+$meses months");
+        // Si hay meses, se suman (sin desbordamiento)
+        if ($meses > 0) {
+            $año_actual = (int)$fecha_fin->format('Y');
+            $mes_actual = (int)$fecha_fin->format('n');
+            $dia_actual = (int)$fecha_fin->format('j');
+            
+            $target_month   = ($mes_actual - 1 + $meses) % 12 + 1;
+            $target_year    = $año_actual + intdiv($mes_actual - 1 + $meses, 12);
+            $dias_en_target = (int)date('t', strtotime(sprintf('%04d-%02d-01', $target_year, $target_month)));
+            $target_day     = min($dia_actual, $dias_en_target);
+            
+            $fecha_fin->setDate($target_year, $target_month, $target_day);
+        }
+        
+        // Si hay días, se suman
+        if ($dias > 0) {
+            $fecha_fin->modify("+$dias days");
+        }
+        
+        // Se resta 1 día para que el rango sea inclusivo (ej: del 1 al 15 = 15 días)
         $fecha_fin->modify("-1 day");
     }
 

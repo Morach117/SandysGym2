@@ -57,7 +57,11 @@ class UserService {
                 $datosPadrino = $this->findPadrino($ref_clean);
                 if ($datosPadrino) {
                     $idPadrino = $datosPadrino['soc_id_socio'];
+                } else {
+                    throw new Exception("El código de referido ($referral_code) no existe. Verifica el número de teléfono o déjalo en blanco si no fuiste invitado.");
                 }
+            } else {
+                throw new Exception("No puedes usar tu propio número de teléfono como código de referido.");
             }
         }
 

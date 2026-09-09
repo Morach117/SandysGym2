@@ -153,6 +153,6 @@ try {
         $conn->rollBack();
     }
     error_log("Error Registro: " . $e->getMessage());
-    json_response(['success' => false, 'message' => 'Error interno al procesar el registro.'], 500);
+    json_response(['success' => false, 'message' => $e->getMessage()], 400);
 }
 ?>

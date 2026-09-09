@@ -76,14 +76,24 @@ try {
             $validation_code = str_pad((string)random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
             $expires = date('Y-m-d H:i:s', strtotime('+1 day'));
             
-            $stmtUpdate = $conn->prepare("UPDATE san_socios SET validation_code = :code, validation_expires = :expires WHERE soc_id_socio = :id");
+            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+            $genero_db = !empty($genero) ? strtoupper(substr($genero, 0, 1)) : 'M';
+            
+            $stmtUpdate = $conn->prepare("UPDATE san_socios SET validation_code = :code, validation_expires = :expires, san_password = :password, soc_nombres = :name, soc_apepat = :paternal, soc_apemat = :maternal, soc_tel_cel = :telefono, soc_genero = :genero, soc_fecha_nacimiento = :dob WHERE soc_id_socio = :id");
             $stmtUpdate->bindParam(':code', $validation_code);
             $stmtUpdate->bindParam(':expires', $expires);
+            $stmtUpdate->bindParam(':password', $hashedPassword);
+            $stmtUpdate->bindParam(':name', $name);
+            $stmtUpdate->bindParam(':paternal', $paternal_surname);
+            $stmtUpdate->bindParam(':maternal', $maternal_surname);
+            $stmtUpdate->bindParam(':telefono', $telefono);
+            $stmtUpdate->bindParam(':genero', $genero_db);
+            $stmtUpdate->bindParam(':dob', $fecha_nacimiento_sql);
             $stmtUpdate->bindParam(':id', $existingUser['soc_id_socio']);
             
             if (!$stmtUpdate->execute()) {
                 $conn->rollBack();
-                json_response(['success' => false, 'message' => 'Error al actualizar el código de validación.'], 500);
+                json_response(['success' => false, 'message' => 'Error al actualizar el código de validación y datos.'], 500);
             }
             
             $asunto = "Bienvenido a Sandys Gym - Valida tu cuenta";

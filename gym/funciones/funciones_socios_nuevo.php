@@ -55,9 +55,19 @@
             'soc_id_consorcio'      => $id_consorcio
         );
 
-        // --- VALIDACIÓN DE DUPLICADOS (CORREO Y TELÉFONO) ---
+        // --- VALIDACIÓN DE DUPLICADOS (NOMBRE, CORREO Y TELÉFONO) ---
         $tel_cel = request_var('soc_tel_cel', '');
+        
+        $nombres = strtoupper(request_var('soc_nombres', ''));
+        $apepat  = strtoupper(request_var('soc_apepat', ''));
+        $apemat  = strtoupper(request_var('soc_apemat', ''));
+        
         $where_clauses = array();
+        
+        if (!empty($nombres) && !empty($apepat)) {
+            $name_where = "soc_nombres = '" . mysqli_real_escape_string($conexion, $nombres) . "' AND soc_apepat = '" . mysqli_real_escape_string($conexion, $apepat) . "' AND soc_apemat = '" . mysqli_real_escape_string($conexion, $apemat) . "'";
+            $where_clauses[] = "($name_where)";
+        }
         
         if (!empty($correo)) {
             $where_clauses[] = "soc_correo = '" . mysqli_real_escape_string($conexion, $correo) . "'";
@@ -68,7 +78,7 @@
 
         if (count($where_clauses) > 0) {
             $where_sql = implode(" OR ", $where_clauses);
-            $dup_query = "SELECT soc_nombres, soc_apepat, soc_apemat, soc_correo, soc_tel_cel FROM san_socios WHERE ($where_sql) LIMIT 1";
+            $dup_query = "SELECT soc_nombres, soc_apepat, soc_apemat, soc_correo, soc_tel_cel FROM san_socios WHERE ($where_sql) AND soc_id_empresa = $id_empresa LIMIT 1";
             $dup_resultado = mysqli_query($conexion, $dup_query);
             
             if ($dup_resultado) {
@@ -77,6 +87,9 @@
                     $nombre_completo = trim($dup_fila['soc_nombres'] . ' ' . $dup_fila['soc_apepat'] . ' ' . $dup_fila['soc_apemat']);
                     
                     $motivo = array();
+                    if (!empty($nombres) && !empty($apepat) && trim($dup_fila['soc_nombres']) == trim($nombres) && trim($dup_fila['soc_apepat']) == trim($apepat) && trim($dup_fila['soc_apemat']) == trim($apemat)) {
+                        $motivo[] = "el mismo <strong>nombre completo</strong>";
+                    }
                     if (!empty($correo) && strtolower($dup_fila['soc_correo']) == strtolower($correo)) {
                         $motivo[] = "el correo <strong>$correo</strong>";
                     }
@@ -85,7 +98,7 @@
                     }
                     
                     $motivo_str = implode(" y/o ", $motivo);
-                    if (empty($motivo_str)) $motivo_str = "este correo o teléfono";
+                    if (empty($motivo_str)) $motivo_str = "este nombre, correo o teléfono";
                     
                     $mensaje['num'] = 2;
                     $mensaje['msj'] = "Ya existe un socio registrado con $motivo_str.<br>El nombre del socio es: <strong>$nombre_completo</strong>.";

@@ -29,7 +29,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_contact'])) {
                     throw new Exception("Por favor, completa el Captcha de seguridad.");
                 }
                 
-                $verifyResponse = @file_get_contents('https://www.google.com/recaptcha/api/siteverify?secret='.$recaptcha_secret_key.'&response='.$recaptchaResponse);
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, "https://www.google.com/recaptcha/api/siteverify");
+                curl_setopt($ch, CURLOPT_POST, 1);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(['secret' => $recaptcha_secret_key, 'response' => $recaptchaResponse]));
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Evita errores SSL en local (Laragon)
+                $verifyResponse = curl_exec($ch);
+                curl_close($ch);
+                
                 $responseData = json_decode($verifyResponse);
                 
                 if (!$responseData || !$responseData->success) {

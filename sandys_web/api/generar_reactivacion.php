@@ -65,8 +65,8 @@ if ($idSocioPost <= 0) {
 try {
     $conn->beginTransaction();
     
-    $tituloPromoReact = TITULO_PROMO_REACTIVACION . $idSocioPost;
-    $tituloPromoRef = 'REFERIDO-' . $idSocioPost;
+    $tituloPromoReact = 'PROMOCION FIJA DE REACTIVACION';
+    $tituloPromoRef = 'PROMOCION FIJA DE REFERIDOS';
 
     $stmtVal = $conn->prepare("
         SELECT c.codigo_generado 
@@ -124,7 +124,7 @@ try {
             'vigencia_final' => $vigenciaFinal,
             'porcentaje_descuento' => DESCUENTO_REACTIVACION,
             'utilizado' => '0',
-            'tipo_promocion' => 'General'
+            'tipo_promocion' => 'Masivo'
         ];
         
         $promoBaseId = construir_insert('san_promociones', $datosPromo);

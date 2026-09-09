@@ -22,7 +22,7 @@ $query = "SELECT
             p.pag_id_servicio 
           FROM san_consorcios c
           LEFT JOIN san_pagos p 
-            ON p.pag_id_socio = :socioId 
+            ON p.pag_id_socio = :socioId AND p.pag_status = 'A'
           WHERE c.con_id_consorcio = :idConsorcio
           ORDER BY p.pag_fecha_fin DESC, p.pag_id_pago DESC LIMIT 1";
 

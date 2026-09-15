@@ -130,6 +130,17 @@ if ($envio) {
         $meses = $datos_bd['meses'];
         $dias  = $datos_bd['dias'];
 
+        // Corrección de datos redundantes o incorrectos en la base de datos
+        // Si el usuario capturó meses=1 y dias=30, es una mensualidad (redundante). Priorizamos meses.
+        // Si capturó meses=1 y dias=15 (quincena), o dias=7 (semana), priorizamos días.
+        if ($meses > 0 && $dias > 0) {
+            if ($dias == ($meses * 30)) {
+                $dias = 0; 
+            } elseif ($meses == 1 && ($dias == 15 || $dias == 7)) {
+                $meses = 0; 
+            }
+        }
+
         // Si en la base de datos ambos valores están en 0, analizar la descripción como soporte
         if ($meses === 0 && $dias === 0 && !empty($datos_bd['descripcion'])) {
             $desc = $datos_bd['descripcion'];
